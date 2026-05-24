@@ -23,7 +23,12 @@ data/
 *.sqlite3
 
 # Node
-frontend/node_modules/
+node_modules/
+frontend-react/node_modules/
+frontend-react/.next/
+frontend-react/out/
+frontend-react/dist/
+frontend-react/*.tsbuildinfo
 frontend/.next/
 frontend/out/
 frontend/.pnp

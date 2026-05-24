@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Transaction - FinTrack</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#8edcc9",
+                    "surface-tint": "#77dc88",
+                    "background": "#121412",
+                    "surface-container-highest": "#333533",
+                    "on-tertiary-container": "#b1fd9d",
+                    "primary": "#77dc88",
+                    "on-secondary": "#00382e",
+                    "surface-container-high": "#292a28",
+                    "tertiary-fixed": "#aaf596",
+                    "on-error-container": "#ffdad6",
+                    "surface-container-low": "#1a1c1a",
+                    "on-primary-fixed-variant": "#005320",
+                    "tertiary-container": "#337728",
+                    "surface-container-lowest": "#0d0f0d",
+                    "error": "#ffb4ab",
+                    "on-secondary-fixed": "#00201a",
+                    "outline-variant": "#3f4a3e",
+                    "primary-container": "#007a33",
+                    "secondary-container": "#006354",
+                    "primary-fixed-dim": "#77dc88",
+                    "surface": "#121412",
+                    "on-surface": "#e3e3df",
+                    "tertiary-fixed-dim": "#8fd87d",
+                    "on-surface-variant": "#becabb",
+                    "on-primary-container": "#a1ffad",
+                    "on-error": "#690005",
+                    "inverse-primary": "#006e2d",
+                    "outline": "#889486",
+                    "secondary": "#88d5c2",
+                    "on-secondary-fixed-variant": "#005144",
+                    "error-container": "#93000a",
+                    "on-primary-fixed": "#002109",
+                    "on-tertiary-fixed-variant": "#095305",
+                    "secondary-fixed": "#a3f2de",
+                    "on-tertiary-fixed": "#002200",
+                    "surface-dim": "#121412",
+                    "surface-variant": "#333533",
+                    "inverse-on-surface": "#2f312e",
+                    "on-background": "#e3e3df",
+                    "surface-bright": "#383a37",
+                    "tertiary": "#8fd87d",
+                    "on-primary": "#003914",
+                    "on-tertiary": "#003a00",
+                    "secondary-fixed-dim": "#88d5c2",
+                    "primary-fixed": "#93f9a2",
+                    "inverse-surface": "#e3e3df",
+                    "surface-container": "#1e201e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-max": "1440px",
+                    "unit": "4px",
+                    "margin-desktop": "64px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Inter", "sans-serif"],
+                    "label-sm": ["Inter", "sans-serif"],
+                    "headline-lg": ["Inter", "sans-serif"],
+                    "display-lg": ["Inter", "sans-serif"],
+                    "body-md": ["Inter", "sans-serif"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                    "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                    "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                    "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                    "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        /* Custom styles to handle specific inputs that Tailwind forms plugin might miss in dark mode */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg fill='%23becabb' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+            background-repeat: no-repeat;
+            background-position-x: 96%;
+            background-position-y: 50%;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex items-center justify-center p-margin-mobile md:p-margin-desktop antialiased">
+<!-- Modal Backdrop / Background Layer -->
+<div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-0"></div>
+<!-- Centered Card / Modal -->
+<main class="relative z-10 w-full max-w-2xl bg-surface-container-low rounded-xl border border-outline-variant/30 shadow-[0_8px_32px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col">
+<!-- Header -->
+<header class="flex justify-between items-center px-8 py-6 border-b border-outline-variant/20 bg-surface-container-low">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary-fixed-dim">
+                Add Transaction
+            </h1>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors rounded-full p-2 hover:bg-surface-container-highest">
+<span class="material-symbols-outlined block">close</span>
+</button>
+</header>
+<!-- Form Content -->
+<form class="p-8 space-y-8 flex-1 overflow-y-auto">
+<!-- Amount Input Area (Hero Input) -->
+<div class="bg-surface-container-highest/30 rounded-lg p-6 flex flex-col items-center border border-primary-container/20 shadow-inner">
+<label class="font-label-sm text-label-sm text-on-surface-variant mb-2" for="amount">Total Amount</label>
+<div class="flex items-center justify-center w-full">
+<span class="font-display-lg text-display-lg text-primary-fixed mr-2">$</span>
+<input class="bg-transparent border-none font-display-lg text-display-lg text-on-surface w-48 text-center focus:ring-0 focus:outline-none placeholder:text-on-surface-variant/20" id="amount" placeholder="0.00" required="" step="0.01" type="number"/>
+</div>
+</div>
+<!-- Grid Details -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Merchant / Description -->
+<div class="space-y-2">
+<label class="block font-label-sm text-label-sm text-on-surface-variant" for="merchant">Merchant / Description</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/70 pointer-events-none" style="font-variation-settings: 'FILL' 0;">storefront</span>
+<input class="w-full bg-surface-container-highest border border-outline-variant/40 rounded-lg py-3 pl-10 pr-4 font-body-md text-body-md text-on-surface focus:border-primary-fixed focus:ring-1 focus:ring-primary-fixed transition-all outline-none" id="merchant" placeholder="e.g. Whole Foods" type="text"/>
+</div>
+</div>
+<!-- Date -->
+<div class="space-y-2">
+<label class="block font-label-sm text-label-sm text-on-surface-variant" for="date">Date</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/70 pointer-events-none" style="font-variation-settings: 'FILL' 0;">calendar_today</span>
+<input class="w-full bg-surface-container-highest border border-outline-variant/40 rounded-lg py-3 pl-10 pr-4 font-body-md text-body-md text-on-surface focus:border-primary-fixed focus:ring-1 focus:ring-primary-fixed transition-all outline-none [color-scheme:dark]" id="date" type="date"/>
+</div>
+</div>
+<!-- Category -->
+<div class="space-y-2">
+<label class="block font-label-sm text-label-sm text-on-surface-variant" for="category">Category</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/70 pointer-events-none" style="font-variation-settings: 'FILL' 0;">category</span>
+<select class="w-full bg-surface-container-highest border border-outline-variant/40 rounded-lg py-3 pl-10 pr-10 font-body-md text-body-md text-on-surface focus:border-primary-fixed focus:ring-1 focus:ring-primary-fixed transition-all outline-none" id="category">
+<option disabled="" selected="" value="">Select category</option>
+<option value="groceries">Groceries</option>
+<option value="utilities">Utilities</option>
+<option value="entertainment">Entertainment</option>
+<option value="dining">Dining Out</option>
+<option value="transportation">Transportation</option>
+</select>
+</div>
+</div>
+<!-- Payment Method -->
+<div class="space-y-2">
+<label class="block font-label-sm text-label-sm text-on-surface-variant" for="payment_method">Payment Method</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/70 pointer-events-none" style="font-variation-settings: 'FILL' 0;">account_balance_wallet</span>
+<select class="w-full bg-surface-container-highest border border-outline-variant/40 rounded-lg py-3 pl-10 pr-10 font-body-md text-body-md text-on-surface focus:border-primary-fixed focus:ring-1 focus:ring-primary-fixed transition-all outline-none" id="payment_method">
+<option value="checking">Checking Account (...4521)</option>
+<option value="credit">Credit Card (...8892)</option>
+<option value="cash">Cash</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Toggles & Extras -->
+<div class="pt-4 border-t border-outline-variant/20 space-y-6">
+<!-- Recurring Toggle -->
+<div class="flex items-center justify-between bg-surface-container-highest/20 p-4 rounded-lg border border-outline-variant/10">
+<div>
+<p class="font-body-md text-body-md text-on-surface">Recurring Expense</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Automatically log this transaction monthly</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-container-high rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-on-surface after:border-outline-variant after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<!-- Receipt Upload -->
+<div class="space-y-2">
+<label class="block font-label-sm text-label-sm text-on-surface-variant">Attach Receipt (Optional)</label>
+<div class="w-full border-2 border-dashed border-outline-variant/40 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary-fixed/50 hover:bg-surface-container-highest/30 transition-colors group">
+<div class="p-3 bg-surface-container-high rounded-full mb-3 group-hover:bg-primary-container/20 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary-fixed transition-colors" style="font-variation-settings: 'FILL' 0;">upload_file</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface mb-1">Click to upload or drag and drop</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">SVG, PNG, JPG or PDF (max. 5MB)</p>
+<input accept=".svg,.png,.jpg,.jpeg,.pdf" class="hidden" type="file"/>
+</div>
+</div>
+</div>
+</form>
+<!-- Footer Actions -->
+<footer class="p-6 bg-surface-container-low border-t border-outline-variant/20 flex flex-col sm:flex-row justify-end items-center gap-4">
+<button class="w-full sm:w-auto px-6 py-2.5 rounded-lg border border-secondary text-secondary font-body-md text-body-md hover:bg-secondary/10 transition-colors focus:ring-2 focus:ring-secondary focus:outline-none" type="button">
+                Cancel
+            </button>
+<button class="w-full sm:w-auto px-8 py-2.5 rounded-lg bg-primary-container text-white font-body-md text-body-md font-medium hover:bg-primary-container/90 transition-colors focus:ring-2 focus:ring-primary-fixed focus:outline-none shadow-lg shadow-primary-container/20 flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                Save Transaction
+            </button>
+</footer>
+</main>
+</body></html>

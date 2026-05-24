@@ -1,22 +1,13 @@
-# Replace yourdomain.com with your actual domain
-yourdomain.com {
-    # API → backend
+:80 {
     handle /api/* {
-        reverse_proxy backend:8000
+        reverse_proxy backend:8080
     }
 
-    # Everything else → Next.js frontend
+    handle /health {
+        reverse_proxy backend:8080
+    }
+
     handle {
-        reverse_proxy frontend:3000
+        reverse_proxy frontend:80
     }
 }
-
-# For local testing without a domain:
-# :80 {
-#     handle /api/* {
-#         reverse_proxy backend:8000
-#     }
-#     handle {
-#         reverse_proxy frontend:3000
-#     }
-# }

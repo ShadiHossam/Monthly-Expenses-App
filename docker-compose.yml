@@ -1,47 +1,74 @@
-version: "3.9"
-
 services:
-  backend:
-    build: ./backend
-    container_name: expense-backend
-    restart: unless-stopped
-    env_file: .env
-    volumes:
-      - ./data:/app/data
-    expose:
-      - "8000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  frontend:
-    build: ./frontend
-    container_name: expense-frontend
+  postgres:
+    image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000/api/v1}
+      POSTGRES_DB: ${DB_NAME:-expense_tracker}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend-java
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ${DB_NAME:-expense_tracker}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      UPLOAD_DIR: /app/data/uploads
+      ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-true}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_SOLO: ${STRIPE_PRICE_SOLO:-}
+      STRIPE_PRICE_PRO: ${STRIPE_PRICE_PRO:-}
+      STRIPE_PRICE_BUSINESS: ${STRIPE_PRICE_BUSINESS:-}
+      STRIPE_PRICE_OVERAGE: ${STRIPE_PRICE_OVERAGE:-}
+    volumes:
+      - ./data/uploads:/app/data/uploads
     expose:
-      - "3000"
+      - "8080"
+
+  frontend:
+    build:
+      context: ./frontend-react
+      args:
+        VITE_API_URL: /api/v1
+    restart: unless-stopped
     depends_on:
       - backend
+    expose:
+      - "80"
 
   caddy:
     image: caddy:2-alpine
-    container_name: expense-caddy
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "3000:80"
       - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
-      - frontend
       - backend
+      - frontend
 
 volumes:
+  postgres_data:
   caddy_data:
   caddy_config:
