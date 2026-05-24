@@ -34,6 +34,12 @@ frontend/out/
 frontend/.pnp
 frontend/.pnp.js
 
+# Design mockups / Stitch exports — local only, not application code
+stitch_monthly_expense_analytics/
+
+# Claude Code local state
+.claude/
+
 # Misc
 .DS_Store
 *.pem
