@@ -77,12 +77,13 @@ public class AnalyticsService {
         }
 
         return byMonth.entrySet().stream().map(e -> {
+            String label = Month.of(e.getKey()).getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH);
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("month", e.getKey());
-            m.put("month_name", Month.of(e.getKey()).name());
+            m.put("month_label", label);
             m.put("year", year);
-            m.put("debits", e.getValue()[0]);
-            m.put("credits", e.getValue()[1]);
+            m.put("total_debits", e.getValue()[0]);
+            m.put("total_credits", e.getValue()[1]);
             return m;
         }).toList();
     }
@@ -124,7 +125,7 @@ public class AnalyticsService {
                     Map<String, Object> m = new LinkedHashMap<>();
                     m.put("category_id", e.getKey());
                     m.put("category_name", cat != null ? cat.getName() : "Uncategorized");
-                    m.put("category_color", cat != null ? cat.getColor() : "#9ca3af");
+                    m.put("color", cat != null ? cat.getColor() : "#9ca3af");
                     m.put("total", e.getValue());
                     m.put("percentage", Math.round(pct * 10.0) / 10.0);
                     m.put("transaction_count", countByCat.getOrDefault(
@@ -152,10 +153,18 @@ public class AnalyticsService {
                 .sorted((a, b) -> b.getValue()[0].compareTo(a.getValue()[0]))
                 .limit(20)
                 .map(e -> {
+                    int visits = e.getValue()[0].intValue();
+                    BigDecimal total = e.getValue()[1];
+                    BigDecimal avg = visits > 0
+                            ? total.divide(BigDecimal.valueOf(visits), 2, RoundingMode.HALF_UP)
+                            : BigDecimal.ZERO;
+                    String reason = visits >= 10 ? "Very frequent" : visits >= 5 ? "Frequent" : "Regular";
                     Map<String, Object> m = new LinkedHashMap<>();
                     m.put("merchant_name", e.getKey());
-                    m.put("visit_count", e.getValue()[0].intValue());
-                    m.put("total_spend", e.getValue()[1]);
+                    m.put("visit_count", visits);
+                    m.put("total_spent", total);
+                    m.put("avg_spend", avg);
+                    m.put("frequency_reason", reason);
                     return m;
                 }).toList();
     }
@@ -165,9 +174,12 @@ public class AnalyticsService {
                 .stream()
                 .filter(s -> s.getPeriodEnd() != null && s.getClosingBalance() != null)
                 .map(s -> {
+                    String label = s.getPeriodEnd().getMonth()
+                            .getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH)
+                            + " " + s.getPeriodEnd().getYear();
                     Map<String, Object> m = new LinkedHashMap<>();
-                    m.put("date", s.getPeriodEnd());
-                    m.put("balance", s.getClosingBalance());
+                    m.put("period_label", label);
+                    m.put("closing_balance", s.getClosingBalance());
                     return m;
                 }).toList();
     }
@@ -175,6 +187,9 @@ public class AnalyticsService {
     public List<Map<String, Object>> recurring(Long userId) {
         List<Transaction> txns = transactionRepository.findByUserIdAndDateRange(
                 userId, LocalDate.now().minusMonths(6), LocalDate.now());
+
+        Map<Long, Category> categoryById = categoryRepository.findByUserIdOrderByName(userId)
+                .stream().collect(Collectors.toMap(Category::getId, c -> c));
 
         Map<String, List<Transaction>> byMerchant = new LinkedHashMap<>();
         for (Transaction t : txns) {
@@ -187,8 +202,10 @@ public class AnalyticsService {
             List<Transaction> group = entry.getValue();
             if (group.size() < 2) continue;
 
-            List<LocalDate> dates = group.stream().map(Transaction::getTxnDate)
-                    .sorted().toList();
+            List<Transaction> sorted = group.stream()
+                    .sorted(Comparator.comparing(Transaction::getTxnDate)).toList();
+            List<LocalDate> dates = sorted.stream().map(Transaction::getTxnDate).toList();
+
             long avgDays = 0;
             for (int i = 1; i < dates.size(); i++) {
                 avgDays += dates.get(i - 1).until(dates.get(i), ChronoUnit.DAYS);
@@ -199,12 +216,27 @@ public class AnalyticsService {
                 BigDecimal avgAmount = group.stream().map(Transaction::getAmount)
                         .reduce(BigDecimal.ZERO, BigDecimal::add)
                         .divide(BigDecimal.valueOf(group.size()), 2, RoundingMode.HALF_UP);
+
+                Transaction latest = sorted.get(sorted.size() - 1);
+                Category cat = latest.getCategoryId() != null ? categoryById.get(latest.getCategoryId()) : null;
+
+                List<Map<String, Object>> txnList = sorted.stream().map(t -> {
+                    Map<String, Object> tx = new LinkedHashMap<>();
+                    tx.put("id", t.getId());
+                    tx.put("txn_date", t.getTxnDate());
+                    tx.put("amount", t.getAmount());
+                    return tx;
+                }).toList();
+
                 Map<String, Object> m = new LinkedHashMap<>();
                 m.put("merchant_name", entry.getKey());
-                m.put("frequency", "monthly");
-                m.put("occurrence_count", group.size());
-                m.put("avg_amount", avgAmount);
+                m.put("amount", avgAmount);
+                m.put("occurrences", group.size());
+                m.put("months_seen", group.size());
                 m.put("last_date", dates.get(dates.size() - 1));
+                m.put("category_name", cat != null ? cat.getName() : null);
+                m.put("category_color", cat != null ? cat.getColor() : null);
+                m.put("transactions", txnList);
                 result.add(m);
             }
         }
@@ -219,12 +251,17 @@ public class AnalyticsService {
             LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
             BigDecimal debits = transactionRepository.sumDebits(userId, start, end);
             BigDecimal credits = transactionRepository.sumCredits(userId, start, end);
+            String label = start.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH)
+                    + " " + start.getYear();
             Map<String, Object> m = new LinkedHashMap<>();
+            BigDecimal d = debits != null ? debits : BigDecimal.ZERO;
+            BigDecimal c = credits != null ? credits : BigDecimal.ZERO;
             m.put("month", start.getMonthValue());
             m.put("year", start.getYear());
-            m.put("month_name", start.getMonth().name());
-            m.put("debits", debits != null ? debits : BigDecimal.ZERO);
-            m.put("credits", credits != null ? credits : BigDecimal.ZERO);
+            m.put("month_label", label);
+            m.put("total_debits", d);
+            m.put("total_credits", c);
+            m.put("net", c.subtract(d));
             result.add(m);
         }
         return result;

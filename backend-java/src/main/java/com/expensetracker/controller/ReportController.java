@@ -27,7 +27,7 @@ public class ReportController {
             @AuthenticationPrincipal Long userId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from_date,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to_date) {
-        return ResponseEntity.ok(reportService.generate(userId, from_date, to_date));
+        return ResponseEntity.ok(Map.of("data", reportService.generate(userId, from_date, to_date)));
     }
 
     @GetMapping("/saved")

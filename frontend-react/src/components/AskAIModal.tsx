@@ -42,7 +42,7 @@ export default function AskAIModal({ open, onClose, fromDate, toDate }: Props) {
     setLoading(true);
     try {
       const res = await api.askAI(q, fromDate, toDate);
-      setMessages(prev => [...prev, { role: "ai", text: res.data.answer }]);
+      setMessages(prev => [...prev, { role: "ai", text: (res as any).data?.answer ?? (res as any).answer ?? "No response" }]);
     } catch (err: any) {
       setMessages(prev => [...prev, { role: "ai", text: "Something went wrong. Please try again." }]);
     } finally {

@@ -1,6 +1,7 @@
 package com.expensetracker.controller;
 
 import com.expensetracker.dto.response.BillingUsage;
+import com.expensetracker.dto.response.PlanOut;
 import com.expensetracker.service.BillingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class BillingController {
     }
 
     @GetMapping("/api/v1/billing/plans")
-    public ResponseEntity<List<Map<String, Object>>> plans() {
+    public ResponseEntity<List<PlanOut>> plans() {
         return ResponseEntity.ok(billingService.getPlans());
     }
 

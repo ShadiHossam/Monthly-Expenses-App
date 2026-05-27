@@ -27,19 +27,22 @@ public class OcrService {
     private final AppProperties appProperties;
     private final ObjectMapper objectMapper;
     private final AiProviderResolver resolver;
+    private final TesseractParser tesseractParser;
 
     public OcrService(@Qualifier("groqClient") WebClient groqClient,
                       @Qualifier("openrouterClient") WebClient openrouterClient,
                       @Qualifier("anthropicClient") WebClient anthropicClient,
                       AppProperties appProperties,
                       ObjectMapper objectMapper,
-                      AiProviderResolver resolver) {
+                      AiProviderResolver resolver,
+                      TesseractParser tesseractParser) {
         this.groqClient = groqClient;
         this.openrouterClient = openrouterClient;
         this.anthropicClient = anthropicClient;
         this.appProperties = appProperties;
         this.objectMapper = objectMapper;
         this.resolver = resolver;
+        this.tesseractParser = tesseractParser;
     }
 
     private static final String EXTRACTION_PROMPT = """
@@ -64,8 +67,21 @@ public class OcrService {
         """;
 
     public List<TransactionDTO> extract(byte[] imageBytes, String mimeType, User user) {
-        String base64 = Base64.getEncoder().encodeToString(imageBytes);
         String provider = resolver.resolveOcrProvider(user);
+
+        if ("tesseract".equals(provider)) {
+            try {
+                String rawText = tesseractParser.extractText(imageBytes, mimeType);
+                List<TransactionDTO> results = tesseractParser.parse(rawText);
+                if (!results.isEmpty()) return results;
+                log.warn("Tesseract found 0 transactions, falling back to AI provider");
+            } catch (Exception e) {
+                log.warn("Tesseract failed ({}), falling back to AI provider", e.getMessage());
+            }
+            provider = "auto";
+        }
+
+        String base64 = Base64.getEncoder().encodeToString(imageBytes);
         AppProperties.Ai ai = appProperties.getAi();
 
         for (int attempt = 0; attempt <= ai.getMaxRetries(); attempt++) {
@@ -87,6 +103,11 @@ public class OcrService {
                     }
                 };
                 return parseTransactions(jsonResponse);
+            } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+                log.warn("OCR attempt {} failed: {} — body: {}", attempt + 1, e.getMessage(), e.getResponseBodyAsString());
+                if (attempt == ai.getMaxRetries()) {
+                    throw new RuntimeException("Failed to extract transactions after retries", e);
+                }
             } catch (Exception e) {
                 log.warn("OCR attempt {} failed: {}", attempt + 1, e.getMessage());
                 if (attempt == ai.getMaxRetries()) {

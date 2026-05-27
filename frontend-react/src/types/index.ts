@@ -209,9 +209,12 @@ export interface BudgetStatus {
   category_name: string;
   category_color: string;
   monthly_limit: number;
-  current_spend: number;
+  spent_this_month: number;
   percentage: number;
+  status: "ok" | "warning" | "exceeded";
   enabled: boolean;
+  breach_count: number;
+  last_breach_month: string | null;
 }
 
 export interface SavedReport {

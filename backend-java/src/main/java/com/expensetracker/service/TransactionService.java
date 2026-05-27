@@ -1,11 +1,14 @@
 package com.expensetracker.service;
 
 import com.expensetracker.dto.request.BulkCategorizeRequest;
+import com.expensetracker.dto.request.TransactionRequest;
 import com.expensetracker.dto.response.TransactionOut;
 import com.expensetracker.exception.EntityNotFoundException;
 import com.expensetracker.model.Category;
+import com.expensetracker.model.Statement;
 import com.expensetracker.model.Transaction;
 import com.expensetracker.repository.CategoryRepository;
+import com.expensetracker.repository.StatementRepository;
 import com.expensetracker.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,6 +31,35 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
+    private final StatementRepository statementRepository;
+
+    @Transactional
+    public TransactionOut createManual(Long userId, TransactionRequest req) {
+        Statement stmt = statementRepository.findByUserIdAndOcrEngine(userId, "manual")
+                .orElseGet(() -> statementRepository.save(
+                        Statement.builder()
+                                .userId(userId)
+                                .filename("Manual Entries")
+                                .ocrEngine("manual")
+                                .verifyStatus("verified")
+                                .build()));
+
+        Transaction t = Transaction.builder()
+                .userId(userId)
+                .statementId(stmt.getId())
+                .txnDate(req.getTxnDate())
+                .description(req.getDescription())
+                .merchantName(req.getMerchantName())
+                .amount(req.getAmount())
+                .txnType(req.getTxnType())
+                .refNumber(req.getRefNumber())
+                .categoryId(req.getCategoryId())
+                .isCategorized(req.getCategoryId() != null)
+                .build();
+
+        t = transactionRepository.save(t);
+        return toOut(t, getCategoryMap(userId));
+    }
 
     public Page<TransactionOut> list(Long userId, LocalDate from, LocalDate to,
                                      Long categoryId, String txnType, String search,

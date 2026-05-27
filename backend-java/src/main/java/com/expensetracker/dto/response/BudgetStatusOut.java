@@ -17,4 +17,6 @@ public class BudgetStatusOut {
     private double percentage;
     private String status; // ok / warning / exceeded
     private boolean enabled;
+    private int breachCount;       // # of past months (excl. current) where spending > limit
+    private String lastBreachMonth; // most recent breached month as YYYY-MM, null if none
 }

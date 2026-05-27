@@ -112,11 +112,23 @@ public class MerchantService {
     }
 
     public List<Map<String, Object>> frequentMerchants(Long userId) {
-        return dbAggregateMerchants(userId, java.time.LocalDate.now().minusMonths(3), java.time.LocalDate.now(), 20);
+        return transactionRepository.aggregateMerchants(
+                        userId, java.time.LocalDate.now().minusMonths(3), java.time.LocalDate.now(), 20)
+                .stream()
+                .filter(row -> ((Number) row[1]).intValue() >= 2)
+                .map(row -> {
+                    Map<String, Object> m = new java.util.LinkedHashMap<>();
+                    m.put("merchant_name", row[0]);
+                    m.put("visit_count", ((Number) row[1]).intValue());
+                    m.put("total_spent", row[2]);
+                    m.put("avg_spend", row[3]);
+                    m.put("frequency_reason", "frequent");
+                    return m;
+                }).toList();
     }
 
     public List<Map<String, Object>> ranking(Long userId, int limit) {
-        return transactionRepository.aggregateMerchants(
+        var rows = transactionRepository.aggregateMerchants(
                         userId, java.time.LocalDate.of(2000, 1, 1), java.time.LocalDate.now(), limit)
                 .stream()
                 .map(row -> {
@@ -124,11 +136,19 @@ public class MerchantService {
                     m.put("merchant_name", row[0]);
                     m.put("visit_count", ((Number) row[1]).intValue());
                     m.put("total_spend", row[2]);
+                    m.put("avg_spend", row[3]);
                     return m;
                 })
                 .sorted((a, b) -> new java.math.BigDecimal(b.get("total_spend").toString())
                         .compareTo(new java.math.BigDecimal(a.get("total_spend").toString())))
                 .toList();
+        var result = new java.util.ArrayList<Map<String, Object>>();
+        for (int i = 0; i < rows.size(); i++) {
+            Map<String, Object> m = new java.util.LinkedHashMap<>(rows.get(i));
+            m.put("rank", i + 1);
+            result.add(m);
+        }
+        return result;
     }
 
     public List<Map<String, Object>> merchantTransactions(Long userId, String merchantName) {
@@ -158,6 +178,7 @@ public class MerchantService {
                     m.put("merchant_name", row[0]);
                     m.put("visit_count", ((Number) row[1]).intValue());
                     m.put("total_spend", row[2]);
+                    m.put("avg_spend", row[3]);
                     return m;
                 }).toList();
     }

@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../lib/api";
-import { formatAED, formatDate } from "../lib/utils";
-import ExportButtons from "../components/ExportButtons";
+import { cn, formatAED, formatDate } from "../lib/utils";
 import { exportToExcel, exportToPDF } from "../lib/exportUtils";
+
+function MSIcon({ name, className }: { name: string; className?: string }) {
+  return <span className={cn("material-symbols-outlined select-none", className)}>{name}</span>;
+}
 
 export default function MerchantsPage() {
   const [merchants, setMerchants] = useState<any[]>([]);
@@ -25,33 +29,23 @@ export default function MerchantsPage() {
   }, []);
 
   async function toggleMerchant(name: string) {
-    if (expanded === name) {
-      setExpanded(null);
-      return;
-    }
+    if (expanded === name) { setExpanded(null); return; }
     setExpanded(name);
     if (!txns[name]) {
       setTxnLoading(name);
       try {
         const res = await api.getMerchantTransactions(name);
-        setTxns((prev) => ({ ...prev, [name]: (res as any).data || [] }));
-      } finally {
-        setTxnLoading(null);
-      }
+        setTxns(prev => ({ ...prev, [name]: (res as any).data || [] }));
+      } finally { setTxnLoading(null); }
     }
   }
 
   const q = search.toLowerCase();
-  const filteredFrequent = frequent.filter((p) =>
-    p.merchant_name?.toLowerCase().includes(q)
-  );
-  const filteredMerchants = merchants.filter((m) =>
-    (m.merchant_name || "").toLowerCase().includes(q)
-  );
+  const filteredFrequent = frequent.filter(p => p.merchant_name?.toLowerCase().includes(q));
+  const filteredMerchants = merchants.filter(m => (m.merchant_name || "").toLowerCase().includes(q));
 
   function handleExcelExport() {
-    const sheets = [];
-
+    const sheets: any[] = [];
     if (frequent.length > 0) {
       sheets.push({
         name: "Frequent Places",
@@ -69,7 +63,6 @@ export default function MerchantsPage() {
         })),
       });
     }
-
     sheets.push({
       name: "All Merchants",
       columns: [
@@ -83,91 +76,119 @@ export default function MerchantsPage() {
         total_spend: Number(m.total_spend).toFixed(2),
       })),
     });
-
     exportToExcel(sheets, "merchants");
   }
 
   function handlePDFExport() {
-    const sections = [];
-
+    const sections: any[] = [];
     if (frequent.length > 0) {
       sections.push({
         title: "Frequent Places",
         columns: ["Merchant", "Visits", "Avg Spend (AED)", "Total (AED)"],
-        rows: frequent.map((p: any) => [
-          p.merchant_name,
-          p.visit_count,
-          Number(p.avg_spend).toFixed(2),
-          Number(p.total_spent).toFixed(2),
-        ]) as (string | number)[][],
+        rows: frequent.map((p: any) => [p.merchant_name, p.visit_count, Number(p.avg_spend).toFixed(2), Number(p.total_spent).toFixed(2)]),
       });
     }
-
     sections.push({
       title: "All Merchants",
       columns: ["Merchant", "Visits", "Total Spent (AED)"],
-      rows: merchants.map((m: any) => [
-        m.merchant_name || "Unknown",
-        m.visit_count,
-        Number(m.total_spend).toFixed(2),
-      ]) as (string | number)[][],
+      rows: merchants.map((m: any) => [m.merchant_name || "Unknown", m.visit_count, Number(m.total_spend).toFixed(2)]),
     });
-
     exportToPDF(sections, "merchants", "Merchants Report");
   }
 
+  if (loading) {
+    return <div className="flex justify-center py-24"><div className="w-8 h-8 border-4 border-ft-primary dark:border-ve-primary border-t-transparent rounded-full animate-spin" /></div>;
+  }
+
+  const hasAny = merchants.length > 0 || frequent.length > 0;
+
   return (
-    <div className="max-w-2xl mx-auto px-4 pt-6 pb-8">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold text-slate-900">Merchants</h1>
-        {!loading && merchants.length > 0 && (
-          <ExportButtons onExportExcel={handleExcelExport} onExportPDF={handlePDFExport} />
+    <div className="px-6 pt-6 pb-10 max-w-3xl mx-auto">
+
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-ft-on-surface dark:text-ve-on-surface">Merchants</h1>
+          <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">All detected merchants and spending patterns</p>
+        </div>
+        {hasAny && (
+          <div className="flex items-center gap-2">
+            <button onClick={handleExcelExport}
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl border border-ft-outline-variant dark:border-ve-outline text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors">
+              <MSIcon name="table_view" className="text-base" />
+              Excel
+            </button>
+            <button onClick={handlePDFExport}
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl border border-ft-outline-variant dark:border-ve-outline text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors">
+              <MSIcon name="picture_as_pdf" className="text-base" />
+              PDF
+            </button>
+          </div>
         )}
       </div>
 
+      {/* ── Search ── */}
       <div className="relative mb-6">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-        </svg>
+        <MSIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant pointer-events-none" />
         <input
           type="text"
-          placeholder="Filter merchants..."
+          placeholder="Search merchants…"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          onChange={e => setSearch(e.target.value)}
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-ft-outline-variant dark:border-ve-outline bg-ft-surface dark:bg-ve-surface text-sm text-ft-on-surface dark:text-ve-on-surface placeholder-ft-on-surface-variant dark:placeholder-ve-on-surface-variant focus:outline-none focus:ring-2 focus:ring-ft-primary dark:focus:ring-ve-primary"
         />
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      {!hasAny ? (
+        /* ── Empty state ── */
+        <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-16 flex flex-col items-center text-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-ft-surface-low dark:bg-ve-surface-high flex items-center justify-center">
+            <MSIcon name="storefront" className="text-4xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
+          </div>
+          <div>
+            <p className="font-semibold text-ft-on-surface dark:text-ve-on-surface">No merchants detected yet</p>
+            <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-1 max-w-xs">
+              Upload a bank statement to automatically discover merchants and spending patterns.
+            </p>
+          </div>
+          <Link to="/upload"
+            className="flex items-center gap-2 px-5 py-2.5 bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity">
+            <MSIcon name="upload" className="text-lg" />
+            Upload Statement
+          </Link>
         </div>
       ) : (
-        <>
+        <div className="space-y-6">
+
+          {/* ── Frequent Places ── */}
           {filteredFrequent.length > 0 && (
-            <div className="mb-6">
-              <h2 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                <span className="text-yellow-500">⭐</span> Frequent Places
-              </h2>
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <div>
+              <p className="text-xs font-semibold text-ft-on-surface-variant dark:text-ve-on-surface-variant uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <MSIcon name="star" className="text-base text-amber-500" />
+                Frequent Places
+              </p>
+              <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl overflow-hidden">
                 {filteredFrequent.map((p: any, i: number) => (
-                  <div key={i}>
+                  <div key={p.merchant_name}>
                     <button
                       onClick={() => toggleMerchant(p.merchant_name)}
-                      className={`w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-slate-50 transition-colors ${i < filteredFrequent.length - 1 || expanded === p.merchant_name ? "border-b border-gray-50" : ""}`}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors",
+                        i < filteredFrequent.length - 1 && "border-b border-ft-outline-variant dark:border-ve-outline"
+                      )}
                     >
-                      <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm font-bold text-emerald-600">{p.visit_count}x</span>
+                      <div className="w-10 h-10 rounded-xl bg-ft-primary/10 dark:bg-ve-primary/10 flex items-center justify-center shrink-0">
+                        <span className="text-xs font-bold text-ft-primary dark:text-ve-primary">{p.visit_count}x</span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-900 truncate">{p.merchant_name}</p>
-                        <p className="text-xs text-slate-400">{p.frequency_reason} · avg {formatAED(p.avg_spend)}</p>
+                        <p className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface truncate">{p.merchant_name}</p>
+                        <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">
+                          {p.frequency_reason} · avg {formatAED(p.avg_spend)}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold text-slate-900">{formatAED(p.total_spent)}</p>
-                        <svg className={`w-4 h-4 text-slate-400 transition-transform ${expanded === p.merchant_name ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-sm font-bold text-ft-on-surface dark:text-ve-on-surface tabular-nums">{formatAED(p.total_spent)}</span>
+                        <MSIcon name={expanded === p.merchant_name ? "expand_less" : "expand_more"} className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
                       </div>
                     </button>
                     {expanded === p.merchant_name && (
@@ -179,63 +200,90 @@ export default function MerchantsPage() {
             </div>
           )}
 
+          {/* ── Top by Spend ── */}
           {ranking.length > 0 && (
-            <div className="mb-6">
-              <h2 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                <span>🏆</span> Top Merchants by Spend
-              </h2>
-              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <div>
+              <p className="text-xs font-semibold text-ft-on-surface-variant dark:text-ve-on-surface-variant uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <MSIcon name="emoji_events" className="text-base text-amber-500" />
+                Top Merchants by Spend
+              </p>
+              <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl overflow-hidden">
                 {ranking.slice(0, 10).map((m: any, i: number) => (
-                  <div key={i} className={`flex items-center gap-4 px-5 py-4 ${i < ranking.length - 1 ? "border-b border-gray-50" : ""}`}>
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-sm ${i === 0 ? "bg-yellow-100 text-yellow-700" : i === 1 ? "bg-slate-100 text-slate-600" : i === 2 ? "bg-amber-50 text-amber-700" : "bg-gray-50 text-slate-400"}`}>
+                  <div key={i} className={cn(
+                    "flex items-center gap-3 px-5 py-4",
+                    i < Math.min(ranking.length, 10) - 1 && "border-b border-ft-outline-variant dark:border-ve-outline"
+                  )}>
+                    <div className={cn(
+                      "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-sm font-bold",
+                      i === 0 ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                        : i === 1 ? "bg-slate-100 dark:bg-slate-700/30 text-slate-600 dark:text-slate-400"
+                        : i === 2 ? "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400"
+                        : "bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface-variant dark:text-ve-on-surface-variant"
+                    )}>
                       {m.rank}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-900 truncate">{m.merchant_name}</p>
-                      <p className="text-xs text-slate-400">{m.visit_count} visit{m.visit_count !== 1 ? "s" : ""} · avg {formatAED(m.avg_spend)}</p>
+                      <p className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface truncate">{m.merchant_name}</p>
+                      <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">
+                        {m.visit_count} visit{m.visit_count !== 1 ? "s" : ""} · avg {formatAED(m.avg_spend)}
+                      </p>
                     </div>
-                    <p className="text-sm font-bold text-slate-900 flex-shrink-0">{formatAED(m.total_spend)}</p>
+                    <span className="text-sm font-bold text-ft-on-surface dark:text-ve-on-surface tabular-nums shrink-0">{formatAED(m.total_spend)}</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          <h2 className="font-semibold text-slate-700 mb-3">All Merchants</h2>
-          {filteredMerchants.length > 0 ? (
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-              {filteredMerchants.map((m: any, i: number) => (
-                <div key={i}>
-                  <button
-                    onClick={() => toggleMerchant(m.merchant_name)}
-                    className={`w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-slate-50 transition-colors ${i < filteredMerchants.length - 1 || expanded === m.merchant_name ? "border-b border-gray-50" : ""}`}
-                  >
-                    <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm font-bold text-slate-500">{(m.merchant_name || "?")[0].toUpperCase()}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-900 truncate">{m.merchant_name || "Unknown"}</p>
-                      <p className="text-xs text-slate-400">{m.visit_count} visit{m.visit_count !== 1 ? "s" : ""}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-bold text-slate-900">{formatAED(m.total_spend)}</p>
-                      <svg className={`w-4 h-4 text-slate-400 transition-transform ${expanded === m.merchant_name ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </button>
-                  {expanded === m.merchant_name && (
-                    <TransactionList name={m.merchant_name} txns={txns[m.merchant_name]} loading={txnLoading === m.merchant_name} />
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-10 text-slate-400">
-              {search ? "No merchants match your filter." : "No merchants yet. Upload a statement first."}
-            </div>
-          )}
-        </>
+          {/* ── All Merchants ── */}
+          <div>
+            <p className="text-xs font-semibold text-ft-on-surface-variant dark:text-ve-on-surface-variant uppercase tracking-wider mb-3">
+              All Merchants
+            </p>
+            {filteredMerchants.length > 0 ? (
+              <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl overflow-hidden">
+                {filteredMerchants.map((m: any, i: number) => (
+                  <div key={i}>
+                    <button
+                      onClick={() => toggleMerchant(m.merchant_name)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors",
+                        i < filteredMerchants.length - 1 && "border-b border-ft-outline-variant dark:border-ve-outline"
+                      )}
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-ft-surface-low dark:bg-ve-surface-high flex items-center justify-center shrink-0">
+                        <span className="text-sm font-bold text-ft-on-surface-variant dark:text-ve-on-surface-variant">
+                          {(m.merchant_name || "?")[0].toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface truncate">{m.merchant_name || "Unknown"}</p>
+                        <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">
+                          {m.visit_count} visit{m.visit_count !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-sm font-bold text-ft-on-surface dark:text-ve-on-surface tabular-nums">{formatAED(m.total_spend)}</span>
+                        <MSIcon name={expanded === m.merchant_name ? "expand_less" : "expand_more"} className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
+                      </div>
+                    </button>
+                    {expanded === m.merchant_name && (
+                      <TransactionList name={m.merchant_name} txns={txns[m.merchant_name]} loading={txnLoading === m.merchant_name} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-10 flex flex-col items-center text-center gap-2">
+                <MSIcon name="search_off" className="text-3xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
+                <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant">
+                  {search ? "No merchants match your search." : "No merchants found."}
+                </p>
+              </div>
+            )}
+          </div>
+
+        </div>
       )}
     </div>
   );
@@ -244,23 +292,31 @@ export default function MerchantsPage() {
 function TransactionList({ name, txns, loading }: { name: string; txns: any[] | undefined; loading: boolean }) {
   if (loading) {
     return (
-      <div className="px-5 py-4 flex justify-center">
-        <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="border-t border-ft-outline-variant dark:border-ve-outline px-5 py-4 flex justify-center bg-ft-surface-low dark:bg-ve-surface-high">
+        <div className="w-5 h-5 border-2 border-ft-primary dark:border-ve-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
   if (!txns || txns.length === 0) {
-    return <div className="px-5 py-3 text-xs text-slate-400">No transactions found.</div>;
+    return (
+      <div className="border-t border-ft-outline-variant dark:border-ve-outline px-5 py-3 bg-ft-surface-low dark:bg-ve-surface-high">
+        <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">No transactions found.</p>
+      </div>
+    );
   }
   return (
-    <div className="bg-slate-50 border-t border-gray-100">
+    <div className="border-t border-ft-outline-variant dark:border-ve-outline bg-ft-surface-low dark:bg-ve-surface-high">
+      <p className="text-xs font-semibold text-ft-on-surface-variant dark:text-ve-on-surface-variant uppercase tracking-wider px-5 pt-3 mb-1">Transaction history</p>
       {txns.map((t: any, i: number) => (
-        <div key={i} className={`flex items-center gap-3 px-5 py-3 ${i < txns.length - 1 ? "border-b border-gray-100" : ""}`}>
+        <div key={i} className={cn(
+          "flex items-center gap-3 px-5 py-2.5",
+          i < txns.length - 1 && "border-b border-ft-outline-variant/50 dark:border-ve-outline/50"
+        )}>
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-slate-500 truncate">{t.description || name}</p>
-            <p className="text-xs text-slate-400">{formatDate(t.txn_date)}</p>
+            <p className="text-xs text-ft-on-surface dark:text-ve-on-surface truncate">{t.description || name}</p>
+            <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">{formatDate(t.txn_date)}</p>
           </div>
-          <p className="text-xs font-semibold text-slate-700">{formatAED(t.amount)}</p>
+          <span className="text-xs font-semibold text-ft-on-surface dark:text-ve-on-surface tabular-nums">{formatAED(t.amount)}</span>
         </div>
       ))}
     </div>

@@ -79,6 +79,17 @@ public class BudgetService {
             String status = pct >= 100 ? "exceeded" : pct >= 80 ? "warning" : "ok";
             Category cat = cats.get(alert.getCategoryId());
 
+            List<Object[]> monthly = transactionRepository.monthlyDebitsByCategory(userId, alert.getCategoryId());
+            int breachCount = 0;
+            String lastBreachMonth = null;
+            for (Object[] row : monthly) {
+                BigDecimal monthTotal = new BigDecimal(row[1].toString());
+                if (monthTotal.compareTo(alert.getMonthlyLimit()) > 0) {
+                    breachCount++;
+                    lastBreachMonth = row[0].toString();
+                }
+            }
+
             return BudgetStatusOut.builder()
                     .id(alert.getId()).categoryId(alert.getCategoryId())
                     .categoryName(cat != null ? cat.getName() : "Unknown")
@@ -87,6 +98,8 @@ public class BudgetService {
                     .spentThisMonth(spent)
                     .percentage(Math.round(pct * 10.0) / 10.0)
                     .status(status).enabled(alert.isEnabled())
+                    .breachCount(breachCount)
+                    .lastBreachMonth(lastBreachMonth)
                     .build();
         }).toList();
     }

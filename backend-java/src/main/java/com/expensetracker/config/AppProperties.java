@@ -56,6 +56,8 @@ public class AppProperties {
         private String openrouterOcrModel = "google/gemini-2.0-flash-exp:free";
         private String anthropicChatModel = "claude-haiku-4-5-20251001";
         private String groqChatModel = "llama-3.3-70b-versatile";
+        // "auto" = AI provider per user settings; "tesseract" = local OCR with regex parsing
+        private String ocrProvider = "auto";
     }
 
     public List<String> getCorsOriginsList() {

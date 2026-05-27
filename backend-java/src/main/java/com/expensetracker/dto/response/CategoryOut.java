@@ -1,6 +1,7 @@
 package com.expensetracker.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
@@ -14,6 +15,7 @@ public class CategoryOut {
     private String name;
     private String color;
     private String icon;
+    @JsonProperty("is_system")
     private boolean isSystem;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private OffsetDateTime createdAt;

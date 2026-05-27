@@ -2,6 +2,7 @@ package com.expensetracker.service;
 
 import com.expensetracker.config.AppProperties;
 import com.expensetracker.dto.response.BillingUsage;
+import com.expensetracker.dto.response.PlanOut;
 import com.expensetracker.dto.response.UsageLogOut;
 import com.expensetracker.exception.EntityNotFoundException;
 import com.expensetracker.model.Subscription;
@@ -78,12 +79,28 @@ public class BillingService {
                 .build();
     }
 
-    public List<Map<String, Object>> getPlans() {
+    public List<PlanOut> getPlans() {
         return List.of(
-            Map.of("id", "free",     "name", "Free",     "price", 0,     "pages", 15,   "concurrent", 1, "ai_chat", false, "overage", false),
-            Map.of("id", "solo",     "name", "Solo",     "price", 4.99,  "pages", 75,   "concurrent", 2, "ai_chat", true,  "overage", false, "trial_days", 30),
-            Map.of("id", "pro",      "name", "Pro",      "price", 14.99, "pages", 300,  "concurrent", 5, "ai_chat", true,  "overage", false, "trial_days", 30),
-            Map.of("id", "business", "name", "Business", "price", 39.99, "pages", 1500, "concurrent", 10,"ai_chat", true,  "overage", true,  "trial_days", 30)
+            PlanOut.builder()
+                .key("free").label("Free").priceUsd(0).pages(15).concurrent(1)
+                .aiChat(false).overage(false).trialDays(0)
+                .features(List.of("15 pages / month", "1 concurrent upload", "Auto-categorization"))
+                .build(),
+            PlanOut.builder()
+                .key("solo").label("Solo").priceUsd(4.99).pages(75).concurrent(2)
+                .aiChat(true).overage(false).trialDays(30)
+                .features(List.of("75 pages / month", "2 concurrent uploads", "AI chat assistant", "30-day free trial"))
+                .build(),
+            PlanOut.builder()
+                .key("pro").label("Pro").priceUsd(14.99).pages(300).concurrent(5)
+                .aiChat(true).overage(false).trialDays(30)
+                .features(List.of("300 pages / month", "5 concurrent uploads", "AI chat assistant", "Priority processing", "30-day free trial"))
+                .build(),
+            PlanOut.builder()
+                .key("business").label("Business").priceUsd(39.99).pages(1500).concurrent(10)
+                .aiChat(true).overage(true).overagePriceUsd(0.10).trialDays(30)
+                .features(List.of("1 500 pages / month", "10 concurrent uploads", "AI chat assistant", "Overage billing ($0.10/page)", "Priority processing", "30-day free trial"))
+                .build()
         );
     }
 
@@ -111,7 +128,7 @@ public class BillingService {
         SessionCreateParams.Builder builder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
                 .setCustomer(customerId)
-                .setSuccessUrl(appProperties.getCorsOriginsList().get(0) + "/billing?success=true")
+                .setSuccessUrl(appProperties.getCorsOriginsList().get(0) + "/billing?success=1")
                 .setCancelUrl(appProperties.getCorsOriginsList().get(0) + "/billing?cancelled=true")
                 .addLineItem(SessionCreateParams.LineItem.builder()
                         .setPrice(priceId).setQuantity(1L).build());

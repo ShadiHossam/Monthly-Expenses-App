@@ -1,6 +1,7 @@
 package com.expensetracker.controller;
 
 import com.expensetracker.dto.request.BulkCategorizeRequest;
+import com.expensetracker.dto.request.TransactionRequest;
 import com.expensetracker.dto.response.TransactionOut;
 import com.expensetracker.service.TransactionService;
 import jakarta.validation.Valid;
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,6 +26,14 @@ import java.util.Map;
 public class TransactionController {
 
     private final TransactionService transactionService;
+
+    @PostMapping
+    public ResponseEntity<TransactionOut> create(
+            @Valid @RequestBody TransactionRequest req,
+            @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(transactionService.createManual(userId, req));
+    }
 
     @GetMapping
     public ResponseEntity<Page<TransactionOut>> list(

@@ -55,9 +55,10 @@ app:
     max-retries: 2
     anthropic-ocr-model: ${ANTHROPIC_OCR_MODEL:claude-haiku-4-5-20251001}
     groq-ocr-model: ${GROQ_OCR_MODEL:meta-llama/llama-4-scout-17b-16e-instruct}
-    openrouter-ocr-model: ${OPENROUTER_OCR_MODEL:google/gemini-2.0-flash-exp:free}
+    openrouter-ocr-model: ${OPENROUTER_OCR_MODEL:google/gemini-2.5-flash-preview-05-20}
     anthropic-chat-model: ${ANTHROPIC_CHAT_MODEL:claude-haiku-4-5-20251001}
     groq-chat-model: ${GROQ_CHAT_MODEL:llama-3.3-70b-versatile}
+    ocr-provider: ${OCR_PROVIDER:auto}
 
 logging:
   level:

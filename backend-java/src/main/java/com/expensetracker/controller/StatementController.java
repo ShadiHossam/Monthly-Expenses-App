@@ -54,4 +54,9 @@ public class StatementController {
     public ResponseEntity<StatementOut> reverify(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(statementService.reverify(id, userId));
     }
+
+    @PostMapping("/reverify-pending")
+    public ResponseEntity<Map<String, Object>> reverifyAllPending(@AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(statementService.reverifyAllPending(userId));
+    }
 }

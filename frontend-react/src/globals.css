@@ -2,23 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background: #f8fafc;
-  color: #0f172a;
+/* ── Light mode (FinTrack B2C) ── */
+:root {
+  --background: #f6fbf1;
+  --foreground: #171d17;
+  --surface: #ffffff;
+  --surface-low: #f0f5eb;
+  --primary: #005e26;
+  --outline: #becabb;
 }
 
+body {
+  background-color: #f6fbf1;
+  color: #171d17;
+  font-family: "Plus Jakarta Sans", Inter, system-ui, sans-serif;
+}
+
+/* ── Dark mode (Veridian Elite) ── */
 .dark {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
+  --background: #111412;
+  --foreground: #e2e8e3;
+  --surface: #1d201e;
+  --surface-low: #252926;
+  --primary: #95d4b3;
+  --outline: #444d46;
 }
 
 .dark body {
-  background-color: #0f172a;
-  color: #f1f5f9;
+  background-color: #111412;
+  color: #e2e8e3;
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  user-select: none;
 }
 
 @layer utilities {
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Monospace numerics for financial figures in dark mode */
+  .dark .tabular-nums {
+    font-family: "JetBrains Mono", monospace;
   }
 }

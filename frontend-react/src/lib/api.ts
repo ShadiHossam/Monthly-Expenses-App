@@ -42,8 +42,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   if (res.status === 401) {
     localStorage.removeItem("token");
-    window.location.href = "/login";
-    throw new Error("Unauthorized");
+    if (!window.location.pathname.startsWith("/login") && !window.location.pathname.startsWith("/register")) {
+      window.location.href = "/login";
+    }
+    const err = await res.json().catch(() => ({ detail: "Invalid username or password" }));
+    throw new Error(err.detail || "Invalid username or password");
   }
 
   if (!res.ok) {
@@ -103,6 +106,7 @@ export const api = {
   getStatement: (id: number) => request<Statement>(`/statements/${id}`),
   deleteStatement: (id: number) => request<void>(`/statements/${id}`, { method: "DELETE" }),
   reverifyStatement: (id: number) => request<Statement>(`/statements/${id}/reverify`, { method: "POST" }),
+  reverifyAllPending: () => request<{ queued: number }>("/statements/reverify-pending", { method: "POST" }),
 
   // Transactions
   listTransactions: (params: Record<string, string | number | undefined> = {}) => {
@@ -121,6 +125,27 @@ export const api = {
       body: JSON.stringify({ transaction_ids: transactionIds, category_id: categoryId }),
     }),
   uncategorized: () => request<Transaction[]>("/transactions/uncategorized"),
+  createTransaction: (data: {
+    txnDate: string;
+    description: string;
+    amount: number;
+    txnType: "debit" | "credit";
+    merchantName?: string;
+    refNumber?: string;
+    categoryId?: number;
+  }) =>
+    request<Transaction>("/transactions", {
+      method: "POST",
+      body: JSON.stringify({
+        txnDate: data.txnDate,
+        description: data.description,
+        amount: data.amount,
+        txnType: data.txnType,
+        merchantName: data.merchantName || undefined,
+        refNumber: data.refNumber || undefined,
+        categoryId: data.categoryId || undefined,
+      }),
+    }),
 
   // Categories
   listCategories: () => request<Category[]>("/categories"),

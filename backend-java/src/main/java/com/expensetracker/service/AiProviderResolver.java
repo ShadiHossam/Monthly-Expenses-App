@@ -13,7 +13,12 @@ public class AiProviderResolver {
     private final AppProperties appProperties;
 
     public String resolveOcrProvider(User user) {
+        // System-level override takes priority (set OCR_PROVIDER=tesseract in env)
+        String systemProvider = appProperties.getAi().getOcrProvider();
+        if ("tesseract".equals(systemProvider)) return "tesseract";
+
         String p = user.getAiProvider();
+        if ("tesseract".equals(p)) return "tesseract";
         if ("anthropic".equals(p) && StringUtils.hasText(user.getAnthropicApiKey())) return "anthropic";
         if ("groq".equals(p) && StringUtils.hasText(user.getGroqApiKey())) return "groq";
         if ("openrouter".equals(p) && StringUtils.hasText(user.getOpenrouterApiKey())) return "openrouter";

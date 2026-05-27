@@ -32,10 +32,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query(value = """
         SELECT * FROM transactions t
         WHERE t.user_id = :userId
-        AND (:from IS NULL OR t.txn_date >= CAST(:from AS date))
-        AND (:to IS NULL OR t.txn_date <= CAST(:to AS date))
-        AND (:categoryId IS NULL OR t.category_id = :categoryId)
-        AND (:txnType IS NULL OR t.txn_type = :txnType)
+        AND (CAST(:from AS date) IS NULL OR t.txn_date >= CAST(:from AS date))
+        AND (CAST(:to AS date) IS NULL OR t.txn_date <= CAST(:to AS date))
+        AND (CAST(:categoryId AS bigint) IS NULL OR t.category_id = CAST(:categoryId AS bigint))
+        AND (CAST(:txnType AS varchar) IS NULL OR t.txn_type = CAST(:txnType AS varchar))
         AND (:search = '' OR LOWER(t.description) LIKE '%' || LOWER(:search) || '%'
              OR LOWER(COALESCE(t.merchant_name,'')) LIKE '%' || LOWER(:search) || '%')
         ORDER BY t.txn_date DESC, t.id DESC
@@ -60,6 +60,21 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
         """, nativeQuery = true)
     BigDecimal sumDebitThisMonthByCategoryNative(@Param("userId") Long userId, @Param("categoryId") Long categoryId);
 
+    @Query(value = """
+        SELECT
+            to_char(date_trunc('month', t.txn_date), 'YYYY-MM') AS month,
+            COALESCE(SUM(t.amount), 0) AS total
+        FROM transactions t
+        WHERE t.user_id = :userId
+          AND t.category_id = :categoryId
+          AND t.txn_type = 'debit'
+          AND t.txn_date >= date_trunc('month', CURRENT_DATE) - INTERVAL '11 months'
+          AND t.txn_date < date_trunc('month', CURRENT_DATE)
+        GROUP BY date_trunc('month', t.txn_date)
+        ORDER BY 1
+        """, nativeQuery = true)
+    List<Object[]> monthlyDebitsByCategory(@Param("userId") Long userId, @Param("categoryId") Long categoryId);
+
     @Query("SELECT t FROM Transaction t WHERE t.userId = :userId AND t.txnDate BETWEEN :from AND :to ORDER BY t.txnDate DESC")
     List<Transaction> findByUserIdAndDateRange(@Param("userId") Long userId, @Param("from") LocalDate from, @Param("to") LocalDate to);
 
@@ -78,7 +93,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
         SELECT
             COALESCE(merchant_name, description) AS merchant_name,
             COUNT(*) AS visit_count,
-            COALESCE(SUM(amount), 0) AS total_spend
+            COALESCE(SUM(amount), 0) AS total_spend,
+            COALESCE(AVG(amount), 0) AS avg_spend
         FROM transactions
         WHERE user_id = :userId
           AND txn_date BETWEEN :from AND :to

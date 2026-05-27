@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface StatementRepository extends JpaRepository<Statement, Long> {
     List<Statement> findByUserIdOrderByCreatedAtDesc(Long userId);
     Optional<Statement> findByIdAndUserId(Long id, Long userId);
+    Optional<Statement> findByUserIdAndOcrEngine(Long userId, String ocrEngine);
+    List<Statement> findByUserIdAndVerifyStatusIn(Long userId, List<String> statuses);
 }

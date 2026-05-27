@@ -1,5 +1,10 @@
 import { useState } from "react";
 import { api } from "../lib/api";
+import { cn } from "../lib/utils";
+
+function MSIcon({ name, className }: { name: string; className?: string }) {
+  return <span className={cn("material-symbols-outlined select-none", className)}>{name}</span>;
+}
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -24,55 +29,63 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-ft-background dark:bg-ve-background px-4">
       <div className="w-full max-w-sm">
+
+        {/* Logo + title */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <div className="w-16 h-16 bg-ft-primary dark:bg-ve-primary-dim rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <MSIcon name="account_balance_wallet" className="text-3xl text-white dark:text-ve-background" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Expense Tracker</h1>
-          <p className="text-slate-500 mt-1">Sign in to your account</p>
+          <h1 className="text-2xl font-bold text-ft-on-surface dark:text-ve-on-surface">FinTrack</h1>
+          <p className="text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-1 text-sm">Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+        {/* Form card */}
+        <form onSubmit={handleSubmit}
+          className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-6 space-y-4 shadow-sm">
+
           {error && (
-            <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl">{error}</div>
+            <div className="flex items-center gap-2 bg-red-50 dark:bg-ve-error/10 border border-red-100 dark:border-ve-error/20 text-red-700 dark:text-ve-error text-sm px-4 py-3 rounded-xl">
+              <MSIcon name="error" className="text-base shrink-0" />
+              {error}
+            </div>
           )}
+
           <div>
-            <label className="text-sm font-medium text-slate-700">Username</label>
+            <label className="block text-sm font-medium text-ft-on-surface dark:text-ve-on-surface mb-1.5">Username</label>
             <input
-              className="mt-1 w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50"
+              className="w-full px-4 py-3 border border-ft-outline-variant dark:border-ve-outline rounded-xl bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface placeholder-ft-on-surface-variant dark:placeholder-ve-on-surface-variant focus:outline-none focus:ring-2 focus:ring-ft-primary dark:focus:ring-ve-primary text-sm"
               value={username}
               onChange={e => setUsername(e.target.value)}
               autoComplete="username"
+              placeholder="your username"
               required
             />
           </div>
+
           <div>
-            <label className="text-sm font-medium text-slate-700">Password</label>
+            <label className="block text-sm font-medium text-ft-on-surface dark:text-ve-on-surface mb-1.5">Password</label>
             <input
               type="password"
-              className="mt-1 w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50"
+              className="w-full px-4 py-3 border border-ft-outline-variant dark:border-ve-outline rounded-xl bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface placeholder-ft-on-surface-variant dark:placeholder-ve-on-surface-variant focus:outline-none focus:ring-2 focus:ring-ft-primary dark:focus:ring-ve-primary text-sm"
               value={password}
               onChange={e => setPassword(e.target.value)}
               autoComplete="current-password"
+              placeholder="••••••••"
               required
             />
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-60"
-          >
+
+          <button type="submit" disabled={loading}
+            className="w-full bg-ft-primary dark:bg-ve-primary-dim hover:opacity-90 text-white dark:text-ve-background font-semibold py-3 rounded-xl transition-opacity disabled:opacity-60 text-sm">
             {loading ? "Signing in…" : "Sign In"}
           </button>
         </form>
 
-        <p className="text-center text-sm text-slate-500 mt-6">
+        <p className="text-center text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-6">
           No account?{" "}
-          <a href="/register" className="text-emerald-600 font-medium hover:underline">
+          <a href="/register" className="text-ft-primary dark:text-ve-primary font-medium hover:underline">
             Create one
           </a>
         </p>

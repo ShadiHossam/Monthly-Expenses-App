@@ -30,7 +30,7 @@ public class ReportService {
         report.put("to_date", t);
         report.put("summary", analyticsService.summary(userId, f, t));
         report.put("category_breakdown", analyticsService.categoryBreakdown(userId, f, t));
-        report.put("frequent_merchants", analyticsService.frequentPlaces(userId, f, t));
+        report.put("frequent_places", analyticsService.frequentPlaces(userId, f, t));
         report.put("monthly_overview", analyticsService.monthComparison(userId, 3));
         return report;
     }

@@ -1,6 +1,7 @@
 package com.expensetracker.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
@@ -25,6 +26,7 @@ public class TransactionOut {
     private String categoryName;
     private String categoryColor;
     private String categoryIcon;
+    @JsonProperty("is_categorized")
     private boolean isCategorized;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private OffsetDateTime createdAt;
