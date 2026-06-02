@@ -40,6 +40,9 @@ stitch_monthly_expense_analytics/
 # Claude Code local state
 .claude/
 
+# DB backups — local only
+backups/
+
 # Misc
 .DS_Store
 *.pem

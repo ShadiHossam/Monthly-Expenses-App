@@ -85,6 +85,29 @@ services:
       timeout: 5s
       retries: 3
 
+  db-backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+      DB_USER: ${DB_USER:-expense_user}
+      DB_NAME: ${DB_NAME:-expense_tracker}
+    volumes:
+      - ./backups:/backups
+    entrypoint: >
+      /bin/sh -c "
+        while true; do
+          FILENAME=/backups/backup-$$(date +%Y%m%d-%H%M).sql.gz;
+          pg_dump -h postgres -U $${DB_USER} $${DB_NAME} | gzip > $$FILENAME;
+          echo \"Backup written: $$FILENAME\";
+          find /backups -name '*.sql.gz' -mtime +7 -delete;
+          sleep 86400;
+        done
+      "
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   caddy_data:
