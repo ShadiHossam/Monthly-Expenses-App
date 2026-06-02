@@ -11,8 +11,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping("/api/v1/statements")
@@ -20,12 +24,29 @@ import java.util.Map;
 public class StatementController {
 
     private final StatementService statementService;
+    private final ConcurrentHashMap<Long, Deque<Instant>> uploadTimestamps = new ConcurrentHashMap<>();
+
+    private void checkUploadRateLimit(Long userId) {
+        Instant now = Instant.now();
+        Instant windowStart = now.minusSeconds(60);
+        Deque<Instant> times = uploadTimestamps.computeIfAbsent(userId, k -> new ArrayDeque<>());
+        synchronized (times) {
+            while (!times.isEmpty() && times.peekFirst().isBefore(windowStart)) times.pollFirst();
+            if (times.size() >= 5) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.TOO_MANY_REQUESTS,
+                    "Too many uploads. Please wait before uploading more files.");
+            }
+            times.addLast(now);
+        }
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<Map<String, Object>> upload(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "confirm_overage", defaultValue = "false") boolean confirmOverage,
             @AuthenticationPrincipal Long userId) throws IOException {
+        checkUploadRateLimit(userId);
         return ResponseEntity.ok(statementService.upload(file, userId, confirmOverage));
     }
 
