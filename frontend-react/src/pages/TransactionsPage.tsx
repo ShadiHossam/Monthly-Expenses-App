@@ -63,6 +63,8 @@ function TransactionsInner() {
   const [newCatColor, setNewCatColor] = useState("#10b981");
   const [savingCat, setSavingCat] = useState(false);
   const [merchantRulePrompt, setMerchantRulePrompt] = useState<{ merchantName: string; categoryId: number; categoryName: string } | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const hasAutoSwitched = useRef(false);
 
   useEffect(() => {
@@ -165,6 +167,19 @@ function TransactionsInner() {
       if (created?.id) await handleCategoryChange(txnId, created.id);
     } finally {
       setSavingCat(false);
+    }
+  }
+
+  async function handleDeleteTransaction(id: number) {
+    setDeletingId(id);
+    try {
+      await api.deleteTransaction(id);
+      setTxns(prev => prev.filter(t => t.id !== id));
+      setConfirmDeleteId(null);
+    } catch (err: any) {
+      alert(err.message || "Failed to delete transaction");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -381,7 +396,7 @@ function TransactionsInner() {
                     const cat = t.category_id ? catMap[t.category_id] : null;
                     return (
                       <div key={t.id} className={cn(
-                        "flex items-center gap-4 px-5 py-4",
+                        "group relative flex items-center gap-4 px-5 py-4",
                         i < items.length - 1 ? "border-b border-ft-outline-variant dark:border-ve-outline" : ""
                       )}>
                         {/* Category icon */}
@@ -489,6 +504,26 @@ function TransactionsInner() {
                           </p>
                           {t.balance_after != null && (
                             <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant tabular-nums">{formatAED(t.balance_after)}</p>
+                          )}
+                        </div>
+
+                        {/* Delete button — shown on row hover */}
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {confirmDeleteId === t.id ? (
+                            <div className="flex items-center gap-1.5 bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-xl px-2 py-1 shadow-sm">
+                              <span className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">Delete?</span>
+                              <button onClick={() => handleDeleteTransaction(t.id)} disabled={deletingId === t.id}
+                                className="text-xs font-medium text-red-500 hover:underline disabled:opacity-50">
+                                {deletingId === t.id ? "…" : "Yes"}
+                              </button>
+                              <button onClick={() => setConfirmDeleteId(null)} className="text-xs text-gray-400 hover:underline">No</button>
+                            </div>
+                          ) : (
+                            <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(t.id); }}
+                              className="w-7 h-7 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-colors"
+                              title="Delete transaction">
+                              <span className="material-symbols-outlined text-base">delete</span>
+                            </button>
                           )}
                         </div>
                       </div>

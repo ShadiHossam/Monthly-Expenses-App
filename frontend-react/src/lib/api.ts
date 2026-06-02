@@ -127,6 +127,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ transaction_ids: transactionIds, category_id: categoryId }),
     }),
+  deleteTransaction: (id: number) =>
+    request<void>(`/transactions/${id}`, { method: "DELETE" }),
   uncategorized: () => request<Transaction[]>("/transactions/uncategorized"),
   createTransaction: (data: {
     txnDate: string;

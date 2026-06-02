@@ -60,6 +60,12 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.getById(id, userId));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
+        transactionService.deleteById(id, userId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{id}/category")
     public ResponseEntity<TransactionOut> updateCategory(
             @PathVariable Long id,
