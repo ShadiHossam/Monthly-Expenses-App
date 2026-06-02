@@ -14,10 +14,17 @@ import com.expensetracker.model.PasswordResetToken;
 import com.expensetracker.model.Plan;
 import com.expensetracker.model.Subscription;
 import com.expensetracker.model.User;
+import com.expensetracker.repository.BudgetAlertRepository;
 import com.expensetracker.repository.CategoryRepository;
 import com.expensetracker.repository.LoginAttemptRepository;
+import com.expensetracker.repository.MerchantAliasRepository;
+import com.expensetracker.repository.MerchantRuleRepository;
 import com.expensetracker.repository.PasswordResetTokenRepository;
+import com.expensetracker.repository.SavedReportRepository;
+import com.expensetracker.repository.StatementRepository;
 import com.expensetracker.repository.SubscriptionRepository;
+import com.expensetracker.repository.TransactionRepository;
+import com.expensetracker.repository.UsageLogRepository;
 import com.expensetracker.repository.UserRepository;
 import com.expensetracker.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +50,13 @@ public class AuthService {
     private final SubscriptionRepository subscriptionRepository;
     private final LoginAttemptRepository loginAttemptRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final BudgetAlertRepository budgetAlertRepository;
+    private final MerchantRuleRepository merchantRuleRepository;
+    private final MerchantAliasRepository merchantAliasRepository;
+    private final SavedReportRepository savedReportRepository;
+    private final StatementRepository statementRepository;
+    private final TransactionRepository transactionRepository;
+    private final UsageLogRepository usageLogRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
@@ -179,6 +193,46 @@ public class AuthService {
     @Transactional
     public void cleanupOldLoginAttempts() {
         loginAttemptRepository.deleteOlderThan(Instant.now().minus(24, ChronoUnit.HOURS));
+    }
+
+    @Transactional
+    public UserOut updateProfile(Long userId, String email, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (email != null && !email.isBlank() && !email.equals(user.getEmail())) {
+            if (userRepository.existsByEmail(email)) {
+                throw new BusinessException("Email already in use", HttpStatus.CONFLICT);
+            }
+            user.setEmail(email);
+        }
+
+        if (newPassword != null && !newPassword.isBlank()) {
+            if (currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+                throw new BusinessException("Current password is incorrect", HttpStatus.BAD_REQUEST);
+            }
+            if (newPassword.length() < 8) {
+                throw new BusinessException("Password must be at least 8 characters", HttpStatus.BAD_REQUEST);
+            }
+            user.setPasswordHash(passwordEncoder.encode(newPassword));
+        }
+
+        return toUserOut(userRepository.save(user));
+    }
+
+    @Transactional
+    public void deleteAccount(Long userId) {
+        passwordResetTokenRepository.deleteByUserId(userId);
+        usageLogRepository.deleteByUserId(userId);
+        transactionRepository.deleteByUserId(userId);
+        statementRepository.deleteByUserId(userId);
+        budgetAlertRepository.deleteByUserId(userId);
+        merchantRuleRepository.deleteByUserId(userId);
+        merchantAliasRepository.deleteByUserId(userId);
+        savedReportRepository.deleteByUserId(userId);
+        categoryRepository.deleteByUserId(userId);
+        subscriptionRepository.deleteByUserId(userId);
+        userRepository.deleteById(userId);
     }
 
     @Transactional

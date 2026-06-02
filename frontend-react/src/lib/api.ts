@@ -69,6 +69,10 @@ export const api = {
     }),
   me: () => request<User>("/auth/me"),
   logout: () => request<void>("/auth/logout", { method: "POST" }),
+  updateProfile: (data: { email?: string; currentPassword?: string; newPassword?: string }) =>
+    request<User>("/auth/profile", { method: "PATCH", body: JSON.stringify(data) }),
+  deleteAccount: (confirmation: string) =>
+    request<void>("/auth/profile", { method: "DELETE", body: JSON.stringify({ confirmation }) }),
   forgotPassword: (email: string) =>
     request<{ message: string }>("/auth/forgot-password", {
       method: "POST", body: JSON.stringify({ email }),

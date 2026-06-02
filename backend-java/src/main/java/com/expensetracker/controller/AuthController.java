@@ -63,6 +63,33 @@ public class AuthController {
         return ResponseEntity.ok(authService.getMe(userId));
     }
 
+    @PatchMapping("/profile")
+    public ResponseEntity<UserOut> updateProfile(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(authService.updateProfile(userId,
+            body.get("email"), body.get("currentPassword"), body.get("newPassword")));
+    }
+
+    @DeleteMapping("/profile")
+    public ResponseEntity<Void> deleteAccount(
+            @AuthenticationPrincipal Long userId,
+            @RequestBody Map<String, String> body,
+            HttpServletResponse httpResponse) {
+        if (!"DELETE".equals(body.get("confirmation"))) {
+            throw new com.expensetracker.exception.BusinessException(
+                "Invalid confirmation", org.springframework.http.HttpStatus.BAD_REQUEST);
+        }
+        authService.deleteAccount(userId);
+        Cookie cookie = new Cookie(JwtAuthFilter.COOKIE_NAME, "");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        httpResponse.addCookie(cookie);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody Map<String, String> body) {
         authService.forgotPassword(body.get("email"));

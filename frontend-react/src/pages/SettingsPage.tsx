@@ -36,14 +36,51 @@ export default function SettingsPage() {
   const [error, setError] = useState("");
   const [showKey, setShowKey] = useState<Record<KeyField, boolean>>({ groq: false, openrouter: false, anthropic: false });
 
+  // Profile state
+  const [profileEmail, setProfileEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [profileError, setProfileError] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+
   useEffect(() => {
-    api.me().then(setUser).catch(() => {});
+    api.me().then(u => { setUser(u); setProfileEmail(u.email ?? ""); }).catch(() => {});
     api.getAISettings().then(s => {
       setAISettings(s);
       setProvider(s.ai_provider);
       setConcurrentLimit((s as any).concurrent_processing ?? 2);
     }).catch(() => {});
   }, []);
+
+  async function handleProfileSave() {
+    setProfileSaving(true); setProfileError(""); setProfileSaved(false);
+    try {
+      const payload: any = {};
+      if (profileEmail !== user?.email) payload.email = profileEmail;
+      if (newPassword) { payload.currentPassword = currentPassword; payload.newPassword = newPassword; }
+      await api.updateProfile(payload);
+      setProfileSaved(true);
+      setCurrentPassword(""); setNewPassword("");
+      setTimeout(() => setProfileSaved(false), 3000);
+    } catch (err: any) {
+      setProfileError(err.message);
+    } finally {
+      setProfileSaving(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    if (deleteConfirm !== "DELETE") return;
+    try {
+      await api.deleteAccount("DELETE");
+      navigate("/login");
+    } catch (err: any) {
+      setProfileError(err.message);
+    }
+  }
 
   async function logout() {
     await api.logout().catch(() => {});
@@ -126,6 +163,59 @@ export default function SettingsPage() {
           <span className="text-xs font-mono text-ft-on-surface dark:text-ve-on-surface">#{user?.id}</span>
         </div>
       </div>
+
+      {/* ── Profile Edit ── */}
+      <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-5 mb-4 space-y-4">
+        <p className="text-xs font-semibold text-ft-on-surface-variant dark:text-ve-on-surface-variant uppercase tracking-wider">Change Credentials</p>
+        {profileError && <p className="text-red-500 text-sm bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-2">{profileError}</p>}
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-ft-on-surface-variant dark:text-ve-on-surface-variant block">Email</label>
+          <input type="email" value={profileEmail} onChange={e => setProfileEmail(e.target.value)}
+            className="w-full text-sm bg-ft-surface-low dark:bg-ve-surface-high border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2.5 text-ft-on-surface dark:text-ve-on-surface focus:outline-none focus:ring-2 focus:ring-ft-primary dark:focus:ring-ve-primary" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-ft-on-surface-variant dark:text-ve-on-surface-variant block">Current password</label>
+          <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)}
+            placeholder="Required to change password"
+            className="w-full text-sm bg-ft-surface-low dark:bg-ve-surface-high border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2.5 text-ft-on-surface dark:text-ve-on-surface focus:outline-none focus:ring-2 focus:ring-ft-primary dark:focus:ring-ve-primary" />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-ft-on-surface-variant dark:text-ve-on-surface-variant block">New password</label>
+          <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
+            placeholder="Leave blank to keep current"
+            className="w-full text-sm bg-ft-surface-low dark:bg-ve-surface-high border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2.5 text-ft-on-surface dark:text-ve-on-surface focus:outline-none focus:ring-2 focus:ring-ft-primary dark:focus:ring-ve-primary" />
+        </div>
+        <button onClick={handleProfileSave} disabled={profileSaving}
+          className="px-4 py-2 bg-ft-primary dark:bg-ve-primary text-white rounded-xl text-sm font-medium disabled:opacity-50">
+          {profileSaving ? "Saving…" : profileSaved ? "Saved!" : "Save changes"}
+        </button>
+        <hr className="border-ft-outline-variant dark:border-ve-outline" />
+        <button onClick={() => setShowDeleteModal(true)}
+          className="text-red-500 dark:text-red-400 text-sm underline">
+          Delete account
+        </button>
+      </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-ft-surface dark:bg-ve-surface rounded-2xl p-6 max-w-sm w-full mx-4 border border-ft-outline-variant dark:border-ve-outline">
+            <h3 className="font-bold text-lg text-ft-on-surface dark:text-ve-on-surface mb-2">Delete account?</h3>
+            <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mb-4">
+              This permanently deletes all your data. Type <strong>DELETE</strong> to confirm.
+            </p>
+            <input value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
+              placeholder="DELETE"
+              className="w-full border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2 text-sm mb-4 bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface" />
+            <div className="flex gap-2">
+              <button onClick={() => { setShowDeleteModal(false); setDeleteConfirm(""); }}
+                className="flex-1 border border-ft-outline-variant dark:border-ve-outline rounded-xl py-2 text-sm text-ft-on-surface dark:text-ve-on-surface">Cancel</button>
+              <button onClick={handleDeleteAccount} disabled={deleteConfirm !== "DELETE"}
+                className="flex-1 bg-red-500 text-white rounded-xl py-2 text-sm font-medium disabled:opacity-40">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── AI Configuration ── */}
       <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-5 mb-4 space-y-5">

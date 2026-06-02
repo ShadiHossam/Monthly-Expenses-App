@@ -14,4 +14,5 @@ public interface UsageLogRepository extends JpaRepository<UsageLog, Long> {
     List<UsageLog> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
     List<UsageLog> findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(
             Long userId, OffsetDateTime from, OffsetDateTime to);
+    void deleteByUserId(Long userId);
 }

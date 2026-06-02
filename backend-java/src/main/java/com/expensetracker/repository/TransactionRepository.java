@@ -182,4 +182,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             @Param("from") LocalDate from,
             @Param("to") LocalDate to,
             @Param("lim") int limit);
+
+    void deleteByUserId(Long userId);
 }
