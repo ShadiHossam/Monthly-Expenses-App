@@ -65,7 +65,7 @@ public class AuthService {
         if (userRepository.existsByUsername(req.getUsername())) {
             throw new BusinessException("Username already taken", HttpStatus.CONFLICT);
         }
-        if (StringUtils.hasText(req.getEmail()) && userRepository.existsByEmail(req.getEmail())) {
+        if (userRepository.existsByEmail(req.getEmail())) {
             throw new BusinessException("Email already in use", HttpStatus.CONFLICT);
         }
 
