@@ -17,9 +17,7 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await api.login(username, password);
-      localStorage.setItem("token", res.token);
-      localStorage.setItem("user", JSON.stringify(res.user));
+      await api.login(username, password);
       window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.message || "Login failed");

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
+import { api } from "../lib/api";
 import { ErrorBoundary } from "../components/ErrorBoundary";
+import { UploadProvider, useUploadContext } from "../context/UploadContext";
 
 const FULL_NAV = [
   { href: "/dashboard",    label: "Home",         icon: "home" },
@@ -34,6 +36,40 @@ function MSIcon({ name, className }: { name: string; className?: string }) {
   );
 }
 
+function UploadProgressBadge() {
+  const { entries, hasActiveUploads } = useUploadContext();
+  const location = useLocation();
+  if (!hasActiveUploads || location.pathname === "/upload") return null;
+  const active = entries.filter(e => e.status === "uploading" || e.status === "processing");
+  const queued = entries.filter(e => e.status === "queued");
+  const maxPct = active.length > 0 ? Math.max(...active.map(e => e.progress?.pct ?? 5)) : 0;
+  return (
+    <Link
+      to="/upload"
+      className="fixed bottom-24 md:bottom-6 right-4 z-30 flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl shadow-lg
+                 bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline
+                 hover:shadow-xl transition-shadow"
+    >
+      <div className="w-5 h-5 shrink-0 relative">
+        <div className="w-5 h-5 border-2 border-ft-primary dark:border-ve-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs font-semibold text-ft-on-surface dark:text-ve-on-surface leading-tight">
+          {active.length} uploading{queued.length > 0 ? `, ${queued.length} queued` : ""}
+        </p>
+        {active.length > 0 && (
+          <div className="mt-1 w-24 h-1 bg-ft-surface-low dark:bg-ve-surface-high rounded-full overflow-hidden">
+            <div
+              className="h-full bg-ft-primary dark:bg-ve-primary-dim rounded-full transition-all duration-500"
+              style={{ width: `${maxPct}%` }}
+            />
+          </div>
+        )}
+      </div>
+    </Link>
+  );
+}
+
 export default function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,12 +78,9 @@ export default function AppLayout() {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login", { replace: true });
-    } else {
-      setReady(true);
-    }
+    api.me()
+      .then(() => setReady(true))
+      .catch(() => navigate("/login", { replace: true }));
   }, [navigate]);
 
   useEffect(() => {
@@ -66,14 +99,15 @@ export default function AppLayout() {
     }
   }
 
-  function handleSignOut() {
-    localStorage.removeItem("token");
+  async function handleSignOut() {
+    await api.logout().catch(() => {});
     navigate("/login", { replace: true });
   }
 
   if (!ready) return null;
 
   return (
+    <UploadProvider>
     <div className="min-h-screen flex bg-ft-background dark:bg-ve-background">
 
       {/* ── Desktop sidebar ── */}
@@ -185,6 +219,9 @@ export default function AppLayout() {
           })}
         </div>
       </nav>
+
+      <UploadProgressBadge />
     </div>
+    </UploadProvider>
   );
 }

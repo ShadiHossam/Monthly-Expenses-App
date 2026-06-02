@@ -13,9 +13,7 @@ export default function RegisterPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await api.register(username, password, email || undefined);
-      localStorage.setItem("token", res.token);
-      localStorage.setItem("user", JSON.stringify(res.user));
+      await api.register(username, password, email || undefined);
       window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.message || "Registration failed");

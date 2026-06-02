@@ -37,8 +37,7 @@ export default function SettingsPage() {
   const [showKey, setShowKey] = useState<Record<KeyField, boolean>>({ groq: false, openrouter: false, anthropic: false });
 
   useEffect(() => {
-    const u = localStorage.getItem("user");
-    if (u) setUser(JSON.parse(u));
+    api.me().then(setUser).catch(() => {});
     api.getAISettings().then(s => {
       setAISettings(s);
       setProvider(s.ai_provider);
@@ -46,9 +45,8 @@ export default function SettingsPage() {
     }).catch(() => {});
   }, []);
 
-  function logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  async function logout() {
+    await api.logout().catch(() => {});
     navigate("/login");
   }
 
