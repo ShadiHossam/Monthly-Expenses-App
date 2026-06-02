@@ -8,6 +8,7 @@ import com.expensetracker.repository.CategoryRepository;
 import com.expensetracker.repository.StatementRepository;
 import com.expensetracker.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -36,17 +37,16 @@ public class AnalyticsService {
         debits = debits != null ? debits : BigDecimal.ZERO;
         credits = credits != null ? credits : BigDecimal.ZERO;
 
-        List<Transaction> txns = transactionRepository.findByUserIdAndDateRange(userId, f, t);
-        long count = txns.size();
+        long count = transactionRepository.countByUserIdAndDateRange(userId, f, t);
 
-        Transaction biggest = txns.stream()
-                .filter(tx -> "debit".equals(tx.getTxnType()))
-                .max(Comparator.comparing(Transaction::getAmount))
-                .orElse(null);
+        var biggestPage = transactionRepository.findBiggestDebit(userId, f, t, PageRequest.of(0, 1));
+        Transaction biggest = biggestPage.isEmpty() ? null : biggestPage.getContent().get(0);
 
-        // Balance from latest statement
         BigDecimal closing = statementRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream().map(Statement::getClosingBalance).filter(Objects::nonNull).findFirst().orElse(null);
+
+        LocalDate firstTxn = transactionRepository.findMinTxnDate(userId, f, t);
+        LocalDate lastTxn = transactionRepository.findMaxTxnDate(userId, f, t);
 
         return AnalyticsSummary.builder()
                 .totalDebits(debits)
@@ -54,6 +54,8 @@ public class AnalyticsService {
                 .net(credits.subtract(debits))
                 .closingBalance(closing)
                 .transactionCount(count)
+                .firstTxnDate(firstTxn)
+                .lastTxnDate(lastTxn)
                 .biggestExpense(biggest != null ? AnalyticsSummary.BiggestExpense.builder()
                         .merchantName(biggest.getMerchantName() != null ? biggest.getMerchantName() : biggest.getDescription())
                         .amount(biggest.getAmount())
@@ -92,46 +94,38 @@ public class AnalyticsService {
         LocalDate f = from != null ? from : LocalDate.of(2000, 1, 1);
         LocalDate t = to != null ? to : LocalDate.now();
 
-        List<Transaction> txns = transactionRepository.findByUserIdAndDateRange(userId, f, t)
-                .stream().filter(tx -> "debit".equals(tx.getTxnType())).toList();
+        List<Object[]> rows = transactionRepository.aggregateCategoryBreakdown(userId, f, t);
+        if (rows.isEmpty()) return List.of();
 
-        BigDecimal total = txns.stream().map(Transaction::getAmount)
+        BigDecimal total = rows.stream()
+                .map(r -> (BigDecimal) r[1])
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        Map<Long, BigDecimal> byCat = new LinkedHashMap<>();
-        for (Transaction tx : txns) {
-            byCat.merge(tx.getCategoryId(), tx.getAmount(), BigDecimal::add);
-        }
-
-        // Only fetch categories that are actually used — avoids loading all user categories
-        List<Long> usedCatIds = byCat.keySet().stream().filter(Objects::nonNull).toList();
+        List<Long> usedCatIds = rows.stream()
+                .map(r -> r[0] != null ? ((Number) r[0]).longValue() : null)
+                .filter(Objects::nonNull)
+                .toList();
         Map<Long, Category> cats = usedCatIds.isEmpty()
                 ? Map.of()
                 : categoryRepository.findAllById(usedCatIds).stream()
                         .collect(Collectors.toMap(Category::getId, c -> c));
 
-        // Pre-group transaction counts by category to avoid O(n²) stream filtering
-        Map<Long, Long> countByCat = txns.stream()
-                .collect(Collectors.groupingBy(
-                        tx -> tx.getCategoryId() != null ? tx.getCategoryId() : -1L,
-                        Collectors.counting()));
-
-        return byCat.entrySet().stream()
-                .sorted(Map.Entry.<Long, BigDecimal>comparingByValue().reversed())
-                .map(e -> {
-                    var cat = e.getKey() != null ? cats.get(e.getKey()) : null;
-                    double pct = total.compareTo(BigDecimal.ZERO) > 0
-                            ? e.getValue().divide(total, 4, RoundingMode.HALF_UP).doubleValue() * 100 : 0;
-                    Map<String, Object> m = new LinkedHashMap<>();
-                    m.put("category_id", e.getKey());
-                    m.put("category_name", cat != null ? cat.getName() : "Uncategorized");
-                    m.put("color", cat != null ? cat.getColor() : "#9ca3af");
-                    m.put("total", e.getValue());
-                    m.put("percentage", Math.round(pct * 10.0) / 10.0);
-                    m.put("transaction_count", countByCat.getOrDefault(
-                            e.getKey() != null ? e.getKey() : -1L, 0L));
-                    return m;
-                }).toList();
+        return rows.stream().map(r -> {
+            Long catId = r[0] != null ? ((Number) r[0]).longValue() : null;
+            BigDecimal rowTotal = (BigDecimal) r[1];
+            long txnCount = ((Number) r[2]).longValue();
+            Category cat = catId != null ? cats.get(catId) : null;
+            double pct = total.compareTo(BigDecimal.ZERO) > 0
+                    ? rowTotal.divide(total, 4, RoundingMode.HALF_UP).doubleValue() * 100 : 0;
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("category_id", catId);
+            m.put("category_name", cat != null ? cat.getName() : "Uncategorized");
+            m.put("color", cat != null ? cat.getColor() : "#9ca3af");
+            m.put("total", rowTotal);
+            m.put("percentage", Math.round(pct * 10.0) / 10.0);
+            m.put("transaction_count", txnCount);
+            return m;
+        }).toList();
     }
 
     public List<Map<String, Object>> frequentPlaces(Long userId, LocalDate from, LocalDate to) {
@@ -212,7 +206,7 @@ public class AnalyticsService {
             }
             avgDays = avgDays / (dates.size() - 1);
 
-            if (avgDays >= 25 && avgDays <= 35) {
+            if (avgDays >= 20 && avgDays <= 45) {
                 BigDecimal avgAmount = group.stream().map(Transaction::getAmount)
                         .reduce(BigDecimal.ZERO, BigDecimal::add)
                         .divide(BigDecimal.valueOf(group.size()), 2, RoundingMode.HALF_UP);
@@ -244,18 +238,27 @@ public class AnalyticsService {
     }
 
     public List<Map<String, Object>> monthComparison(Long userId, int months) {
-        List<Map<String, Object>> result = new ArrayList<>();
         LocalDate now = LocalDate.now();
+        LocalDate from = now.minusMonths(months - 1).withDayOfMonth(1);
+        LocalDate to = now.withDayOfMonth(now.lengthOfMonth());
+
+        List<Object[]> rows = transactionRepository.aggregateMonthlyTotals(userId, from, to);
+        Map<String, Object[]> byYearMonth = new LinkedHashMap<>();
+        for (Object[] r : rows) {
+            String key = r[0] + "-" + r[1];
+            byYearMonth.put(key, r);
+        }
+
+        List<Map<String, Object>> result = new ArrayList<>();
         for (int i = months - 1; i >= 0; i--) {
             LocalDate start = now.minusMonths(i).withDayOfMonth(1);
-            LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
-            BigDecimal debits = transactionRepository.sumDebits(userId, start, end);
-            BigDecimal credits = transactionRepository.sumCredits(userId, start, end);
+            String key = start.getYear() + "-" + start.getMonthValue();
+            Object[] r = byYearMonth.get(key);
+            BigDecimal d = r != null ? (BigDecimal) r[2] : BigDecimal.ZERO;
+            BigDecimal c = r != null ? (BigDecimal) r[3] : BigDecimal.ZERO;
             String label = start.getMonth().getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.ENGLISH)
                     + " " + start.getYear();
             Map<String, Object> m = new LinkedHashMap<>();
-            BigDecimal d = debits != null ? debits : BigDecimal.ZERO;
-            BigDecimal c = credits != null ? credits : BigDecimal.ZERO;
             m.put("month", start.getMonthValue());
             m.put("year", start.getYear());
             m.put("month_label", label);

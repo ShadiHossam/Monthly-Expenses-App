@@ -14,7 +14,7 @@ export interface Statement {
   opening_balance?: number;
   closing_balance?: number;
   verify_status: "pending" | "passed" | "failed" | "flagged";
-  verify_errors?: string[];
+  verify_errors?: string | string[];
   confidence?: number;
   ocr_engine: string;
   created_at: string;
@@ -83,6 +83,8 @@ export interface Summary {
   net: number;
   closing_balance?: number;
   transaction_count: number;
+  first_txn_date?: string;
+  last_txn_date?: string;
   biggest_expense?: {
     merchant_name: string;
     amount: number;

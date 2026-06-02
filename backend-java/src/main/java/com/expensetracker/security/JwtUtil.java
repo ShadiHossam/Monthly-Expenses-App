@@ -8,6 +8,8 @@ import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PostConstruct;
+
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -17,6 +19,16 @@ import java.util.Date;
 public class JwtUtil {
 
     private final AppProperties props;
+
+    @PostConstruct
+    public void validateSecret() {
+        String secret = props.getJwt().getSecret();
+        if (secret == null || secret.length() < 32) {
+            throw new IllegalStateException(
+                "SECRET_KEY must be at least 32 characters. Current length: " +
+                (secret == null ? 0 : secret.length()));
+        }
+    }
 
     private SecretKey key() {
         return Keys.hmacShaKeyFor(props.getJwt().getSecret().getBytes(StandardCharsets.UTF_8));

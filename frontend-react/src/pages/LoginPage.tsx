@@ -79,6 +79,13 @@ export default function LoginPage() {
             className="w-full bg-ft-primary dark:bg-ve-primary-dim hover:opacity-90 text-white dark:text-ve-background font-semibold py-3 rounded-xl transition-opacity disabled:opacity-60 text-sm">
             {loading ? "Signing in…" : "Sign In"}
           </button>
+
+          <div className="text-center">
+            <a href="/forgot-password"
+              className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:text-ft-primary dark:hover:text-ve-primary underline">
+              Forgot password?
+            </a>
+          </div>
         </form>
 
         <p className="text-center text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-6">

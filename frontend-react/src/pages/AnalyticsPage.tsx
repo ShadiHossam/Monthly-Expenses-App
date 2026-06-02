@@ -17,12 +17,22 @@ export default function AnalyticsPage() {
   const today = new Date();
   const [tab, setTab] = useState<Tab>("month");
   const [monthOffset, setMonthOffset] = useState(0);
+  const [quarterOffset, setQuarterOffset] = useState(0);
+  const [yearOffset, setYearOffset] = useState(0);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [breakdown, setBreakdown] = useState<any[]>([]);
   const [frequent, setFrequent] = useState<any[]>([]);
   const [balanceTrend, setBalanceTrend] = useState<any[]>([]);
   const [monthComparison, setMonthComparison] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  function getQuarterInfo() {
+    const y = today.getFullYear();
+    const m = today.getMonth() + 1;
+    const baseQ = Math.ceil(m / 3);
+    const totalQ = (y * 4 + baseQ - 1) + quarterOffset;
+    return { qYear: Math.floor(totalQ / 4), q: (totalQ % 4) + 1 };
+  }
 
   function getRange() {
     const y = today.getFullYear();
@@ -31,8 +41,11 @@ export default function AnalyticsPage() {
       const d = new Date(y, m - 1 + monthOffset, 1);
       return getMonthRange(d.getFullYear(), d.getMonth() + 1);
     }
-    if (tab === "quarter") return getQuarterRange(y, Math.ceil(m / 3));
-    return getYearRange(y);
+    if (tab === "quarter") {
+      const { qYear, q } = getQuarterInfo();
+      return getQuarterRange(qYear, q);
+    }
+    return getYearRange(y + yearOffset);
   }
 
   function getLabel() {
@@ -42,28 +55,44 @@ export default function AnalyticsPage() {
       const d = new Date(y, m - 1 + monthOffset, 1);
       return d.toLocaleDateString("en-AE", { month: "long", year: "numeric" });
     }
-    if (tab === "quarter") return `Q${Math.ceil(m / 3)} ${y}`;
-    return String(y);
+    if (tab === "quarter") {
+      const { qYear, q } = getQuarterInfo();
+      return `Q${q} ${qYear}`;
+    }
+    return String(y + yearOffset);
+  }
+
+  function getChartYear() {
+    if (tab === "year") return today.getFullYear() + yearOffset;
+    if (tab === "quarter") return getQuarterInfo().qYear;
+    return today.getFullYear();
   }
 
   useEffect(() => {
     setLoading(true);
     const { from, to } = getRange();
-    const y = today.getFullYear();
+    let autoSwitched = false;
     Promise.all([
-      api.getMonthly(y),
+      api.getMonthly(getChartYear()),
       api.getCategoryBreakdown(from, to),
       api.getFrequentPlaces(from, to),
       api.getBalanceTrend(),
       api.getMonthComparison(6),
     ]).then(([m, b, f, bt, mc]) => {
+      const bkd = Array.isArray(b) ? b : [];
+      // Auto-step back one month if current month has no data — same pattern as Dashboard.
+      if (tab === "month" && monthOffset === 0 && bkd.length === 0) {
+        autoSwitched = true;
+        setMonthOffset(-1);
+        return;
+      }
       setMonthlyData(Array.isArray(m) ? m : []);
-      setBreakdown(Array.isArray(b) ? b : []);
+      setBreakdown(bkd);
       setFrequent(Array.isArray(f) ? f : []);
       setBalanceTrend(Array.isArray(bt) ? bt : []);
       setMonthComparison(Array.isArray(mc) ? mc : []);
-    }).finally(() => setLoading(false));
-  }, [tab, monthOffset]);
+    }).finally(() => { if (!autoSwitched) setLoading(false); });
+  }, [tab, monthOffset, quarterOffset, yearOffset]);
 
   function handleExcelExport() {
     const label = getLabel();
@@ -165,7 +194,7 @@ export default function AnalyticsPage() {
           {/* Period tabs */}
           <div className="flex bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-xl p-1 gap-1">
             {(["month", "quarter", "year"] as Tab[]).map(t => (
-              <button key={t} onClick={() => { setTab(t); setMonthOffset(0); }}
+              <button key={t} onClick={() => { setTab(t); setMonthOffset(0); setQuarterOffset(0); setYearOffset(0); }}
                 className={cn("px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors",
                   tab === t ? "bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background" : "text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:text-ft-on-surface dark:hover:text-ve-on-surface")}>
                 {t}
@@ -188,20 +217,29 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* ── Month nav ── */}
-      {tab === "month" && (
-        <div className="flex items-center gap-2 mb-5">
-          <button onClick={() => setMonthOffset(o => o - 1)}
-            className="p-2 rounded-xl hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors">
-            <MSIcon name="chevron_left" className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
-          </button>
-          <span className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface flex-1 text-center">{getLabel()}</span>
-          <button onClick={() => setMonthOffset(o => Math.min(o + 1, 0))} disabled={monthOffset >= 0}
-            className="p-2 rounded-xl hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors disabled:opacity-30">
-            <MSIcon name="chevron_right" className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
-          </button>
-        </div>
-      )}
+      {/* ── Period nav ── */}
+      <div className="flex items-center gap-2 mb-5">
+        <button
+          onClick={() => {
+            if (tab === "month") setMonthOffset(o => o - 1);
+            else if (tab === "quarter") setQuarterOffset(o => o - 1);
+            else setYearOffset(o => o - 1);
+          }}
+          className="p-2 rounded-xl hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors">
+          <MSIcon name="chevron_left" className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
+        </button>
+        <span className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface flex-1 text-center">{getLabel()}</span>
+        <button
+          onClick={() => {
+            if (tab === "month") setMonthOffset(o => Math.min(o + 1, 0));
+            else if (tab === "quarter") setQuarterOffset(o => Math.min(o + 1, 0));
+            else setYearOffset(o => Math.min(o + 1, 0));
+          }}
+          disabled={tab === "month" ? monthOffset >= 0 : tab === "quarter" ? quarterOffset >= 0 : yearOffset >= 0}
+          className="p-2 rounded-xl hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors disabled:opacity-30">
+          <MSIcon name="chevron_right" className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
+        </button>
+      </div>
 
       {loading ? (
         <div className="flex justify-center py-20">

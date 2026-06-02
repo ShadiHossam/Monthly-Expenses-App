@@ -64,13 +64,16 @@ public class BudgetService {
         budgetAlertRepository.delete(alert);
     }
 
-    public List<BudgetStatusOut> status(Long userId) {
+    public List<BudgetStatusOut> status(Long userId, int year, int month) {
         var cats = categoryRepository.findByUserIdOrderByName(userId)
                 .stream().collect(java.util.stream.Collectors.toMap(Category::getId, c -> c));
 
+        java.time.LocalDate viewedMonth = java.time.LocalDate.of(year, month, 1);
+        java.time.LocalDate breachFrom = viewedMonth.minusMonths(11);
+
         return budgetAlertRepository.findByUserId(userId).stream().map(alert -> {
             BigDecimal spent = transactionRepository
-                    .sumDebitThisMonthByCategoryNative(userId, alert.getCategoryId());
+                    .sumDebitByMonthByCategoryNative(userId, alert.getCategoryId(), year, month);
             if (spent == null) spent = BigDecimal.ZERO;
 
             double pct = alert.getMonthlyLimit().compareTo(BigDecimal.ZERO) > 0
@@ -79,7 +82,8 @@ public class BudgetService {
             String status = pct >= 100 ? "exceeded" : pct >= 80 ? "warning" : "ok";
             Category cat = cats.get(alert.getCategoryId());
 
-            List<Object[]> monthly = transactionRepository.monthlyDebitsByCategory(userId, alert.getCategoryId());
+            List<Object[]> monthly = transactionRepository.monthlyDebitsByCategoryInRange(
+                    userId, alert.getCategoryId(), breachFrom, viewedMonth);
             int breachCount = 0;
             String lastBreachMonth = null;
             for (Object[] row : monthly) {

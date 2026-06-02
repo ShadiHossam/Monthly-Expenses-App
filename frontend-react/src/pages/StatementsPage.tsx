@@ -30,6 +30,8 @@ export default function StatementsPage() {
   const [retryingId, setRetryingId] = useState<number | null>(null);
   const [retryingAll, setRetryingAll] = useState(false);
   const [retryAllMsg, setRetryAllMsg] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   useEffect(() => {
     api.listStatements()
@@ -41,8 +43,38 @@ export default function StatementsPage() {
   async function handleDelete(id: number, filename: string) {
     if (!window.confirm(`Delete statement "${filename}"? This will also remove all associated transactions.`)) return;
     setDeletingId(id);
-    try { await api.deleteStatement(id); setStatements(prev => prev.filter(s => s.id !== id)); }
-    catch {} finally { setDeletingId(null); }
+    try {
+      await api.deleteStatement(id);
+      setStatements(prev => prev.filter(s => s.id !== id));
+      setSelectedIds(prev => { const next = new Set(prev); next.delete(id); return next; });
+    } catch {} finally { setDeletingId(null); }
+  }
+
+  async function handleBulkDelete() {
+    const ids = Array.from(selectedIds);
+    if (!window.confirm(`Delete ${ids.length} statement${ids.length !== 1 ? "s" : ""}? This will also remove all associated transactions.`)) return;
+    setBulkDeleting(true);
+    try {
+      await Promise.all(ids.map(id => api.deleteStatement(id)));
+      setStatements(prev => prev.filter(s => !selectedIds.has(s.id)));
+      setSelectedIds(new Set());
+    } catch {} finally { setBulkDeleting(false); }
+  }
+
+  function toggleSelect(id: number) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.size === statements.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(statements.map(s => s.id)));
+    }
   }
 
   async function handleRetry(id: number) {
@@ -72,6 +104,8 @@ export default function StatementsPage() {
   }
 
   const stuckCount = statements.filter(s => s.verify_status === "pending" || s.verify_status === "failed").length;
+  const allSelected = statements.length > 0 && selectedIds.size === statements.length;
+  const someSelected = selectedIds.size > 0 && !allSelected;
 
   if (loading) {
     return <div className="flex justify-center py-24"><div className="w-8 h-8 border-4 border-ft-primary dark:border-ve-primary border-t-transparent rounded-full animate-spin" /></div>;
@@ -85,24 +119,52 @@ export default function StatementsPage() {
           <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">All uploaded bank statements</p>
         </div>
 
-        {stuckCount > 0 && (
-          <div className="flex flex-col items-end gap-1">
-            <button
-              onClick={handleRetryAll}
-              disabled={retryingAll}
-              className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60"
-            >
-              {retryingAll
-                ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                : <MSIcon name="replay" className="text-lg" />}
-              Retry All Pending / Failed ({stuckCount})
-            </button>
-            {retryAllMsg && (
-              <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">{retryAllMsg}</p>
-            )}
-          </div>
-        )}
+        <div className="flex items-center gap-3 flex-wrap justify-end">
+          {stuckCount > 0 && (
+            <div className="flex flex-col items-end gap-1">
+              <button
+                onClick={handleRetryAll}
+                disabled={retryingAll}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60"
+              >
+                {retryingAll
+                  ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  : <MSIcon name="replay" className="text-lg" />}
+                Retry All Pending / Failed ({stuckCount})
+              </button>
+              {retryAllMsg && (
+                <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">{retryAllMsg}</p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
+
+      {selectedIds.size > 0 && (
+        <div className="mb-4 flex items-center justify-between gap-3 px-4 py-3 bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl">
+          <span className="text-sm font-medium text-ft-on-surface dark:text-ve-on-surface">
+            {selectedIds.size} statement{selectedIds.size !== 1 ? "s" : ""} selected
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:text-ft-on-surface dark:hover:text-ve-on-surface transition-colors px-3 py-1.5 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="flex items-center gap-2 px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60"
+            >
+              {bulkDeleting
+                ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                : <MSIcon name="delete" className="text-lg" />}
+              Delete {selectedIds.size} selected
+            </button>
+          </div>
+        </div>
+      )}
 
       {statements.length === 0 ? (
         <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-16 flex flex-col items-center text-center gap-4">
@@ -121,13 +183,36 @@ export default function StatementsPage() {
         </div>
       ) : (
         <div className="space-y-3">
+          <div className="flex items-center gap-2 px-1 pb-1">
+            <input
+              type="checkbox"
+              checked={allSelected}
+              ref={el => { if (el) el.indeterminate = someSelected; }}
+              onChange={toggleSelectAll}
+              className="w-4 h-4 rounded accent-ft-primary dark:accent-ve-primary cursor-pointer"
+            />
+            <span className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">Select all</span>
+          </div>
+
           {statements.map(stmt => {
             const statusCfg = STATUS_CONFIG[stmt.verify_status] ?? STATUS_CONFIG.pending;
             const isStuck = stmt.verify_status === "pending" || stmt.verify_status === "failed";
+            const isSelected = selectedIds.has(stmt.id);
             return (
-              <div key={stmt.id} className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-5">
+              <div key={stmt.id} className={cn(
+                "bg-ft-surface dark:bg-ve-surface border rounded-2xl p-5 transition-colors",
+                isSelected
+                  ? "border-ft-primary dark:border-ve-primary"
+                  : "border-ft-outline-variant dark:border-ve-outline"
+              )}>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleSelect(stmt.id)}
+                      className="w-4 h-4 rounded accent-ft-primary dark:accent-ve-primary cursor-pointer shrink-0 mt-0.5"
+                    />
                     <div className="w-10 h-10 rounded-xl bg-ft-surface-low dark:bg-ve-surface-high flex items-center justify-center shrink-0">
                       <MSIcon name="description" className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
                     </div>

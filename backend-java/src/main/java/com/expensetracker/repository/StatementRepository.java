@@ -13,4 +13,5 @@ public interface StatementRepository extends JpaRepository<Statement, Long> {
     Optional<Statement> findByIdAndUserId(Long id, Long userId);
     Optional<Statement> findByUserIdAndOcrEngine(Long userId, String ocrEngine);
     List<Statement> findByUserIdAndVerifyStatusIn(Long userId, List<String> statuses);
+    List<Statement> findByVerifyStatus(String verifyStatus);
 }

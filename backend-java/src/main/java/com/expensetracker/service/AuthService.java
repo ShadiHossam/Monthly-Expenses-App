@@ -10,11 +10,13 @@ import com.expensetracker.exception.EntityNotFoundException;
 import com.expensetracker.exception.RateLimitException;
 import com.expensetracker.model.Category;
 import com.expensetracker.model.LoginAttempt;
+import com.expensetracker.model.PasswordResetToken;
 import com.expensetracker.model.Plan;
 import com.expensetracker.model.Subscription;
 import com.expensetracker.model.User;
 import com.expensetracker.repository.CategoryRepository;
 import com.expensetracker.repository.LoginAttemptRepository;
+import com.expensetracker.repository.PasswordResetTokenRepository;
 import com.expensetracker.repository.SubscriptionRepository;
 import com.expensetracker.repository.UserRepository;
 import com.expensetracker.security.JwtUtil;
@@ -29,6 +31,7 @@ import org.springframework.util.StringUtils;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HexFormat;
 import java.util.List;
 
 @Service
@@ -39,6 +42,8 @@ public class AuthService {
     private final CategoryRepository categoryRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final LoginAttemptRepository loginAttemptRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AppProperties appProperties;
@@ -174,6 +179,43 @@ public class AuthService {
     @Transactional
     public void cleanupOldLoginAttempts() {
         loginAttemptRepository.deleteOlderThan(Instant.now().minus(24, ChronoUnit.HOURS));
+    }
+
+    @Transactional
+    public void forgotPassword(String email) {
+        if (email == null || email.isBlank()) return;
+        userRepository.findByEmail(email).ifPresent(user -> {
+            passwordResetTokenRepository.deleteByUserId(user.getId());
+            String token = HexFormat.of().formatHex(
+                java.security.SecureRandom.getSeed(32));
+            passwordResetTokenRepository.save(PasswordResetToken.builder()
+                .userId(user.getId())
+                .token(token)
+                .expiresAt(Instant.now().plusSeconds(3600))
+                .used(false)
+                .build());
+            emailService.sendPasswordReset(email, token);
+        });
+        // Always returns 200 — no user enumeration
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        if (token == null || newPassword == null || newPassword.length() < 8) {
+            throw new BusinessException("Invalid request", HttpStatus.BAD_REQUEST);
+        }
+        PasswordResetToken prt = passwordResetTokenRepository
+            .findByTokenAndUsedFalse(token)
+            .orElseThrow(() -> new BusinessException("Invalid or expired token", HttpStatus.BAD_REQUEST));
+        if (prt.getExpiresAt().isBefore(Instant.now())) {
+            throw new BusinessException("Token expired", HttpStatus.BAD_REQUEST);
+        }
+        User user = userRepository.findById(prt.getUserId())
+            .orElseThrow(() -> new BusinessException("User not found", HttpStatus.NOT_FOUND));
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        prt.setUsed(true);
+        passwordResetTokenRepository.save(prt);
     }
 
     public static UserOut toUserOut(User user) {

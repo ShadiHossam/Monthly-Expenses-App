@@ -1,6 +1,7 @@
 package com.expensetracker.controller;
 
 import com.expensetracker.dto.request.BulkCategorizeRequest;
+import com.expensetracker.dto.request.CategoryPatchRequest;
 import com.expensetracker.dto.request.TransactionRequest;
 import com.expensetracker.dto.response.TransactionOut;
 import com.expensetracker.service.TransactionService;
@@ -62,9 +63,9 @@ public class TransactionController {
     @PatchMapping("/{id}/category")
     public ResponseEntity<TransactionOut> updateCategory(
             @PathVariable Long id,
-            @RequestBody Map<String, Long> body,
+            @Valid @RequestBody CategoryPatchRequest req,
             @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(transactionService.updateCategory(id, userId, body.get("category_id")));
+        return ResponseEntity.ok(transactionService.updateCategory(id, userId, req.getCategoryId()));
     }
 
     @PostMapping("/bulk-categorize")

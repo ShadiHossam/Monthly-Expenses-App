@@ -15,12 +15,12 @@ import com.expensetracker.repository.SubscriptionRepository;
 import com.expensetracker.repository.TransactionRepository;
 import com.expensetracker.repository.UsageLogRepository;
 import com.expensetracker.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
-import com.expensetracker.exception.BusinessException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -45,7 +45,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class StatementService {
 
@@ -59,7 +58,38 @@ public class StatementService {
     private final SseEmitterRegistry sseRegistry;
     private final AppProperties appProperties;
 
+    /**
+     * Self-reference (Spring proxy) — required so {@link #processStatementAsync(Long)} runs
+     * through the AOP interceptor chain (which enables @Async + @Transactional). Calling
+     * {@code this.processStatementAsync(id)} directly from a sibling method would BYPASS
+     * the proxy and run synchronously on the caller's thread, blocking the HTTP request
+     * and preventing SSE progress from being delivered.
+     */
+    private final StatementService self;
+
     private final ConcurrentHashMap<Long, AtomicInteger> activeProcessing = new ConcurrentHashMap<>();
+
+    public StatementService(StatementRepository statementRepository,
+                            TransactionRepository transactionRepository,
+                            SubscriptionRepository subscriptionRepository,
+                            UsageLogRepository usageLogRepository,
+                            UserRepository userRepository,
+                            OcrService ocrService,
+                            MerchantService merchantService,
+                            SseEmitterRegistry sseRegistry,
+                            AppProperties appProperties,
+                            @Lazy @Autowired StatementService self) {
+        this.statementRepository = statementRepository;
+        this.transactionRepository = transactionRepository;
+        this.subscriptionRepository = subscriptionRepository;
+        this.usageLogRepository = usageLogRepository;
+        this.userRepository = userRepository;
+        this.ocrService = ocrService;
+        this.merchantService = merchantService;
+        this.sseRegistry = sseRegistry;
+        this.appProperties = appProperties;
+        this.self = self;
+    }
 
     @Transactional
     public Map<String, Object> upload(MultipartFile file, Long userId, boolean confirmOverage) throws IOException {
@@ -131,7 +161,10 @@ public class StatementService {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    for (Long sid : finalIds) processStatementAsync(sid);
+                    // Call via Spring proxy (self) so @Async + @Transactional take effect.
+                    // Calling `this.processStatementAsync(...)` would bypass the proxy and
+                    // block the HTTP thread.
+                    for (Long sid : finalIds) self.processStatementAsync(sid);
                 }
             });
 
@@ -157,7 +190,8 @@ public class StatementService {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                 @Override
                 public void afterCommit() {
-                    processStatementAsync(finalStatementId);
+                    // Call via Spring proxy (self) so @Async takes effect.
+                    self.processStatementAsync(finalStatementId);
                 }
             });
 
@@ -185,7 +219,7 @@ public class StatementService {
             Path imagePath = Paths.get(stmt.getImagePath());
             byte[] imageBytes = Files.readAllBytes(imagePath);
             String mimeType = stmt.getImagePath().endsWith(".png") ? "image/png" : "image/jpeg";
-            imageBytes = resizeIfNeeded(imageBytes, mimeType, 1500);
+            imageBytes = resizeIfNeeded(imageBytes, mimeType, 2500);
 
             sendProgress(statementId, 50, "Extracting transactions with AI", "ocr");
 
@@ -201,7 +235,10 @@ public class StatementService {
 
             for (OcrService.TransactionDTO dto : extracted) {
                 LocalDate date;
-                try { date = dto.parsedDate(); } catch (Exception e) { continue; }
+                try { date = dto.parsedDate(); } catch (Exception e) {
+                    log.warn("Skipping transaction — unparseable date '{}' in statement {}: {}", dto.date(), statementId, e.getMessage());
+                    continue;
+                }
 
                 if (transactionRepository.existsByUserIdAndTxnDateAndAmountAndDescriptionAndTxnType(
                         stmt.getUserId(), date, dto.amount(), dto.description(),
@@ -243,6 +280,7 @@ public class StatementService {
             Map<String, Object> completePayload = new java.util.LinkedHashMap<>();
             completePayload.put("statement_id", statementId);
             completePayload.put("transaction_count", toSave.size());
+            completePayload.put("skipped_count", extracted.size() - toSave.size());
             completePayload.put("verify_status", "passed");
             if (minDate != null && maxDate != null) {
                 final LocalDate finalMinDate = minDate;
@@ -251,6 +289,7 @@ public class StatementService {
                         .stream()
                         .filter(s -> !s.getId().equals(statementId))
                         .filter(s -> s.getPeriodStart() != null && s.getPeriodEnd() != null)
+                        .filter(s -> transactionRepository.countByStatementId(s.getId()) > 0)
                         .anyMatch(s ->
                                 !s.getPeriodEnd().isBefore(finalMinDate) && !s.getPeriodStart().isAfter(finalMaxDate));
                 if (overlaps) {
@@ -267,14 +306,15 @@ public class StatementService {
 
         } catch (Exception e) {
             log.error("Statement processing failed for id {}: {}", statementId, e.getMessage(), e);
+            // Persist failure status in a separate transaction (the outer @Transactional
+            // is rolled back by this exception, so a direct save here would be discarded).
             try {
-                Statement stmt = statementRepository.findById(statementId).orElse(null);
-                if (stmt != null) {
-                    stmt.setVerifyStatus("failed");
-                    statementRepository.save(stmt);
-                }
-            } catch (Exception ignored) {}
-            sseRegistry.send(statementId, "error", Map.of("message", e.getMessage()));
+                self.markStatementFailed(statementId, e.getMessage());
+            } catch (Exception logOnly) {
+                log.warn("Could not persist failed status for statement {}: {}", statementId, logOnly.getMessage());
+            }
+            String msg = e.getMessage() != null ? e.getMessage() : "Processing failed";
+            sseRegistry.send(statementId, "error", Map.of("message", msg));
             sseRegistry.completeWithError(statementId, e);
         } finally {
             if (userId != null) {
@@ -284,8 +324,64 @@ public class StatementService {
         }
     }
 
+    /** Marks a statement failed in its own transaction so it survives the parent rollback. */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    public void markStatementFailed(Long statementId, String errorMessage) {
+        statementRepository.findById(statementId).ifPresent(stmt -> {
+            stmt.setVerifyStatus("failed");
+            // verify_errors is mapped as jsonb — wrap the message in a JSON-encoded
+            // array element so PostgreSQL accepts it.
+            String trimmed = errorMessage != null
+                    ? errorMessage.substring(0, Math.min(errorMessage.length(), 500))
+                    : "Processing failed";
+            String json = "[" + jsonString(trimmed) + "]";
+            stmt.setVerifyErrors(json);
+            statementRepository.save(stmt);
+        });
+    }
+
+    private static String jsonString(String raw) {
+        StringBuilder sb = new StringBuilder("\"");
+        for (int i = 0; i < raw.length(); i++) {
+            char c = raw.charAt(i);
+            switch (c) {
+                case '"'  -> sb.append("\\\"");
+                case '\\' -> sb.append("\\\\");
+                case '\n' -> sb.append("\\n");
+                case '\r' -> sb.append("\\r");
+                case '\t' -> sb.append("\\t");
+                default -> {
+                    if (c < 0x20) sb.append(String.format("\\u%04x", (int) c));
+                    else sb.append(c);
+                }
+            }
+        }
+        return sb.append("\"").toString();
+    }
+
     public SseEmitter getProgressEmitter(Long statementId) {
         return sseRegistry.getOrCreate(statementId);
+    }
+
+    /**
+     * After the application starts, requeue any statements left in "pending" state by a
+     * previous run (JVM crash, restart, etc.). Without this, those rows would stay pending
+     * forever because the in-memory afterCommit callback that scheduled them died with the
+     * old process.
+     */
+    @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
+    public void resumePendingStatementsOnStartup() {
+        try {
+            List<Statement> pending = statementRepository.findByVerifyStatus("pending");
+            if (pending.isEmpty()) return;
+            log.info("Resuming {} pending statement(s) left from previous run", pending.size());
+            for (Statement stmt : pending) {
+                try { self.processStatementAsync(stmt.getId()); }
+                catch (Exception e) { log.warn("Could not requeue statement {}: {}", stmt.getId(), e.getMessage()); }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to scan for pending statements on startup: {}", e.getMessage());
+        }
     }
 
     public List<StatementOut> listStatements(Long userId) {
@@ -308,6 +404,7 @@ public class StatementService {
         if (stmt.getImagePath() != null) {
             try { Files.deleteIfExists(Paths.get(stmt.getImagePath())); } catch (IOException ignored) {}
         }
+        transactionRepository.deleteByStatementId(statementId);
         statementRepository.delete(stmt);
     }
 
@@ -317,7 +414,13 @@ public class StatementService {
                 .orElseThrow(() -> new EntityNotFoundException("Statement not found"));
         stmt.setVerifyStatus("pending");
         statementRepository.save(stmt);
-        processStatementAsync(statementId);
+        // Defer to after commit so async runs against persisted state, via proxy.
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                self.processStatementAsync(statementId);
+            }
+        });
         return toOut(stmt, transactionRepository.countByStatementId(statementId));
     }
 
@@ -330,11 +433,11 @@ public class StatementService {
             statementRepository.save(stmt);
         }
         List<Long> ids = stuck.stream().map(Statement::getId).toList();
-        // kick off async processing after the transaction commits
+        // kick off async processing after the transaction commits — via Spring proxy
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                for (Long sid : ids) processStatementAsync(sid);
+                for (Long sid : ids) self.processStatementAsync(sid);
             }
         });
         return Map.of("queued", ids.size());
@@ -355,7 +458,7 @@ public class StatementService {
             PDFRenderer renderer = new PDFRenderer(doc);
             List<BufferedImage> pages = new ArrayList<>();
             for (int i = 0; i < doc.getNumberOfPages(); i++) {
-                pages.add(renderer.renderImageWithDPI(i, 150, org.apache.pdfbox.rendering.ImageType.RGB));
+                pages.add(renderer.renderImageWithDPI(i, 250, org.apache.pdfbox.rendering.ImageType.RGB));
             }
             return pages;
         }

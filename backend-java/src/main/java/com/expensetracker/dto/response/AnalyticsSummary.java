@@ -15,6 +15,8 @@ public class AnalyticsSummary {
     private BigDecimal openingBalance;
     private BigDecimal closingBalance;
     private long transactionCount;
+    private LocalDate firstTxnDate;
+    private LocalDate lastTxnDate;
     private BiggestExpense biggestExpense;
 
     @Data

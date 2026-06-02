@@ -213,7 +213,7 @@ export default function CategoriesPage() {
             )}>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                 style={{ backgroundColor: (cat.color || "#94a3b8") + "20" }}>
-                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: cat.color || "#94a3b8" }} />
+                <MSIcon name={cat.icon || "label"} className="text-[18px] leading-none" style={{ color: cat.color || "#94a3b8" }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface">{cat.name}</p>

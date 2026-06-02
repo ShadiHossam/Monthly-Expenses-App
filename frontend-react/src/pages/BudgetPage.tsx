@@ -34,12 +34,17 @@ function MSIcon({ name, className }: { name: string; className?: string }) {
   return <span className={cn("material-symbols-outlined select-none", className)}>{name}</span>;
 }
 
-async function loadBudgets(): Promise<Budget[]> {
-  const res = await api.listBudgets();
+async function loadBudgets(year: number, month: number): Promise<Budget[]> {
+  const res = await api.listBudgets({ year, month });
   return Array.isArray(res) ? res as unknown as Budget[] : ((res as any).data ?? []);
 }
 
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
 export default function BudgetPage() {
+  const now = new Date();
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,14 +65,27 @@ export default function BudgetPage() {
   const [alertsDismissed, setAlertsDismissed] = useState(false);
 
   useEffect(() => {
-    Promise.all([loadBudgets(), api.listCategories()])
+    setLoading(true);
+    Promise.all([loadBudgets(selectedYear, selectedMonth), api.listCategories()])
       .then(([budgetList, catRes]) => {
         setBudgets(budgetList);
         setCategories(Array.isArray(catRes) ? catRes : []);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [selectedYear, selectedMonth]);
+
+  function goPrevMonth() {
+    if (selectedMonth === 1) { setSelectedMonth(12); setSelectedYear(y => y - 1); }
+    else setSelectedMonth(m => m - 1);
+  }
+
+  function goNextMonth() {
+    const isCurrentMonth = selectedYear === now.getFullYear() && selectedMonth === now.getMonth() + 1;
+    if (isCurrentMonth) return;
+    if (selectedMonth === 12) { setSelectedMonth(1); setSelectedYear(y => y + 1); }
+    else setSelectedMonth(m => m + 1);
+  }
 
   async function handleToggle(budget: Budget) {
     setTogglingId(budget.id);
@@ -94,8 +112,7 @@ export default function BudgetPage() {
     setSaving(true);
     try {
       await api.createBudget(Number(formCategoryId), limitNum);
-      // Reload full status so spent_this_month is populated correctly
-      const fresh = await loadBudgets();
+      const fresh = await loadBudgets(selectedYear, selectedMonth);
       setBudgets(fresh);
       setShowForm(false); setFormCategoryId(""); setFormLimit("");
     } catch {} finally { setSaving(false); }
@@ -123,7 +140,7 @@ export default function BudgetPage() {
         tasks.push(api.updateCategory(budget.category_id, { color: editColor }));
       }
       await Promise.all(tasks);
-      const fresh = await loadBudgets();
+      const fresh = await loadBudgets(selectedYear, selectedMonth);
       setBudgets(fresh);
       setEditingId(null);
     } catch {} finally { setEditSaving(false); }
@@ -133,16 +150,13 @@ export default function BudgetPage() {
   const availableCategories = categories.filter(c => !usedCategoryIds.has(c.id));
   const exceededBudgets = budgets.filter(b => b.enabled && b.status === "exceeded");
   const warningBudgets = budgets.filter(b => b.enabled && b.status === "warning");
-
-  if (loading) {
-    return <div className="flex justify-center py-24"><div className="w-8 h-8 border-4 border-ft-primary dark:border-ve-primary border-t-transparent rounded-full animate-spin" /></div>;
-  }
+  const isCurrentMonth = selectedYear === now.getFullYear() && selectedMonth === now.getMonth() + 1;
 
   return (
     <div className="px-6 pt-6 pb-10 max-w-3xl mx-auto">
 
       {/* ── Header ── */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold text-ft-on-surface dark:text-ve-on-surface">Budgets &amp; Goals</h1>
           <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">Track your spending limits and savings milestones.</p>
@@ -154,6 +168,30 @@ export default function BudgetPage() {
           <MSIcon name="add" className="text-lg" />
           Create New Budget
         </button>
+      </div>
+
+      {/* ── Month navigator ── */}
+      <div className="flex items-center gap-2 mb-5">
+        <button
+          onClick={goPrevMonth}
+          className="w-8 h-8 flex items-center justify-center rounded-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:bg-ft-surface dark:hover:bg-ve-surface transition-colors"
+          aria-label="Previous month"
+        >
+          <MSIcon name="chevron_left" className="text-xl" />
+        </button>
+        <span className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface min-w-[130px] text-center">
+          {MONTH_NAMES[selectedMonth - 1]} {selectedYear}
+          {isCurrentMonth && <span className="ml-1.5 text-xs font-medium text-ft-primary dark:text-ve-primary">(current)</span>}
+        </span>
+        <button
+          onClick={goNextMonth}
+          disabled={isCurrentMonth}
+          className="w-8 h-8 flex items-center justify-center rounded-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:bg-ft-surface dark:hover:bg-ve-surface transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          aria-label="Next month"
+        >
+          <MSIcon name="chevron_right" className="text-xl" />
+        </button>
+        {loading && <div className="w-4 h-4 border-2 border-ft-primary dark:border-ve-primary border-t-transparent rounded-full animate-spin ml-1" />}
       </div>
 
       {/* ── Alert banner ── */}

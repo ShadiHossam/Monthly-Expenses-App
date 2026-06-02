@@ -58,4 +58,11 @@ public class User {
     @Builder.Default
     private int concurrentProcessing = 2;
 
+    @Column(name = "login_fail_count", nullable = false)
+    @Builder.Default
+    private int loginFailCount = 0;
+
+    @Column(name = "locked_until")
+    private java.time.OffsetDateTime lockedUntil;
+
 }

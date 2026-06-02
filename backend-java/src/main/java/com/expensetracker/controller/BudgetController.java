@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +47,13 @@ public class BudgetController {
     }
 
     @GetMapping("/status")
-    public ResponseEntity<List<BudgetStatusOut>> status(@AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(budgetService.status(userId));
+    public ResponseEntity<List<BudgetStatusOut>> status(
+            @AuthenticationPrincipal Long userId,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month) {
+        LocalDate now = LocalDate.now();
+        int y = year != null ? year : now.getYear();
+        int m = month != null ? month : now.getMonthValue();
+        return ResponseEntity.ok(budgetService.status(userId, y, m));
     }
 }

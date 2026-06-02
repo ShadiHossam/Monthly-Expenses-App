@@ -7,7 +7,7 @@ import UploadModal from "../components/UploadModal";
 import ExportButtons from "../components/ExportButtons";
 import { exportToExcel, exportToPDF } from "../lib/exportUtils";
 
-type Period = "month" | "quarter" | "year" | "custom";
+type Period = "month" | "quarter" | "year" | "all" | "custom";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
@@ -41,6 +41,7 @@ export default function DashboardPage() {
   const [showAskAI, setShowAskAI] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const hasAutoSwitched = useRef(false);
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -53,6 +54,7 @@ export default function DashboardPage() {
 
   function getRange(): { from: string; to: string } {
     if (period === "custom") return { from: customFrom, to: customTo };
+    if (period === "all") return { from: "2000-01-01", to: `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}` };
     const y = today.getFullYear();
     const m = today.getMonth() + 1;
     if (period === "month") {
@@ -71,6 +73,7 @@ export default function DashboardPage() {
 
   function getPeriodLabel() {
     if (period === "custom") return customFrom && customTo ? `${customFrom} → ${customTo}` : "Custom range";
+    if (period === "all") return "All time";
     if (period === "month") {
       const d = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
       return d.toLocaleDateString("en-AE", { month: "long", year: "numeric" });
@@ -86,6 +89,7 @@ export default function DashboardPage() {
   }
 
   function canGoForward() {
+    if (period === "all") return false;
     if (period === "month") return monthOffset < 0;
     if (period === "quarter") return quarterOffset < 0;
     if (period === "year") return yearOffset < 0;
@@ -108,17 +112,28 @@ export default function DashboardPage() {
     if (period === "custom" && (!customFrom || !customTo)) return;
     setLoading(true);
     const { from, to } = getRange();
+    let autoSwitched = false;
     Promise.all([
       api.getSummary(from, to),
       api.getCategoryBreakdown(from, to),
       api.listTransactions({ from, to, limit: 5 }),
       api.getFrequentPlaces(from, to),
     ]).then(([s, b, t, p]) => {
-      setSummary(s as any);
+      const summary = s as any;
+      // Auto-switch to "All time" on first load if the current month has no transactions.
+      // Keep loading=true (don't call setLoading(false) via finally) so the spinner stays
+      // until the "all time" data loads — prevents a flash of the empty state.
+      if (!hasAutoSwitched.current && period === "month" && monthOffset === 0 && (summary?.transaction_count ?? 0) === 0) {
+        hasAutoSwitched.current = true;
+        autoSwitched = true;
+        setPeriod("all");
+        return;
+      }
+      setSummary(summary);
       setBreakdown(Array.isArray(b) ? b : []);
       setRecent((t as any)?.content ?? []);
       setPlaces((Array.isArray(p) ? p : []).slice(0, 4));
-    }).catch(console.error).finally(() => setLoading(false));
+    }).catch(console.error).finally(() => { if (!autoSwitched) setLoading(false); });
   }, [period, monthOffset, quarterOffset, yearOffset, customFrom, customTo, refreshKey]);
 
   const savingsRate = summary?.total_credits > 0
@@ -128,8 +143,11 @@ export default function DashboardPage() {
   const { from: rangeFrom, to: rangeTo } =
     period !== "custom" || (customFrom && customTo) ? getRange() : { from: customFrom, to: customTo };
 
-  const daysDiff = rangeFrom && rangeTo
-    ? Math.max(1, Math.round((new Date(rangeTo).getTime() - new Date(rangeFrom).getTime()) / 86400000) + 1)
+  // Use actual first/last transaction dates for avg/day so "All Time" doesn't divide by ~26 years
+  const effectiveFrom = summary?.first_txn_date ?? rangeFrom;
+  const effectiveTo = summary?.last_txn_date ?? rangeTo;
+  const daysDiff = effectiveFrom && effectiveTo
+    ? Math.max(1, Math.round((new Date(effectiveTo).getTime() - new Date(effectiveFrom).getTime()) / 86400000) + 1)
     : 30;
   const avgDaily = summary?.total_debits ? summary.total_debits / daysDiff : null;
 
@@ -198,6 +216,20 @@ export default function DashboardPage() {
 
   const hasData = !!summary?.transaction_count;
 
+  const periodIncomeLabel =
+    period === "all" ? "Total Income" :
+    period === "quarter" ? "Quarterly Income" :
+    period === "year" ? "Yearly Income" :
+    period === "custom" ? "Income" :
+    "Monthly Income";
+
+  const periodExpenseLabel =
+    period === "all" ? "Total Expenses" :
+    period === "quarter" ? "Quarterly Expenses" :
+    period === "year" ? "Yearly Expenses" :
+    period === "custom" ? "Expenses" :
+    "Monthly Expenses";
+
   return (
     <div className="px-6 pt-6 pb-10 max-w-5xl mx-auto">
 
@@ -205,10 +237,17 @@ export default function DashboardPage() {
       <div className="flex items-center gap-2 flex-wrap justify-end mb-6">
           {/* Period tabs */}
           <div className="flex items-center bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-xl p-1 gap-1">
-            {(["month", "quarter", "year", "custom"] as Period[]).map(p => (
+            {(["month", "quarter", "year", "all", "custom"] as Period[]).map(p => (
               <button
                 key={p}
-                onClick={() => { setPeriod(p); setShowMonthPicker(false); }}
+                onClick={() => {
+                  if (p === "custom" && period !== "custom") {
+                    const { from, to } = getRange();
+                    if (from && to) { setCustomFrom(from); setCustomTo(to); }
+                  }
+                  setPeriod(p);
+                  setShowMonthPicker(false);
+                }}
                 className={cn(
                   "px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-colors",
                   period === p
@@ -216,13 +255,13 @@ export default function DashboardPage() {
                     : "text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:bg-ft-surface-low dark:hover:bg-ve-surface-high"
                 )}
               >
-                {p === "custom" ? "Custom" : p.charAt(0).toUpperCase() + p.slice(1)}
+                {p === "custom" ? "Custom" : p === "all" ? "All time" : p.charAt(0).toUpperCase() + p.slice(1)}
               </button>
             ))}
           </div>
 
           {/* Period navigation */}
-          {period !== "custom" && (
+          {period !== "custom" && period !== "all" && (
             <div className="flex items-center gap-1 bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-xl px-1 py-1">
               <button onClick={stepBack} className="p-1 rounded-lg hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors">
                 <MSIcon name="chevron_left" className="text-lg text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
@@ -316,15 +355,28 @@ export default function DashboardPage() {
           </div>
           <div className="text-center">
             <p className="font-semibold text-ft-on-surface dark:text-ve-on-surface">No data for this period</p>
-            <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-1">Upload a bank statement to get started</p>
+            <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-1">
+              {period !== "all" ? "Your statements may be from a different month — try \"All time\" to see everything." : "Upload a bank statement to get started."}
+            </p>
           </div>
-          <button
-            onClick={() => setShowUpload(true)}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background text-sm font-semibold hover:opacity-90 transition-opacity"
-          >
-            <MSIcon name="upload" className="text-lg" />
-            Upload Statement
-          </button>
+          <div className="flex gap-3">
+            {period !== "all" && (
+              <button
+                onClick={() => setPeriod("all")}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-ft-primary dark:border-ve-primary text-ft-primary dark:text-ve-primary text-sm font-semibold hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors"
+              >
+                <MSIcon name="calendar_view_month" className="text-lg" />
+                View all time
+              </button>
+            )}
+            <button
+              onClick={() => setShowUpload(true)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background text-sm font-semibold hover:opacity-90 transition-opacity"
+            >
+              <MSIcon name="upload" className="text-lg" />
+              Upload Statement
+            </button>
+          </div>
         </div>
       ) : (
         <>
@@ -347,9 +399,12 @@ export default function DashboardPage() {
             </div>
 
             {/* Total Income */}
-            <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-5">
+            <div
+              className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-5 cursor-pointer hover:border-emerald-400 dark:hover:border-ve-primary transition-colors group"
+              onClick={() => navigate(`/transactions?from=${rangeFrom}&to=${rangeTo}&type=credit`)}
+            >
               <div className="flex items-start justify-between mb-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-ft-on-surface-variant dark:text-ve-on-surface-variant">Monthly Income</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-ft-on-surface-variant dark:text-ve-on-surface-variant">{periodIncomeLabel}</p>
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-ve-surface-high flex items-center justify-center">
                   <MSIcon name="arrow_downward" className="text-lg text-emerald-600 dark:text-ve-primary" />
                 </div>
@@ -364,9 +419,12 @@ export default function DashboardPage() {
             </div>
 
             {/* Total Expenses */}
-            <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-5">
+            <div
+              className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-5 cursor-pointer hover:border-red-400 dark:hover:border-ve-error transition-colors group"
+              onClick={() => navigate(`/transactions?from=${rangeFrom}&to=${rangeTo}&type=debit`)}
+            >
               <div className="flex items-start justify-between mb-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-ft-on-surface-variant dark:text-ve-on-surface-variant">Monthly Expenses</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-ft-on-surface-variant dark:text-ve-on-surface-variant">{periodExpenseLabel}</p>
                 <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-ve-surface-high flex items-center justify-center">
                   <MSIcon name="arrow_upward" className="text-lg text-red-500 dark:text-ve-error" />
                 </div>
