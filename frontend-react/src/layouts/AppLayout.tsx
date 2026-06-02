@@ -234,7 +234,40 @@ export default function AppLayout() {
       </nav>
 
       <UploadProgressBadge />
+      <UploadDoneToasts />
     </div>
     </UploadProvider>
+  );
+}
+
+function UploadDoneToasts() {
+  const { notifications, clearNotifications } = useUploadContext();
+  const location = useLocation();
+  const [visible, setVisible] = useState<typeof notifications>([]);
+
+  useEffect(() => {
+    if (location.pathname !== "/upload" && notifications.length > 0) {
+      setVisible(notifications);
+      clearNotifications();
+      const t = setTimeout(() => setVisible([]), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [location.pathname, notifications, clearNotifications]);
+
+  if (visible.length === 0) return null;
+  return (
+    <div className="fixed bottom-24 md:bottom-6 left-4 z-40 flex flex-col gap-2">
+      {visible.map((n, i) => (
+        <div key={i} className="flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-lg
+                                bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline
+                                text-sm text-ft-on-surface dark:text-ve-on-surface">
+          <span className="material-symbols-outlined text-green-500 text-base">check_circle</span>
+          <span>
+            <strong className="truncate max-w-[140px] inline-block align-bottom">{n.filename}</strong>
+            {n.txnCount > 0 && <> — {n.txnCount} transactions</>}
+          </span>
+        </div>
+      ))}
+    </div>
   );
 }

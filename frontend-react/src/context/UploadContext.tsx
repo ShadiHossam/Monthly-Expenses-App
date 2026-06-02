@@ -29,6 +29,8 @@ export type QAItem = QAPending & {
   suggested_new_category_obj?: { name: string; color: string; icon: string } | null;
 };
 
+export type UploadNotification = { filename: string; txnCount: number };
+
 interface UploadContextType {
   entries: FileEntry[];
   addFiles: (files: File[]) => void;
@@ -36,6 +38,9 @@ interface UploadContextType {
   processFile: (entry: FileEntry, confirmOverage?: boolean) => Promise<void>;
   reset: () => void;
   hasActiveUploads: boolean;
+  // Upload done notifications
+  notifications: UploadNotification[];
+  clearNotifications: () => void;
   // QA
   qaItems: QAItem[];
   setQaItems: React.Dispatch<React.SetStateAction<QAItem[]>>;
@@ -73,6 +78,9 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
   const [overlapWarnings, setOverlapWarnings] = useState<Array<{ file: string; period: string }>>([]);
   const [overagePending, setOveragePending] = useState<OveragePending | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [notifications, setNotifications] = useState<UploadNotification[]>([]);
+
+  const clearNotifications = useCallback(() => setNotifications([]), []);
 
   const processingRef = useRef(false);
   const abortControllersRef = useRef<AbortController[]>([]);
@@ -139,7 +147,9 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
       });
 
       const counts = await Promise.all(statementIds.map(waitPage));
-      updateEntry(entry.id, { status: "done", progress: { step: "done", pct: 100, message: "Done!" }, uncategorizedCount: counts.reduce((a, b) => a + b, 0) });
+      const txnCount = counts.reduce((a, b) => a + b, 0);
+      updateEntry(entry.id, { status: "done", progress: { step: "done", pct: 100, message: "Done!" }, uncategorizedCount: txnCount });
+      setNotifications(prev => [...prev, { filename: entry.file.name, txnCount }]);
     } catch (err: unknown) {
       const apiErr = err as Error & { status?: number; detail?: { overage_confirmation_required?: boolean; overage_pages?: number; overage_cost_usd?: number } };
       if (apiErr.status === 402 && apiErr.detail?.overage_confirmation_required) {
@@ -198,6 +208,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
   return (
     <UploadContext.Provider value={{
       entries, addFiles, updateEntry, processFile, reset, hasActiveUploads,
+      notifications, clearNotifications,
       qaItems, setQaItems, qaIndex, setQaIndex,
       allDone, setAllDone,
       overlapWarnings, setOverlapWarnings,
