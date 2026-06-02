@@ -15,6 +15,7 @@ const FULL_NAV = [
   { href: "/statements",   label: "Statements",    icon: "description" },
   { href: "/recurring",    label: "Recurring",     icon: "repeat" },
   { href: "/budget",       label: "Budget",        icon: "account_balance_wallet" },
+  { href: "/savings",      label: "Savings",       icon: "savings" },
   { href: "/settings",     label: "Settings",      icon: "settings" },
   { href: "/billing",      label: "Billing",       icon: "credit_card" },
 ];

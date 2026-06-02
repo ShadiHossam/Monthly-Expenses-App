@@ -17,6 +17,8 @@ import com.expensetracker.model.User;
 import com.expensetracker.repository.BudgetAlertRepository;
 import com.expensetracker.repository.BudgetBreachNotificationRepository;
 import com.expensetracker.repository.CategoryRepository;
+import com.expensetracker.repository.RecurringRuleRepository;
+import com.expensetracker.repository.SavingsGoalRepository;
 import com.expensetracker.repository.LoginAttemptRepository;
 import com.expensetracker.repository.MerchantAliasRepository;
 import com.expensetracker.repository.MerchantRuleRepository;
@@ -53,6 +55,8 @@ public class AuthService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final BudgetAlertRepository budgetAlertRepository;
     private final BudgetBreachNotificationRepository budgetBreachNotificationRepository;
+    private final RecurringRuleRepository recurringRuleRepository;
+    private final SavingsGoalRepository savingsGoalRepository;
     private final MerchantRuleRepository merchantRuleRepository;
     private final MerchantAliasRepository merchantAliasRepository;
     private final SavedReportRepository savedReportRepository;
@@ -226,6 +230,8 @@ public class AuthService {
     public void deleteAccount(Long userId) {
         passwordResetTokenRepository.deleteByUserId(userId);
         budgetBreachNotificationRepository.deleteByUserId(userId);
+        recurringRuleRepository.deleteByUserId(userId);
+        savingsGoalRepository.deleteByUserId(userId);
         usageLogRepository.deleteByUserId(userId);
         transactionRepository.deleteByUserId(userId);
         statementRepository.deleteByUserId(userId);

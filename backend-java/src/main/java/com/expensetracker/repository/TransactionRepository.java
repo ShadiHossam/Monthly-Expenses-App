@@ -183,5 +183,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             @Param("to") LocalDate to,
             @Param("lim") int limit);
 
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.userId = :userId AND t.txnType = 'credit' AND t.txnDate >= :from AND t.txnDate <= :to")
+    Optional<BigDecimal> sumCreditsBetween(@Param("userId") Long userId, @Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.userId = :userId AND t.txnType = 'debit' AND t.txnDate >= :from AND t.txnDate <= :to")
+    Optional<BigDecimal> sumDebitsBetween(@Param("userId") Long userId, @Param("from") LocalDate from, @Param("to") LocalDate to);
+
     void deleteByUserId(Long userId);
 }

@@ -217,6 +217,13 @@ export const api = {
   getBalanceTrend: () => request<BalanceTrendPoint[]>("/analytics/balance-trend"),
   getRecurring: () => request<RecurringItem[]>("/analytics/recurring"),
 
+  // Savings Goals
+  listSavingsGoals: () => request<any[]>("/savings-goals"),
+  createSavingsGoal: (data: { name: string; targetAmount: number; targetDate: string; color?: string }) =>
+    request<any>("/savings-goals", { method: "POST", body: JSON.stringify(data) }),
+  deleteSavingsGoal: (id: number) =>
+    request<void>(`/savings-goals/${id}`, { method: "DELETE" }),
+
   // Recurring rules (manual)
   listRecurringRules: () => request<any[]>("/recurring-rules"),
   createRecurringRule: (data: { label: string; merchantPattern?: string; expectedAmount?: number; frequencyDays?: number; nextExpectedDate?: string }) =>

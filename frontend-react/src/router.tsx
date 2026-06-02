@@ -17,6 +17,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import SavingsPage from "./pages/SavingsPage";
 
 export const router = createBrowserRouter([
   {
@@ -49,6 +50,7 @@ export const router = createBrowserRouter([
       { path: "budget", element: <BudgetPage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "billing", element: <BillingPage /> },
+      { path: "savings", element: <SavingsPage /> },
     ],
   },
 ]);
