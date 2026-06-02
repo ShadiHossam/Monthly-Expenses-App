@@ -124,8 +124,8 @@ public class BillingService {
         SessionCreateParams.Builder builder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
                 .setCustomer(customerId)
-                .setSuccessUrl(appProperties.getCorsOriginsList().get(0) + "/billing?success=1")
-                .setCancelUrl(appProperties.getCorsOriginsList().get(0) + "/billing?cancelled=true")
+                .setSuccessUrl(appProperties.getAppUrl() + "/billing?success=1")
+                .setCancelUrl(appProperties.getAppUrl() + "/billing?cancelled=true")
                 .addLineItem(SessionCreateParams.LineItem.builder()
                         .setPrice(priceId).setQuantity(1L).build());
 
@@ -145,7 +145,7 @@ public class BillingService {
         com.stripe.model.billingportal.Session portal = com.stripe.model.billingportal.Session.create(
             com.stripe.param.billingportal.SessionCreateParams.builder()
                 .setCustomer(sub.getStripeCustomerId())
-                .setReturnUrl(appProperties.getCorsOriginsList().get(0) + "/billing")
+                .setReturnUrl(appProperties.getAppUrl() + "/billing")
                 .build()
         );
         return Map.of("portal_url", portal.getUrl());

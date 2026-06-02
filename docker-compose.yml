@@ -32,6 +32,9 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       UPLOAD_DIR: /app/data/uploads
       ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-true}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-noreply@expensetracker.app}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
