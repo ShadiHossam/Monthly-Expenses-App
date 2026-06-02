@@ -5,10 +5,13 @@ import com.expensetracker.dto.response.BudgetStatusOut;
 import com.expensetracker.exception.BusinessException;
 import com.expensetracker.exception.EntityNotFoundException;
 import com.expensetracker.model.BudgetAlert;
+import com.expensetracker.model.BudgetBreachNotification;
 import com.expensetracker.model.Category;
 import com.expensetracker.repository.BudgetAlertRepository;
+import com.expensetracker.repository.BudgetBreachNotificationRepository;
 import com.expensetracker.repository.CategoryRepository;
 import com.expensetracker.repository.TransactionRepository;
+import com.expensetracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +30,9 @@ public class BudgetService {
     private final BudgetAlertRepository budgetAlertRepository;
     private final CategoryRepository categoryRepository;
     private final TransactionRepository transactionRepository;
+    private final BudgetBreachNotificationRepository breachNotificationRepository;
+    private final UserRepository userRepository;
+    private final EmailService emailService;
 
     public List<BudgetAlert> list(Long userId) {
         return budgetAlertRepository.findByUserId(userId);
@@ -64,13 +71,16 @@ public class BudgetService {
         budgetAlertRepository.delete(alert);
     }
 
-    public List<BudgetStatusOut> status(Long userId) {
+    public List<BudgetStatusOut> status(Long userId, int year, int month) {
         var cats = categoryRepository.findByUserIdOrderByName(userId)
                 .stream().collect(java.util.stream.Collectors.toMap(Category::getId, c -> c));
 
+        java.time.LocalDate viewedMonth = java.time.LocalDate.of(year, month, 1);
+        java.time.LocalDate breachFrom = viewedMonth.minusMonths(11);
+
         return budgetAlertRepository.findByUserId(userId).stream().map(alert -> {
             BigDecimal spent = transactionRepository
-                    .sumDebitThisMonthByCategoryNative(userId, alert.getCategoryId());
+                    .sumDebitByMonthByCategoryNative(userId, alert.getCategoryId(), year, month);
             if (spent == null) spent = BigDecimal.ZERO;
 
             double pct = alert.getMonthlyLimit().compareTo(BigDecimal.ZERO) > 0
@@ -79,7 +89,25 @@ public class BudgetService {
             String status = pct >= 100 ? "exceeded" : pct >= 80 ? "warning" : "ok";
             Category cat = cats.get(alert.getCategoryId());
 
-            List<Object[]> monthly = transactionRepository.monthlyDebitsByCategory(userId, alert.getCategoryId());
+            // Fire breach email once per category per month
+            if ("exceeded".equals(status) && alert.isEnabled()) {
+                boolean alreadySent = breachNotificationRepository
+                    .existsByUserIdAndCategoryIdAndYearAndMonth(userId, alert.getCategoryId(), year, month);
+                if (!alreadySent) {
+                    breachNotificationRepository.save(BudgetBreachNotification.builder()
+                        .userId(userId).categoryId(alert.getCategoryId()).year(year).month(month).build());
+                    BigDecimal finalSpent = spent;
+                    userRepository.findById(userId).ifPresent(u -> {
+                        if (u.getEmail() != null && !u.getEmail().endsWith("@noemail.local")) {
+                            emailService.sendBudgetAlert(u.getEmail(),
+                                cat != null ? cat.getName() : "category", finalSpent, alert.getMonthlyLimit());
+                        }
+                    });
+                }
+            }
+
+            List<Object[]> monthly = transactionRepository.monthlyDebitsByCategoryInRange(
+                    userId, alert.getCategoryId(), breachFrom, viewedMonth);
             int breachCount = 0;
             String lastBreachMonth = null;
             for (Object[] row : monthly) {

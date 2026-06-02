@@ -134,4 +134,20 @@ public class QaService {
         }
         return Map.of("total_updated", total);
     }
+
+    @Transactional
+    public Map<String, Object> unanswer(Long userId, List<Long> transactionIds) {
+        if (transactionIds == null || transactionIds.isEmpty()) return Map.of("reset", 0);
+        // Reset each transaction to uncategorized
+        int count = 0;
+        for (Long txnId : transactionIds) {
+            transactionRepository.findByIdAndUserId(txnId, userId).ifPresent(txn -> {
+                txn.setCategorized(false);
+                txn.setCategoryId(null);
+                transactionRepository.save(txn);
+            });
+            count++;
+        }
+        return Map.of("reset", count);
+    }
 }

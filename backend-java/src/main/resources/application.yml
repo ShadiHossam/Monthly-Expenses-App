@@ -40,7 +40,11 @@ app:
     origins: ${CORS_ORIGINS:http://localhost:5173}
   upload:
     dir: ${UPLOAD_DIR:/app/data/uploads}
-  allow-registration: ${ALLOW_REGISTRATION:true}
+  allow-registration: ${ALLOW_REGISTRATION:false}
+  app-url: ${APP_URL:http://localhost:3000}
+  resend:
+    api-key: ${RESEND_API_KEY:}
+    from: ${RESEND_FROM:noreply@expensetracker.app}
   stripe:
     secret-key: ${STRIPE_SECRET_KEY:}
     webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
@@ -53,7 +57,7 @@ app:
     openrouter-api-key: ${OPENROUTER_API_KEY:}
     anthropic-api-key: ${ANTHROPIC_API_KEY:}
     max-retries: 2
-    anthropic-ocr-model: ${ANTHROPIC_OCR_MODEL:claude-haiku-4-5-20251001}
+    anthropic-ocr-model: ${ANTHROPIC_OCR_MODEL:claude-sonnet-4-6}
     groq-ocr-model: ${GROQ_OCR_MODEL:meta-llama/llama-4-scout-17b-16e-instruct}
     openrouter-ocr-model: ${OPENROUTER_OCR_MODEL:google/gemini-2.5-flash-preview-05-20}
     anthropic-chat-model: ${ANTHROPIC_CHAT_MODEL:claude-haiku-4-5-20251001}

@@ -46,7 +46,10 @@ public class OcrService {
     }
 
     private static final String EXTRACTION_PROMPT = """
-        You are a bank statement parser. Extract all transactions from this bank statement image.
+        You are a UAE bank statement parser. Extract ALL transactions from this bank statement image.
+        This is likely from a UAE bank (FAB, ADCB, Emirates NBD, Mashreq, DIB, ENBD, RAK Bank, etc.).
+        Currency is AED (Arab Emirates Dirham). Amounts may use commas as thousand separators (e.g. 1,234.56).
+
         Return ONLY a JSON array (no markdown, no explanation) with this exact structure:
         [
           {
@@ -59,11 +62,14 @@ public class OcrService {
           }
         ]
         Rules:
-        - amount must be a positive number
-        - type must be exactly "debit" or "credit"
-        - date must be in YYYY-MM-DD format
+        - amount must be a positive number (strip commas, always positive regardless of type)
+        - type must be exactly "debit" (money out) or "credit" (money in)
+        - Many UAE statements have SEPARATE Debit and Credit columns — a value in the Debit column means type="debit", Credit column means type="credit"
+        - date must be in YYYY-MM-DD format; common formats are DD/MM/YYYY, DD-MM-YYYY, DD MMM YYYY
         - balance_after and ref_number can be null if not available
-        - Include ALL transactions visible in the image
+        - description may be in English or Arabic — include as-is, do not translate
+        - Include EVERY transaction row visible — do not skip any, even if the description is short
+        - Ignore header rows, summary rows, opening/closing balance lines (those are not transactions)
         """;
 
     public List<TransactionDTO> extract(byte[] imageBytes, String mimeType, User user) {
@@ -84,44 +90,51 @@ public class OcrService {
         String base64 = Base64.getEncoder().encodeToString(imageBytes);
         AppProperties.Ai ai = appProperties.getAi();
 
+        // Pick the actual provider we'll call so we can fail fast if no key is configured.
+        String anthropicKey  = resolver.resolveAnthropicKey(user);
+        String groqKey       = resolver.resolveGroqKey(user);
+        String openrouterKey = resolver.resolveOpenrouterKey(user);
+        String resolvedProvider = provider;
+        if (!"anthropic".equals(provider) && !"groq".equals(provider) && !"openrouter".equals(provider)) {
+            if (org.springframework.util.StringUtils.hasText(openrouterKey)) resolvedProvider = "openrouter";
+            else if (org.springframework.util.StringUtils.hasText(groqKey))  resolvedProvider = "groq";
+            else if (org.springframework.util.StringUtils.hasText(anthropicKey)) resolvedProvider = "anthropic";
+            else throw new RuntimeException("No AI provider configured — set GROQ_API_KEY, OPENROUTER_API_KEY, or ANTHROPIC_API_KEY in your environment (or add a key in user AI settings)");
+        }
+        log.info("OCR using provider={} (max-retries={})", resolvedProvider, ai.getMaxRetries());
+
         for (int attempt = 0; attempt <= ai.getMaxRetries(); attempt++) {
             try {
-                String jsonResponse = switch (provider) {
-                    case "anthropic" -> callAnthropic(base64, mimeType,
-                            resolver.resolveAnthropicKey(user), ai.getAnthropicOcrModel());
-                    case "groq" -> callGroq(base64, mimeType,
-                            resolver.resolveGroqKey(user), ai.getGroqOcrModel());
-                    default -> {
-                        String openrouterKey = resolver.resolveOpenrouterKey(user);
-                        if (org.springframework.util.StringUtils.hasText(openrouterKey)) {
-                            yield callOpenRouter(base64, mimeType, openrouterKey, ai.getOpenrouterOcrModel());
-                        } else if (org.springframework.util.StringUtils.hasText(resolver.resolveGroqKey(user))) {
-                            yield callGroq(base64, mimeType, resolver.resolveGroqKey(user), ai.getGroqOcrModel());
-                        } else {
-                            yield callAnthropic(base64, mimeType, resolver.resolveAnthropicKey(user), ai.getAnthropicOcrModel());
-                        }
-                    }
+                String jsonResponse = switch (resolvedProvider) {
+                    case "anthropic"  -> callAnthropic(base64, mimeType, anthropicKey, ai.getAnthropicOcrModel());
+                    case "groq"       -> callGroq(base64, mimeType, groqKey, ai.getGroqOcrModel());
+                    case "openrouter" -> callOpenRouter(base64, mimeType, openrouterKey, ai.getOpenrouterOcrModel());
+                    default -> throw new IllegalStateException("Unreachable provider: " + resolvedProvider);
                 };
-                return parseTransactions(jsonResponse);
+                List<TransactionDTO> parsed = parseTransactions(jsonResponse);
+                log.info("OCR extracted {} transactions via {}", parsed.size(), resolvedProvider);
+                return parsed;
             } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
-                log.warn("OCR attempt {} failed: {} — body: {}", attempt + 1, e.getMessage(), e.getResponseBodyAsString());
+                log.warn("OCR attempt {} failed ({}): {} — body: {}",
+                        attempt + 1, resolvedProvider, e.getMessage(), e.getResponseBodyAsString());
                 if (attempt == ai.getMaxRetries()) {
-                    throw new RuntimeException("Failed to extract transactions after retries", e);
+                    throw new RuntimeException("OCR via " + resolvedProvider + " failed: " + e.getMessage(), e);
                 }
             } catch (Exception e) {
-                log.warn("OCR attempt {} failed: {}", attempt + 1, e.getMessage());
+                log.warn("OCR attempt {} failed ({}): {}", attempt + 1, resolvedProvider, e.getMessage());
                 if (attempt == ai.getMaxRetries()) {
-                    throw new RuntimeException("Failed to extract transactions after retries", e);
+                    throw new RuntimeException("OCR via " + resolvedProvider + " failed: " + e.getMessage(), e);
                 }
             }
         }
-        return List.of();
+        // Defensive — shouldn't reach here because the last attempt throws.
+        throw new RuntimeException("OCR via " + resolvedProvider + " failed after " + (ai.getMaxRetries() + 1) + " attempts");
     }
 
     private String callAnthropic(String base64, String mimeType, String apiKey, String model) {
         Map<String, Object> body = Map.of(
             "model", model,
-            "max_tokens", 4096,
+            "max_tokens", 8192,
             "messages", List.of(Map.of(
                 "role", "user",
                 "content", List.of(
@@ -157,7 +170,7 @@ public class OcrService {
         String dataUri = "data:" + mimeType + ";base64," + base64;
         Map<String, Object> body = Map.of(
             "model", model,
-            "max_tokens", 4096,
+            "max_tokens", 8192,
             "messages", List.of(Map.of(
                 "role", "user",
                 "content", List.of(
@@ -183,7 +196,7 @@ public class OcrService {
         String dataUri = "data:" + mimeType + ";base64," + base64;
         Map<String, Object> body = Map.of(
             "model", model,
-            "max_tokens", 4096,
+            "max_tokens", 8192,
             "messages", List.of(Map.of(
                 "role", "user",
                 "content", List.of(
@@ -217,12 +230,17 @@ public class OcrService {
     private List<TransactionDTO> parseTransactions(String jsonText) {
         try {
             String cleaned = jsonText.trim();
+            // strip markdown fences (handles ```json, ```JSON, plain ```)
             if (cleaned.startsWith("```")) {
-                cleaned = cleaned.replaceAll("```json\\n?|```", "").trim();
+                cleaned = cleaned.replaceAll("(?s)```[a-zA-Z]*\\n?", "").replace("```", "").trim();
             }
+            // extract bare JSON array — skip any preamble or postamble text the AI added
+            int start = cleaned.indexOf('[');
+            int end   = cleaned.lastIndexOf(']');
+            if (start >= 0 && end > start) cleaned = cleaned.substring(start, end + 1);
             return objectMapper.readValue(cleaned, new TypeReference<>() {});
         } catch (Exception e) {
-            log.error("Failed to parse transaction JSON: {}", jsonText);
+            log.error("Failed to parse transaction JSON from AI response: {}", jsonText);
             throw new RuntimeException("Could not parse extracted transactions", e);
         }
     }
@@ -236,7 +254,21 @@ public class OcrService {
             String ref_number
     ) {
         public LocalDate parsedDate() {
-            return LocalDate.parse(date);
+            if (date == null || date.isBlank())
+                throw new java.time.format.DateTimeParseException("blank date", "", 0);
+            List<java.time.format.DateTimeFormatter> fmts = List.of(
+                java.time.format.DateTimeFormatter.ISO_LOCAL_DATE,                                          // 2026-05-29
+                java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"),                                 // 29/05/2026
+                java.time.format.DateTimeFormatter.ofPattern("d/M/yyyy"),                                   // 9/5/2026
+                java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"),                                 // 29-05-2026
+                java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy", java.util.Locale.ENGLISH),     // 29 May 2026
+                java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy",  java.util.Locale.ENGLISH),     //  9 May 2026
+                java.time.format.DateTimeFormatter.ofPattern("MM/dd/yyyy")                                  // 05/29/2026
+            );
+            for (var fmt : fmts) {
+                try { return LocalDate.parse(date, fmt); } catch (Exception ignored) {}
+            }
+            throw new java.time.format.DateTimeParseException("Cannot parse date: " + date, date, 0);
         }
     }
 }

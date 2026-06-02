@@ -9,6 +9,15 @@ function MSIcon({ name, className }: { name: string; className?: string }) {
 
 const COLORS = ["#10b981", "#ef4444", "#f59e0b", "#3b82f6", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316", "#6b7280"];
 
+const PRESET_ICONS = [
+  "shopping_cart", "restaurant", "directions_car", "bolt", "favorite",
+  "movie", "shopping_bag", "south", "sync_alt", "autorenew", "label",
+  "home", "flight", "local_hospital", "school", "fitness_center",
+  "coffee", "local_gas_station", "phone", "wifi", "tv", "savings",
+  "credit_card", "receipt_long", "attach_money", "currency_exchange",
+  "bar_chart", "beach_access", "pets", "celebration", "build", "more_horiz",
+];
+
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [rules, setRules] = useState<any[]>([]);
@@ -16,6 +25,7 @@ export default function CategoriesPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState("");
   const [newColor, setNewColor] = useState("#10b981");
+  const [newIcon, setNewIcon] = useState("label");
   const [showRuleForm, setShowRuleForm] = useState(false);
   const [rulePattern, setRulePattern] = useState("");
   const [ruleCatId, setRuleCatId] = useState<number | "">("");
@@ -34,7 +44,7 @@ export default function CategoriesPage() {
 
   async function addCategory() {
     if (!newName.trim()) return;
-    await api.createCategory(newName.trim(), newColor, "tag");
+    await api.createCategory(newName.trim(), newColor, newIcon);
     setNewName(""); setShowAdd(false); setAiMerchantInput(""); setAiSuggestionReason("");
     load();
   }
@@ -175,6 +185,25 @@ export default function CategoriesPage() {
             onChange={e => setNewName(e.target.value)}
           />
 
+          {/* Icon picker */}
+          <div className="mb-4">
+            <p className="text-xs font-medium text-ft-on-surface-variant dark:text-ve-on-surface-variant mb-2">Icon</p>
+            <div className="grid grid-cols-8 gap-1.5 p-3 border border-ft-outline-variant dark:border-ve-outline rounded-xl bg-ft-surface-low dark:bg-ve-surface-high max-h-28 overflow-y-auto">
+              {PRESET_ICONS.map(iconName => (
+                <button key={iconName} type="button" onClick={() => setNewIcon(iconName)} title={iconName}
+                  className={cn(
+                    "w-8 h-8 flex items-center justify-center rounded-lg transition-colors",
+                    newIcon === iconName
+                      ? "bg-ft-primary dark:bg-ve-primary text-white"
+                      : "hover:bg-ft-surface dark:hover:bg-ve-surface text-ft-on-surface-variant dark:text-ve-on-surface-variant"
+                  )}>
+                  <span className="material-symbols-outlined text-base">{iconName}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Color picker */}
           <div className="flex gap-2 flex-wrap mb-4">
             {COLORS.map(c => (
               <button key={c} onClick={() => setNewColor(c)}
@@ -213,7 +242,7 @@ export default function CategoriesPage() {
             )}>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                 style={{ backgroundColor: (cat.color || "#94a3b8") + "20" }}>
-                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: cat.color || "#94a3b8" }} />
+                <MSIcon name={cat.icon || "label"} className="text-[18px] leading-none" style={{ color: cat.color || "#94a3b8" }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface">{cat.name}</p>

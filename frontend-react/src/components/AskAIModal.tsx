@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 
@@ -21,6 +22,7 @@ export default function AskAIModal({ open, onClose, fromDate, toDate }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -44,7 +46,13 @@ export default function AskAIModal({ open, onClose, fromDate, toDate }: Props) {
       const res = await api.askAI(q, fromDate, toDate);
       setMessages(prev => [...prev, { role: "ai", text: (res as any).data?.answer ?? (res as any).answer ?? "No response" }]);
     } catch (err: any) {
-      setMessages(prev => [...prev, { role: "ai", text: "Something went wrong. Please try again." }]);
+      const msg = (err?.message ?? "").toLowerCase();
+      if (msg.includes("403") || msg.includes("forbidden") || msg.includes("paid") ||
+          msg.includes("plan") || msg.includes("upgrade")) {
+        setUpgradeRequired(true);
+      } else {
+        setMessages(prev => [...prev, { role: "ai", text: "Something went wrong. Please try again." }]);
+      }
     } finally {
       setLoading(false);
     }
@@ -88,7 +96,18 @@ export default function AskAIModal({ open, onClose, fromDate, toDate }: Props) {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-          {messages.length === 0 && (
+          {upgradeRequired && (
+            <div className="flex flex-col items-center gap-3 py-10 text-center px-4">
+              <span className="text-4xl">⭐</span>
+              <p className="font-semibold text-slate-800">AI chat requires Solo or higher</p>
+              <p className="text-sm text-slate-500">Upgrade your plan to chat with AI about your spending.</p>
+              <Link to="/billing" onClick={onClose}
+                className="mt-2 px-5 py-2 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition-colors">
+                View plans →
+              </Link>
+            </div>
+          )}
+          {!upgradeRequired && messages.length === 0 && (
             <div className="text-center py-6">
               <p className="text-sm text-slate-400 mb-4">Try one of these to get started</p>
               <div className="flex flex-wrap gap-2 justify-center">

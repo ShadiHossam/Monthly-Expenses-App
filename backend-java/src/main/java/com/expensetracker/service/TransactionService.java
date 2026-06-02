@@ -140,6 +140,13 @@ public class TransactionService {
                 .build();
     }
 
+    @Transactional
+    public void deleteById(Long transactionId, Long userId) {
+        Transaction txn = transactionRepository.findByIdAndUserId(transactionId, userId)
+            .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+        transactionRepository.delete(txn);
+    }
+
     private String esc(String s) {
         return s != null ? s.replace("\"", "\"\"") : "";
     }

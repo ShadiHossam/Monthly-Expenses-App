@@ -16,6 +16,8 @@ public class AppProperties {
     private Upload upload = new Upload();
     private Stripe stripe = new Stripe();
     private Ai ai = new Ai();
+    private Resend resend = new Resend();
+    private String appUrl = "http://localhost:3000";
     private boolean allowRegistration = true;
 
     @Data
@@ -42,6 +44,12 @@ public class AppProperties {
         private String pricePro = "";
         private String priceBusiness = "";
         private String priceOverage = "";
+    }
+
+    @Data
+    public static class Resend {
+        private String apiKey = "";
+        private String from = "noreply@expensetracker.app";
     }
 
     @Data

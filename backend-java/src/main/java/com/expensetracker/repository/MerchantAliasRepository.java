@@ -12,4 +12,5 @@ public interface MerchantAliasRepository extends JpaRepository<MerchantAlias, Lo
     List<MerchantAlias> findByUserId(Long userId);
     Optional<MerchantAlias> findByIdAndUserId(Long id, Long userId);
     Optional<MerchantAlias> findByUserIdAndRawName(Long userId, String rawName);
+    void deleteByUserId(Long userId);
 }

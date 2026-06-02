@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, RefObject } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 import { cn, formatAED, formatDate } from "../lib/utils";
@@ -17,6 +17,19 @@ export default function MerchantsPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [txns, setTxns] = useState<Record<string, any[]>>({});
   const [txnLoading, setTxnLoading] = useState<string | null>(null);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [merchantEdit, setMerchantEdit] = useState<{ name: string; applyRule: boolean } | null>(null);
+  const merchantEditRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { api.listCategories().then(c => setCategories(Array.isArray(c) ? c : [])); }, []);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (merchantEditRef.current && !merchantEditRef.current.contains(e.target as Node)) setMerchantEdit(null);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   useEffect(() => {
     Promise.all([api.listMerchants(), api.getFrequent(), api.getMerchantRanking()])
@@ -27,6 +40,11 @@ export default function MerchantsPage() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  async function handleMerchantCategorySet(name: string, categoryId: number) {
+    await api.answerQA(name, categoryId, merchantEdit?.applyRule ?? false);
+    setMerchantEdit(null);
+  }
 
   async function toggleMerchant(name: string) {
     if (expanded === name) { setExpanded(null); return; }
@@ -167,30 +185,37 @@ export default function MerchantsPage() {
                 <MSIcon name="star" className="text-base text-amber-500" />
                 Frequent Places
               </p>
-              <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl overflow-hidden">
+              <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl">
                 {filteredFrequent.map((p: any, i: number) => (
                   <div key={p.merchant_name}>
-                    <button
-                      onClick={() => toggleMerchant(p.merchant_name)}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors",
-                        i < filteredFrequent.length - 1 && "border-b border-ft-outline-variant dark:border-ve-outline"
-                      )}
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-ft-primary/10 dark:bg-ve-primary/10 flex items-center justify-center shrink-0">
+                    <div className={cn(
+                      "flex items-center gap-3 px-5 py-4",
+                      i < filteredFrequent.length - 1 && "border-b border-ft-outline-variant dark:border-ve-outline"
+                    )}>
+                      <button onClick={() => toggleMerchant(p.merchant_name)} className="w-10 h-10 rounded-xl bg-ft-primary/10 dark:bg-ve-primary/10 flex items-center justify-center shrink-0 hover:opacity-80 transition-opacity">
                         <span className="text-xs font-bold text-ft-primary dark:text-ve-primary">{p.visit_count}x</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
+                      </button>
+                      <button onClick={() => toggleMerchant(p.merchant_name)} className="flex-1 min-w-0 text-left">
                         <p className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface truncate">{p.merchant_name}</p>
                         <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">
                           {p.frequency_reason} · avg {formatAED(p.avg_spend)}
                         </p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
+                      </button>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <MerchantCategoryButton
+                          merchantName={p.merchant_name}
+                          merchantEdit={merchantEdit}
+                          setMerchantEdit={setMerchantEdit}
+                          merchantEditRef={merchantEditRef}
+                          categories={categories}
+                          onSet={handleMerchantCategorySet}
+                        />
                         <span className="text-sm font-bold text-ft-on-surface dark:text-ve-on-surface tabular-nums">{formatAED(p.total_spent)}</span>
-                        <MSIcon name={expanded === p.merchant_name ? "expand_less" : "expand_more"} className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
+                        <button onClick={() => toggleMerchant(p.merchant_name)} className="p-0.5">
+                          <MSIcon name={expanded === p.merchant_name ? "expand_less" : "expand_more"} className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
+                        </button>
                       </div>
-                    </button>
+                    </div>
                     {expanded === p.merchant_name && (
                       <TransactionList name={p.merchant_name} txns={txns[p.merchant_name]} loading={txnLoading === p.merchant_name} />
                     )}
@@ -207,7 +232,7 @@ export default function MerchantsPage() {
                 <MSIcon name="emoji_events" className="text-base text-amber-500" />
                 Top Merchants by Spend
               </p>
-              <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl overflow-hidden">
+              <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl">
                 {ranking.slice(0, 10).map((m: any, i: number) => (
                   <div key={i} className={cn(
                     "flex items-center gap-3 px-5 py-4",
@@ -228,7 +253,17 @@ export default function MerchantsPage() {
                         {m.visit_count} visit{m.visit_count !== 1 ? "s" : ""} · avg {formatAED(m.avg_spend)}
                       </p>
                     </div>
-                    <span className="text-sm font-bold text-ft-on-surface dark:text-ve-on-surface tabular-nums shrink-0">{formatAED(m.total_spend)}</span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <MerchantCategoryButton
+                        merchantName={m.merchant_name}
+                        merchantEdit={merchantEdit}
+                        setMerchantEdit={setMerchantEdit}
+                        merchantEditRef={merchantEditRef}
+                        categories={categories}
+                        onSet={handleMerchantCategorySet}
+                      />
+                      <span className="text-sm font-bold text-ft-on-surface dark:text-ve-on-surface tabular-nums">{formatAED(m.total_spend)}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -241,32 +276,39 @@ export default function MerchantsPage() {
               All Merchants
             </p>
             {filteredMerchants.length > 0 ? (
-              <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl overflow-hidden">
+              <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl">
                 {filteredMerchants.map((m: any, i: number) => (
                   <div key={i}>
-                    <button
-                      onClick={() => toggleMerchant(m.merchant_name)}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors",
-                        i < filteredMerchants.length - 1 && "border-b border-ft-outline-variant dark:border-ve-outline"
-                      )}
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-ft-surface-low dark:bg-ve-surface-high flex items-center justify-center shrink-0">
+                    <div className={cn(
+                      "flex items-center gap-3 px-5 py-4",
+                      i < filteredMerchants.length - 1 && "border-b border-ft-outline-variant dark:border-ve-outline"
+                    )}>
+                      <button onClick={() => toggleMerchant(m.merchant_name)} className="w-10 h-10 rounded-xl bg-ft-surface-low dark:bg-ve-surface-high flex items-center justify-center shrink-0 hover:opacity-80 transition-opacity">
                         <span className="text-sm font-bold text-ft-on-surface-variant dark:text-ve-on-surface-variant">
                           {(m.merchant_name || "?")[0].toUpperCase()}
                         </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
+                      </button>
+                      <button onClick={() => toggleMerchant(m.merchant_name)} className="flex-1 min-w-0 text-left">
                         <p className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface truncate">{m.merchant_name || "Unknown"}</p>
                         <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">
                           {m.visit_count} visit{m.visit_count !== 1 ? "s" : ""}
                         </p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
+                      </button>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <MerchantCategoryButton
+                          merchantName={m.merchant_name}
+                          merchantEdit={merchantEdit}
+                          setMerchantEdit={setMerchantEdit}
+                          merchantEditRef={merchantEditRef}
+                          categories={categories}
+                          onSet={handleMerchantCategorySet}
+                        />
                         <span className="text-sm font-bold text-ft-on-surface dark:text-ve-on-surface tabular-nums">{formatAED(m.total_spend)}</span>
-                        <MSIcon name={expanded === m.merchant_name ? "expand_less" : "expand_more"} className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
+                        <button onClick={() => toggleMerchant(m.merchant_name)} className="p-0.5">
+                          <MSIcon name={expanded === m.merchant_name ? "expand_less" : "expand_more"} className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
+                        </button>
                       </div>
-                    </button>
+                    </div>
                     {expanded === m.merchant_name && (
                       <TransactionList name={m.merchant_name} txns={txns[m.merchant_name]} loading={txnLoading === m.merchant_name} />
                     )}
@@ -283,6 +325,59 @@ export default function MerchantsPage() {
             )}
           </div>
 
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MerchantCategoryButton({ merchantName, merchantEdit, setMerchantEdit, merchantEditRef, categories, onSet }: {
+  merchantName: string;
+  merchantEdit: { name: string; applyRule: boolean } | null;
+  setMerchantEdit: (v: { name: string; applyRule: boolean } | null) => void;
+  merchantEditRef: RefObject<HTMLDivElement>;
+  categories: any[];
+  onSet: (name: string, categoryId: number) => void;
+}) {
+  const isOpen = merchantEdit?.name === merchantName;
+  return (
+    <div className="relative" ref={isOpen ? merchantEditRef : null}>
+      <button
+        onClick={() => setMerchantEdit(isOpen ? null : { name: merchantName, applyRule: false })}
+        title="Set category"
+        className={cn(
+          "p-1.5 rounded-lg transition-colors",
+          isOpen
+            ? "bg-ft-primary/10 dark:bg-ve-primary/10 text-ft-primary dark:text-ve-primary"
+            : "text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:bg-ft-surface-low dark:hover:bg-ve-surface-high"
+        )}
+      >
+        <MSIcon name="label" className="text-base" />
+      </button>
+      {isOpen && (
+        <div className="absolute top-full right-0 mt-1 z-50 bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-xl shadow-xl overflow-hidden min-w-[190px]">
+          <label className="flex items-center gap-2.5 px-3 py-2.5 border-b border-ft-outline-variant dark:border-ve-outline cursor-pointer hover:bg-ft-surface-low dark:hover:bg-ve-surface-high">
+            <input
+              type="checkbox"
+              checked={merchantEdit!.applyRule}
+              onChange={e => setMerchantEdit({ name: merchantName, applyRule: e.target.checked })}
+              className="w-3.5 h-3.5 accent-ft-primary dark:accent-ve-primary"
+            />
+            <span className="text-xs text-ft-on-surface dark:text-ve-on-surface font-medium">Create auto-rule</span>
+            <MSIcon name="auto_fix_high" className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant ml-auto" />
+          </label>
+          <div className="max-h-52 overflow-y-auto">
+            {categories.map((c: any) => (
+              <button
+                key={c.id}
+                onClick={() => onSet(merchantName, c.id)}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-ft-surface-low dark:hover:bg-ve-surface-high"
+              >
+                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
+                <span className="text-ft-on-surface dark:text-ve-on-surface">{c.name}</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>

@@ -1,145 +1,51 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { api, fetchSSE } from "../lib/api";
+import { api } from "../lib/api";
 import { cn, formatAED } from "../lib/utils";
-import type { BillingUsage, Category, QAPending } from "../types";
+import type { BillingUsage } from "../types";
 import AddTransactionModal from "../components/AddTransactionModal";
-
-const API_BASE = import.meta.env.VITE_API_URL || "/api/v1";
-
-const STEPS = ["preprocessing", "ocr", "parsing", "verifying", "categorizing"];
-
-type FileStatus = "queued" | "uploading" | "processing" | "done" | "error";
-
-type OveragePending = {
-  file: File;
-  entryId: string;
-  overage_pages: number;
-  overage_cost_usd: number;
-};
-
-type FileEntry = {
-  file: File;
-  id: string;
-  status: FileStatus;
-  progress?: { step: string; pct: number; message: string };
-  error?: string;
-  statementId?: number;
-  uncategorizedCount?: number;
-};
-
-type QAItem = QAPending & {
-  suggested_category_name?: string;
-  suggested_new_category_obj?: { name: string; color: string; icon: string } | null;
-};
+import { useUploadContext, STEPS } from "../context/UploadContext";
+import type { FileEntry, FileStatus, QAItem } from "../context/UploadContext";
 
 function MSIcon({ name, className }: { name: string; className?: string }) {
   return <span className={cn("material-symbols-outlined select-none", className)}>{name}</span>;
 }
 
 export default function UploadPage({ onClose }: { onClose?: () => void } = {}) { // eslint-disable-line
-  const [entries, setEntries] = useState<FileEntry[]>([]);
+  const {
+    entries, addFiles, updateEntry, processFile, reset,
+    qaItems, setQaItems, qaIndex, setQaIndex,
+    allDone, setAllDone,
+    overlapWarnings,
+    overagePending, setOveragePending,
+    categories, setCategories,
+  } = useUploadContext();
+
   const [dragging, setDragging] = useState(false);
-  const [qaItems, setQaItems] = useState<QAItem[]>([]);
-  const [qaIndex, setQaIndex] = useState(0);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCat, setSelectedCat] = useState<number | null>(null);
   const [applyRule, setApplyRule] = useState(true);
-  const [allDone, setAllDone] = useState(false);
   const [creatingNewCat, setCreatingNewCat] = useState(false);
   const [showNewCatForm, setShowNewCatForm] = useState(false);
   const [newCatName, setNewCatName] = useState("");
   const [newCatColor, setNewCatColor] = useState("#6366f1");
   const [usage, setUsage] = useState<BillingUsage | null>(null);
-  const [overagePending, setOveragePending] = useState<OveragePending | null>(null);
-  const [overlapWarnings, setOverlapWarnings] = useState<Array<{ file: string; period: string }>>([]);
   const [showAddManual, setShowAddManual] = useState(false);
   const [manualSuccessMsg, setManualSuccessMsg] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const processingRef = useRef(false);
-  const abortControllersRef = useRef<AbortController[]>([]);
 
   useEffect(() => { api.getBillingUsage().then(setUsage).catch(() => {}); }, []);
-  useEffect(() => { return () => { abortControllersRef.current.forEach(ac => ac.abort()); }; }, []);
+  useEffect(() => { api.listCategories().then(setCategories).catch(() => {}); }, [setCategories]);
 
-  const updateEntry = (id: string, patch: Partial<FileEntry>) =>
-    setEntries(prev => prev.map(e => e.id === id ? { ...e, ...patch } : e));
-
-  const processFile = useCallback(async (entry: FileEntry, confirmOverage = false) => {
-    updateEntry(entry.id, { status: "uploading", progress: { step: "preprocessing", pct: 5, message: "Uploading…" } });
-    try {
-      const res = await api.uploadStatement(entry.file, confirmOverage);
-      const statementIds: number[] = res.data.statement_ids ?? (res.data.statement_id ? [res.data.statement_id] : []);
-      const pageCount = res.data.page_count ?? 1;
-      const primaryId = statementIds[0];
-      updateEntry(entry.id, { statementId: primaryId, status: "processing", progress: { step: "preprocessing", pct: 10, message: pageCount > 1 ? `Processing ${pageCount} pages…` : "Processing…" } });
-
-      const waitPage = (sid: number): Promise<number> => new Promise((resolve, reject) => {
-        const ac = new AbortController();
-        abortControllersRef.current.push(ac);
-        (async () => {
-          try {
-            for await (const { event, data } of fetchSSE(`/statements/${sid}/progress`, ac.signal)) {
-              const d = data as Record<string, unknown>;
-              if (event === "progress" && sid === primaryId) {
-                updateEntry(entry.id, { progress: { step: (d.step as string) ?? "", pct: (d.percentage as number) ?? 0, message: (d.message as string) ?? "" } });
-              } else if (event === "complete") {
-                if (d.overlap_warning) setOverlapWarnings(prev => [...prev, { file: entry.file.name, period: (d.overlap_warning as { period: string }).period }]);
-                resolve((d.transaction_count as number) ?? 0); return;
-              } else if (event === "error") {
-                reject(new Error((d.message as string) ?? "Processing failed")); return;
-              }
-            }
-            resolve(0);
-          } catch (err) {
-            if ((err as Error).name === "AbortError") resolve(0); else reject(err);
-          } finally {
-            abortControllersRef.current = abortControllersRef.current.filter(a => a !== ac);
-          }
-        })();
-      });
-
-      const counts = await Promise.all(statementIds.map(waitPage));
-      updateEntry(entry.id, { status: "done", progress: { step: "done", pct: 100, message: "Done!" }, uncategorizedCount: counts.reduce((a, b) => a + b, 0) });
-    } catch (err: unknown) {
-      const apiErr = err as Error & { status?: number; detail?: { overage_confirmation_required?: boolean; overage_pages?: number; overage_cost_usd?: number } };
-      if (apiErr.status === 402 && apiErr.detail?.overage_confirmation_required) {
-        updateEntry(entry.id, { status: "queued", progress: undefined });
-        setOveragePending({ file: entry.file, entryId: entry.id, overage_pages: apiErr.detail.overage_pages ?? 0, overage_cost_usd: apiErr.detail.overage_cost_usd ?? 0 });
-        return;
-      }
-      updateEntry(entry.id, { status: "error", error: apiErr.status === 402 ? "Page quota exceeded — upgrade your plan to continue." : apiErr.message || "Upload failed" });
+  // Sync selectedCat when qaIndex changes
+  useEffect(() => {
+    if (qaItems.length > 0 && qaIndex < qaItems.length) {
+      setSelectedCat(qaItems[qaIndex].suggested_category_id ?? null);
     }
-    api.getBillingUsage().then(setUsage).catch(() => {});
-  }, []);
+  }, [qaIndex, qaItems]);
 
-  const runQueue = useCallback(async (queue: FileEntry[]) => {
-    if (processingRef.current) return;
-    processingRef.current = true;
-    for (const entry of queue) await processFile(entry).catch(() => {});
-    processingRef.current = false;
-    setEntries(prev => {
-      const doneEntries = prev.filter(e => e.status === "done");
-      if (doneEntries.length === 0) return prev;
-      const successIds = doneEntries.filter(e => (e.uncategorizedCount ?? 0) > 0).map(e => e.statementId!);
-      if (successIds.length === 0) { setAllDone(true); return prev; }
-      Promise.all([Promise.all(successIds.map(sid => api.getQAPending(sid))), api.listCategories()]).then(([qaResults, cats]) => {
-        const merged = qaResults.flat().filter(Boolean);
-        const seen = new Set<string>();
-        const unique = merged.filter((q): q is QAPending => { if (seen.has(q.merchant_name)) return false; seen.add(q.merchant_name); return true; });
-        setCategories(cats);
-        if (unique.length > 0) { setQaItems(unique); setQaIndex(0); setSelectedCat(unique[0].suggested_category_id ?? null); } else { setAllDone(true); }
-      });
-      return prev;
-    });
-  }, [processFile]);
-
-  const addFiles = useCallback((files: File[]) => {
-    const images = files.filter(f => f.type.startsWith("image/") || f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf"));
-    if (!images.length) return;
-    const newEntries: FileEntry[] = images.map(f => ({ file: f, id: `${f.name}-${Date.now()}-${Math.random()}`, status: "queued" }));
-    setEntries(prev => { const updated = [...prev, ...newEntries]; if (!processingRef.current) setTimeout(() => runQueue(newEntries), 0); return updated; });
-  }, [runQueue]);
+  const handleDrop = useCallback((files: File[]) => {
+    addFiles(files);
+  }, [addFiles]);
 
   async function handleQAAnswer() {
     if (!selectedCat) return;
@@ -147,7 +53,7 @@ export default function UploadPage({ onClose }: { onClose?: () => void } = {}) {
     await api.answerQA(item.merchant_name, selectedCat, applyRule, item.transaction_ids);
     const next = qaIndex + 1;
     setShowNewCatForm(false); setNewCatName("");
-    if (next >= qaItems.length) { setAllDone(true); } else { setQaIndex(next); setSelectedCat(qaItems[next].suggested_category_id ?? null); }
+    if (next >= qaItems.length) { setAllDone(true); } else { setQaIndex(next); }
   }
 
   async function handleAddAndUseNewCategory(suggestion: { name: string; color: string; icon: string }) {
@@ -172,12 +78,31 @@ export default function UploadPage({ onClose }: { onClose?: () => void } = {}) {
     await api.skipQA(item.merchant_name, item.transaction_ids);
     const next = qaIndex + 1;
     setShowNewCatForm(false); setNewCatName("");
-    if (next >= qaItems.length) { setAllDone(true); } else { setQaIndex(next); setSelectedCat(qaItems[next].suggested_category_id ?? null); }
+    if (next >= qaItems.length) { setAllDone(true); } else { setQaIndex(next); }
   }
 
-  function reset() {
-    abortControllersRef.current.forEach(ac => ac.abort()); abortControllersRef.current = [];
-    setEntries([]); setQaItems([]); setQaIndex(0); setCategories([]); setSelectedCat(null); setAllDone(false); setOverlapWarnings([]); processingRef.current = false;
+  async function handleSkipAll() {
+    const remaining = qaItems.slice(qaIndex);
+    await Promise.all(remaining.map(item => api.skipQA(item.merchant_name, item.transaction_ids)));
+    setAllDone(true);
+  }
+
+  async function handleAutoAssignAI() {
+    const remaining = qaItems.slice(qaIndex);
+    const withSuggestion = remaining.filter(item => item.suggested_category_id);
+    const withoutSuggestion = remaining.filter(item => !item.suggested_category_id);
+    const promises: Promise<unknown>[] = [];
+    if (withSuggestion.length > 0) {
+      promises.push(api.answerBatchQA(withSuggestion.map(item => ({
+        merchant_name: item.merchant_name,
+        category_id: item.suggested_category_id!,
+        apply_rule: true,
+        transaction_ids: item.transaction_ids,
+      }))));
+    }
+    promises.push(...withoutSuggestion.map(item => api.skipQA(item.merchant_name, item.transaction_ids)));
+    await Promise.all(promises);
+    setAllDone(true);
   }
 
   // ── All done screen ──
@@ -190,18 +115,22 @@ export default function UploadPage({ onClose }: { onClose?: () => void } = {}) {
         <h2 className="text-2xl font-bold text-ft-on-surface dark:text-ve-on-surface mb-2">
           {entries.filter(e => e.status === "done").length === 1 ? "Statement processed!" : `${entries.filter(e => e.status === "done").length} statements processed!`}
         </h2>
-        <p className="text-ft-on-surface-variant dark:text-ve-on-surface-variant mb-8 text-center">Your transactions are ready to explore.</p>
+        <p className="text-ft-on-surface-variant dark:text-ve-on-surface-variant mb-8 text-center">
+          {entries.filter(e => e.status === "done").reduce((s, e) => s + (e.uncategorizedCount ?? 0), 0) === 0
+            ? "All transactions already exist — no new data was imported."
+            : "Your transactions are ready to explore."}
+        </p>
         <div className="flex gap-3">
           <button onClick={reset} className="px-6 py-2.5 border border-ft-outline-variant dark:border-ve-outline rounded-xl text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors">
             Upload more
           </button>
           {onClose ? (
             <button onClick={onClose} className="px-6 py-2.5 bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity">
-              Done
+              View Dashboard
             </button>
           ) : (
-            <Link to="/dashboard" className="px-6 py-2.5 bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity">
-              View dashboard
+            <Link to="/" className="px-6 py-2.5 bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity">
+              View Dashboard
             </Link>
           )}
         </div>
@@ -218,7 +147,13 @@ export default function UploadPage({ onClose }: { onClose?: () => void } = {}) {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             {qaIndex > 0 && (
-              <button onClick={() => { setShowNewCatForm(false); setNewCatName(""); setQaIndex(qaIndex - 1); setSelectedCat(qaItems[qaIndex - 1].suggested_category_id ?? null); }}
+              <button onClick={async () => {
+                const prevItem = qaItems[qaIndex - 1];
+                if (prevItem?.transaction_ids?.length) {
+                  await api.unanswerQA(prevItem.transaction_ids).catch(() => {});
+                }
+                setShowNewCatForm(false); setNewCatName(""); setQaIndex(qaIndex - 1);
+              }}
                 className="w-9 h-9 flex items-center justify-center rounded-xl border border-ft-outline-variant dark:border-ve-outline text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors">
                 <MSIcon name="chevron_left" className="text-xl" />
               </button>
@@ -228,12 +163,22 @@ export default function UploadPage({ onClose }: { onClose?: () => void } = {}) {
               <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">{qaIndex + 1} of {qaItems.length}</p>
             </div>
           </div>
-          <div className="flex gap-1">
-            {qaItems.map((_, i) => (
-              <div key={i} className={cn("w-2 h-2 rounded-full transition-colors",
-                i === qaIndex ? "bg-ft-primary dark:bg-ve-primary" : i < qaIndex ? "bg-emerald-200 dark:bg-ve-outline" : "bg-ft-outline-variant dark:bg-ve-outline"
-              )} />
-            ))}
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1">
+              {qaItems.map((_, i) => (
+                <div key={i} className={cn("w-2 h-2 rounded-full transition-colors",
+                  i === qaIndex ? "bg-ft-primary dark:bg-ve-primary" : i < qaIndex ? "bg-emerald-200 dark:bg-ve-outline" : "bg-ft-outline-variant dark:bg-ve-outline"
+                )} />
+              ))}
+            </div>
+            <button onClick={handleAutoAssignAI}
+              className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background hover:opacity-90 transition-opacity whitespace-nowrap">
+              AI assign all
+            </button>
+            <button onClick={handleSkipAll}
+              className="text-xs font-semibold px-2.5 py-1 rounded-lg border border-ft-outline-variant dark:border-ve-outline text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors whitespace-nowrap">
+              Skip all
+            </button>
           </div>
         </div>
 
@@ -411,7 +356,7 @@ export default function UploadPage({ onClose }: { onClose?: () => void } = {}) {
         onDragEnter={() => !quotaExhausted && setDragging(true)}
         onDragLeave={() => setDragging(false)}
         onDragOver={e => e.preventDefault()}
-        onDrop={e => { e.preventDefault(); if (!quotaExhausted) { setDragging(false); addFiles(Array.from(e.dataTransfer.files)); } }}
+        onDrop={e => { e.preventDefault(); if (!quotaExhausted) { setDragging(false); handleDrop(Array.from(e.dataTransfer.files)); } }}
         onClick={() => !quotaExhausted && inputRef.current?.click()}
         className={cn(
           "border-2 border-dashed rounded-2xl text-center transition-all mb-5",
@@ -422,7 +367,7 @@ export default function UploadPage({ onClose }: { onClose?: () => void } = {}) {
         )}
       >
         <input ref={inputRef} type="file" accept="image/*,application/pdf" multiple className="hidden" disabled={!!quotaExhausted}
-          onChange={e => { addFiles(Array.from(e.target.files ?? [])); e.target.value = ""; }} />
+          onChange={e => { handleDrop(Array.from(e.target.files ?? [])); e.target.value = ""; }} />
         {hasEntries ? (
           <div className="flex items-center justify-center gap-2 px-4">
             <MSIcon name="add_circle" className="text-2xl text-ft-primary dark:text-ve-primary" />

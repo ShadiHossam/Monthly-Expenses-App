@@ -27,6 +27,9 @@ export default function RecurringPage() {
   const [items, setItems] = useState<RecurringItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [manualRules, setManualRules] = useState<any[]>([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newRule, setNewRule] = useState({ label: "", merchantPattern: "", expectedAmount: "", frequencyDays: "30", nextExpectedDate: "" });
 
   useEffect(() => {
     api.getRecurring()
@@ -36,7 +39,27 @@ export default function RecurringPage() {
       })
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
+    api.listRecurringRules().then(setManualRules).catch(() => {});
   }, []);
+
+  async function handleAddRule(e: React.FormEvent) {
+    e.preventDefault();
+    const rule = await api.createRecurringRule({
+      label: newRule.label,
+      merchantPattern: newRule.merchantPattern || undefined,
+      expectedAmount: newRule.expectedAmount ? parseFloat(newRule.expectedAmount) : undefined,
+      frequencyDays: parseInt(newRule.frequencyDays) || 30,
+      nextExpectedDate: newRule.nextExpectedDate || undefined,
+    });
+    setManualRules(prev => [rule, ...prev]);
+    setShowAddForm(false);
+    setNewRule({ label: "", merchantPattern: "", expectedAmount: "", frequencyDays: "30", nextExpectedDate: "" });
+  }
+
+  async function handleDeleteRule(id: number) {
+    await api.deleteRecurringRule(id);
+    setManualRules(prev => prev.filter((r: any) => r.id !== id));
+  }
 
   function toggleExpand(key: string) {
     setExpanded(prev => { const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next; });
@@ -53,6 +76,63 @@ export default function RecurringPage() {
         <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">Subscriptions &amp; repeat charges detected automatically</p>
       </div>
 
+      {/* ── Manual Rules ── */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-ft-on-surface dark:text-ve-on-surface">Manual Rules</h2>
+          <button onClick={() => setShowAddForm(v => !v)}
+            className="flex items-center gap-1 text-sm text-ft-primary dark:text-ve-primary font-medium">
+            <MSIcon name="add" className="text-base" />
+            Define recurring
+          </button>
+        </div>
+        {showAddForm && (
+          <form onSubmit={handleAddRule} className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-4 mb-4 flex flex-col gap-3">
+            <input required placeholder="Label (e.g. Netflix)" value={newRule.label}
+              onChange={e => setNewRule(p => ({...p, label: e.target.value}))}
+              className="border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2 text-sm bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface" />
+            <input placeholder="Merchant pattern (optional)" value={newRule.merchantPattern}
+              onChange={e => setNewRule(p => ({...p, merchantPattern: e.target.value}))}
+              className="border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2 text-sm bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface" />
+            <div className="grid grid-cols-2 gap-3">
+              <input type="number" placeholder="Amount (AED)" value={newRule.expectedAmount}
+                onChange={e => setNewRule(p => ({...p, expectedAmount: e.target.value}))}
+                className="border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2 text-sm bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface" />
+              <input type="number" placeholder="Every N days" value={newRule.frequencyDays}
+                onChange={e => setNewRule(p => ({...p, frequencyDays: e.target.value}))}
+                className="border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2 text-sm bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface" />
+            </div>
+            <input type="date" value={newRule.nextExpectedDate}
+              onChange={e => setNewRule(p => ({...p, nextExpectedDate: e.target.value}))}
+              className="border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2 text-sm bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface" />
+            <div className="flex gap-2">
+              <button type="submit" className="flex-1 bg-ft-primary dark:bg-ve-primary text-white rounded-xl py-2 text-sm font-medium">Add</button>
+              <button type="button" onClick={() => setShowAddForm(false)} className="flex-1 border border-ft-outline-variant dark:border-ve-outline rounded-xl py-2 text-sm text-ft-on-surface dark:text-ve-on-surface">Cancel</button>
+            </div>
+          </form>
+        )}
+        {manualRules.length === 0 ? (
+          <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant">No manual rules yet.</p>
+        ) : (
+          <div className="space-y-2">
+            {manualRules.map((rule: any) => (
+              <div key={rule.id} className="flex items-center justify-between bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl px-4 py-3">
+                <div>
+                  <p className="text-sm font-medium text-ft-on-surface dark:text-ve-on-surface">{rule.label}</p>
+                  <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">
+                    Every {rule.frequency_days ?? rule.frequencyDays} days
+                    {rule.expected_amount && ` · AED ${rule.expected_amount}`}
+                  </p>
+                </div>
+                <button onClick={() => handleDeleteRule(rule.id)}
+                  className="material-symbols-outlined text-base text-red-400 hover:text-red-600 transition-colors">delete</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <h2 className="text-base font-semibold text-ft-on-surface dark:text-ve-on-surface mb-3">Auto-Detected</h2>
       {items.length === 0 ? (
         <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-16 flex flex-col items-center text-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-ft-surface-low dark:bg-ve-surface-high flex items-center justify-center">
@@ -64,16 +144,11 @@ export default function RecurringPage() {
               We securely analyze your statements to identify subscriptions and regular payments. Upload your recent financial documents to begin auto-discovery.
             </p>
           </div>
-          <div className="flex gap-3">
-            <Link to="/upload"
-              className="flex items-center gap-2 px-5 py-2.5 bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity">
-              <MSIcon name="description" className="text-lg" />
-              Upload Statements
-            </Link>
-            <button className="px-5 py-2.5 border border-ft-outline-variant dark:border-ve-outline text-ft-on-surface-variant dark:text-ve-on-surface-variant text-sm font-semibold rounded-xl hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors">
-              View Manual Setup
-            </button>
-          </div>
+          <Link to="/upload"
+            className="flex items-center gap-2 px-5 py-2.5 bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity">
+            <MSIcon name="description" className="text-lg" />
+            Upload Statements
+          </Link>
         </div>
       ) : (
         <div className="space-y-3">

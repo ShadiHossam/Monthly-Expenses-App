@@ -4,7 +4,9 @@ import com.expensetracker.config.AppProperties;
 import com.expensetracker.dto.request.AiChatRequest;
 import com.expensetracker.exception.BusinessException;
 import com.expensetracker.model.Category;
+import com.expensetracker.model.Plan;
 import com.expensetracker.model.User;
+import com.expensetracker.util.GccMerchantRules;
 import com.expensetracker.repository.CategoryRepository;
 import com.expensetracker.repository.SubscriptionRepository;
 import com.expensetracker.repository.TransactionRepository;
@@ -21,6 +23,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -55,7 +58,7 @@ public class AiService {
 
     public String chat(Long userId, AiChatRequest req) {
         var sub = subscriptionRepository.findByUserId(userId).orElseThrow();
-        if ("free".equals(sub.getPlan())) {
+        if (Plan.FREE.key.equals(sub.getPlan())) {
             throw new BusinessException("AI chat requires a paid plan", HttpStatus.FORBIDDEN);
         }
 
@@ -88,6 +91,18 @@ public class AiService {
 
     public String suggestCategory(String merchantName, String description,
                                    List<Category> categories, User user) {
+        Optional<String> ruleMatch = GccMerchantRules.match(merchantName);
+        if (ruleMatch.isPresent()) {
+            String categoryName = ruleMatch.get();
+            Optional<Category> existing = categories.stream()
+                    .filter(c -> c.getName().equalsIgnoreCase(categoryName))
+                    .findFirst();
+            if (existing.isPresent()) {
+                return "{\"category_id\":" + existing.get().getId() + ",\"suggested_new_category\":null,\"confidence\":1.0}";
+            }
+            return "{\"category_id\":null,\"suggested_new_category\":\"" + categoryName + "\",\"confidence\":1.0}";
+        }
+
         String catList = categories.stream()
                 .map(c -> c.getId() + ": " + c.getName())
                 .toList().toString();
@@ -105,17 +120,28 @@ public class AiService {
 
     private String callTextAi(User user, String systemPrompt, String userMessage) {
         String provider = resolver.resolveTextProvider(user);
-        try {
-            return switch (provider) {
-                case "anthropic" -> callAnthropicText(systemPrompt, userMessage,
-                        resolver.resolveAnthropicKey(user), appProperties.getAi().getAnthropicChatModel());
-                default -> callGroqText(systemPrompt, userMessage,
-                        resolver.resolveGroqKey(user), appProperties.getAi().getGroqChatModel());
-            };
-        } catch (Exception e) {
-            log.error("AI text call failed: {}", e.getMessage());
-            throw new BusinessException("AI service temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE);
+        int maxRetries = appProperties.getAi().getMaxRetries();
+        Exception lastException = null;
+
+        for (int attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                return switch (provider) {
+                    case "anthropic" -> callAnthropicText(systemPrompt, userMessage,
+                            resolver.resolveAnthropicKey(user), appProperties.getAi().getAnthropicChatModel());
+                    default -> callGroqText(systemPrompt, userMessage,
+                            resolver.resolveGroqKey(user), appProperties.getAi().getGroqChatModel());
+                };
+            } catch (Exception e) {
+                lastException = e;
+                log.warn("AI text attempt {} failed (provider={}): {}", attempt + 1, provider, e.getMessage());
+                if (attempt < maxRetries) {
+                    // fallback to the other provider on next attempt
+                    provider = "anthropic".equals(provider) ? "groq" : "anthropic";
+                }
+            }
         }
+        log.error("AI text call failed after retries", lastException);
+        throw new BusinessException("AI service temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     private String callAnthropicText(String system, String message, String apiKey, String model) {

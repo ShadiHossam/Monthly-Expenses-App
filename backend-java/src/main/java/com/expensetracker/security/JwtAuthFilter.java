@@ -2,6 +2,7 @@ package com.expensetracker.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -39,15 +40,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    public static final String COOKIE_NAME = "auth_token";
+
     private String extractToken(HttpServletRequest request) {
+        // 1. httpOnly cookie (preferred — not accessible to JS)
+        if (request.getCookies() != null) {
+            for (Cookie c : request.getCookies()) {
+                if (COOKIE_NAME.equals(c.getName()) && StringUtils.hasText(c.getValue())) {
+                    return c.getValue();
+                }
+            }
+        }
+        // 2. Authorization header (API clients, mobile)
         String header = request.getHeader("Authorization");
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
             return header.substring(7);
-        }
-        // Also check query param for SSE endpoints
-        String param = request.getParameter("token");
-        if (StringUtils.hasText(param)) {
-            return param;
         }
         return null;
     }

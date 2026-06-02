@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "../lib/utils";
+import { api } from "../lib/api";
 import { ErrorBoundary } from "../components/ErrorBoundary";
+import { UploadProvider, useUploadContext } from "../context/UploadContext";
 
 const FULL_NAV = [
   { href: "/dashboard",    label: "Home",         icon: "home" },
@@ -13,17 +15,20 @@ const FULL_NAV = [
   { href: "/statements",   label: "Statements",    icon: "description" },
   { href: "/recurring",    label: "Recurring",     icon: "repeat" },
   { href: "/budget",       label: "Budget",        icon: "account_balance_wallet" },
+  { href: "/savings",      label: "Savings",       icon: "savings" },
   { href: "/settings",     label: "Settings",      icon: "settings" },
   { href: "/billing",      label: "Billing",       icon: "credit_card" },
 ];
 
 const MOBILE_NAV = [
-  { href: "/dashboard",    label: "Home",     icon: "home" },
-  { href: "/upload",       label: "Upload",   icon: "upload" },
-  { href: "/transactions", label: "Txns",     icon: "receipt_long" },
-  { href: "/analytics",    label: "Analytics",icon: "bar_chart" },
-  { href: "/budget",       label: "Budget",   icon: "account_balance_wallet" },
-  { href: "/settings",     label: "Settings", icon: "settings" },
+  { href: "/dashboard",    label: "Home",       icon: "home" },
+  { href: "/upload",       label: "Upload",     icon: "upload" },
+  { href: "/transactions", label: "Txns",       icon: "receipt_long" },
+  { href: "/analytics",    label: "Analytics",  icon: "bar_chart" },
+  { href: "/categories",   label: "Categories", icon: "category" },
+  { href: "/merchants",    label: "Merchants",  icon: "storefront" },
+  { href: "/budget",       label: "Budget",     icon: "account_balance_wallet" },
+  { href: "/settings",     label: "Settings",   icon: "settings" },
 ];
 
 function MSIcon({ name, className }: { name: string; className?: string }) {
@@ -31,6 +36,40 @@ function MSIcon({ name, className }: { name: string; className?: string }) {
     <span className={cn("material-symbols-outlined select-none", className)}>
       {name}
     </span>
+  );
+}
+
+function UploadProgressBadge() {
+  const { entries, hasActiveUploads } = useUploadContext();
+  const location = useLocation();
+  if (!hasActiveUploads || location.pathname === "/upload") return null;
+  const active = entries.filter(e => e.status === "uploading" || e.status === "processing");
+  const queued = entries.filter(e => e.status === "queued");
+  const maxPct = active.length > 0 ? Math.max(...active.map(e => e.progress?.pct ?? 5)) : 0;
+  return (
+    <Link
+      to="/upload"
+      className="fixed bottom-24 md:bottom-6 right-4 z-30 flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl shadow-lg
+                 bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline
+                 hover:shadow-xl transition-shadow"
+    >
+      <div className="w-5 h-5 shrink-0 relative">
+        <div className="w-5 h-5 border-2 border-ft-primary dark:border-ve-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs font-semibold text-ft-on-surface dark:text-ve-on-surface leading-tight">
+          {active.length} uploading{queued.length > 0 ? `, ${queued.length} queued` : ""}
+        </p>
+        {active.length > 0 && (
+          <div className="mt-1 w-24 h-1 bg-ft-surface-low dark:bg-ve-surface-high rounded-full overflow-hidden">
+            <div
+              className="h-full bg-ft-primary dark:bg-ve-primary-dim rounded-full transition-all duration-500"
+              style={{ width: `${maxPct}%` }}
+            />
+          </div>
+        )}
+      </div>
+    </Link>
   );
 }
 
@@ -42,16 +81,24 @@ export default function AppLayout() {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login", { replace: true });
-    } else {
-      setReady(true);
-    }
+    api.me()
+      .then(() => setReady(true))
+      .catch(() => navigate("/login", { replace: true }));
   }, [navigate]);
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"));
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") {
+      document.documentElement.classList.add("dark");
+      setIsDark(true);
+    } else if (saved === "light") {
+      document.documentElement.classList.remove("dark");
+      setIsDark(false);
+    } else {
+      // Default: follow OS preference
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (prefersDark) { document.documentElement.classList.add("dark"); setIsDark(true); }
+    }
   }, []);
 
   function toggleDark() {
@@ -66,14 +113,15 @@ export default function AppLayout() {
     }
   }
 
-  function handleSignOut() {
-    localStorage.removeItem("token");
+  async function handleSignOut() {
+    await api.logout().catch(() => {});
     navigate("/login", { replace: true });
   }
 
   if (!ready) return null;
 
   return (
+    <UploadProvider>
     <div className="min-h-screen flex bg-ft-background dark:bg-ve-background">
 
       {/* ── Desktop sidebar ── */}
@@ -185,6 +233,42 @@ export default function AppLayout() {
           })}
         </div>
       </nav>
+
+      <UploadProgressBadge />
+      <UploadDoneToasts />
+    </div>
+    </UploadProvider>
+  );
+}
+
+function UploadDoneToasts() {
+  const { notifications, clearNotifications } = useUploadContext();
+  const location = useLocation();
+  const [visible, setVisible] = useState<typeof notifications>([]);
+
+  useEffect(() => {
+    if (location.pathname !== "/upload" && notifications.length > 0) {
+      setVisible(notifications);
+      clearNotifications();
+      const t = setTimeout(() => setVisible([]), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [location.pathname, notifications, clearNotifications]);
+
+  if (visible.length === 0) return null;
+  return (
+    <div className="fixed bottom-24 md:bottom-6 left-4 z-40 flex flex-col gap-2">
+      {visible.map((n, i) => (
+        <div key={i} className="flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-lg
+                                bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline
+                                text-sm text-ft-on-surface dark:text-ve-on-surface">
+          <span className="material-symbols-outlined text-green-500 text-base">check_circle</span>
+          <span>
+            <strong className="truncate max-w-[140px] inline-block align-bottom">{n.filename}</strong>
+            {n.txnCount > 0 && <> — {n.txnCount} transactions</>}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }

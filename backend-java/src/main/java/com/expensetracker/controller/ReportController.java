@@ -22,7 +22,7 @@ public class ReportController {
 
     private final ReportService reportService;
 
-    @GetMapping("/generate")
+    @PostMapping("/generate")
     public ResponseEntity<Map<String, Object>> generate(
             @AuthenticationPrincipal Long userId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from_date,

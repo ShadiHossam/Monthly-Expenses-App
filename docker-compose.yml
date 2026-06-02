@@ -20,6 +20,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     environment:
       DB_HOST: postgres
       DB_NAME: ${DB_NAME:-expense_tracker}
@@ -29,6 +32,9 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       UPLOAD_DIR: /app/data/uploads
       ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-true}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-noreply@expensetracker.app}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
@@ -54,6 +60,11 @@ services:
       - backend
     expose:
       - "80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:80/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   caddy:
     image: caddy:2-alpine
@@ -68,6 +79,34 @@ services:
     depends_on:
       - backend
       - frontend
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:80/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  db-backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+      DB_USER: ${DB_USER:-expense_user}
+      DB_NAME: ${DB_NAME:-expense_tracker}
+    volumes:
+      - ./backups:/backups
+    entrypoint: >
+      /bin/sh -c "
+        while true; do
+          FILENAME=/backups/backup-$$(date +%Y%m%d-%H%M).sql.gz;
+          pg_dump -h postgres -U $${DB_USER} $${DB_NAME} | gzip > $$FILENAME;
+          echo \"Backup written: $$FILENAME\";
+          find /backups -name '*.sql.gz' -mtime +7 -delete;
+          sleep 86400;
+        done
+      "
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:

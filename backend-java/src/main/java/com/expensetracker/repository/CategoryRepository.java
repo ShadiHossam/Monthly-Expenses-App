@@ -18,4 +18,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @Query("SELECT COUNT(t) FROM Transaction t WHERE t.userId = :userId AND t.categoryId = :categoryId")
     long countTransactions(@Param("userId") Long userId, @Param("categoryId") Long categoryId);
+
+    void deleteByUserId(Long userId);
 }

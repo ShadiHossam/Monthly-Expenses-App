@@ -24,29 +24,21 @@ import type {
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api/v1";
 
-function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
-}
-
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = getToken();
   const incomingHeaders = (options.headers as Record<string, string>) ?? {};
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...incomingHeaders,
   };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers, credentials: "include" });
 
   if (res.status === 401) {
-    localStorage.removeItem("token");
     if (!window.location.pathname.startsWith("/login") && !window.location.pathname.startsWith("/register")) {
       window.location.href = "/login";
     }
-    const err = await res.json().catch(() => ({ detail: "Invalid username or password" }));
-    throw new Error(err.detail || "Invalid username or password");
+    const err = await res.json().catch(() => ({ detail: "Unauthorized" }));
+    throw new Error(err.detail || "Unauthorized");
   }
 
   if (!res.ok) {
@@ -76,26 +68,37 @@ export const api = {
       body: JSON.stringify({ username, password, email }),
     }),
   me: () => request<User>("/auth/me"),
+  logout: () => request<void>("/auth/logout", { method: "POST" }),
+  updateProfile: (data: { email?: string; currentPassword?: string; newPassword?: string }) =>
+    request<User>("/auth/profile", { method: "PATCH", body: JSON.stringify(data) }),
+  deleteAccount: (confirmation: string) =>
+    request<void>("/auth/profile", { method: "DELETE", body: JSON.stringify({ confirmation }) }),
+  forgotPassword: (email: string) =>
+    request<{ message: string }>("/auth/forgot-password", {
+      method: "POST", body: JSON.stringify({ email }),
+    }),
+  resetPassword: (token: string, newPassword: string) =>
+    request<{ message: string }>("/auth/reset-password", {
+      method: "POST", body: JSON.stringify({ token, newPassword }),
+    }),
 
   // Statements
   uploadStatement: async (
     file: File,
     confirmOverage = false,
   ): Promise<{ data: { statement_id?: number; statement_ids?: number[]; page_count?: number; stream_url?: string } }> => {
-    const token = getToken();
     const formData = new FormData();
     formData.append("file", file);
     const url = `${API_BASE}/statements/upload${confirmOverage ? "?confirm_overage=true" : ""}`;
     const res = await fetch(url, {
       method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: "include",
       body: formData,
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: "Upload failed" }));
-      const error = new Error(
-        typeof err.detail === "string" ? err.detail : err.detail?.message || "Upload failed",
-      ) as Error & { status: number; detail: unknown };
+      const detail = typeof err.detail === "string" ? err.detail : "Upload failed";
+      const error = new Error(detail) as Error & { status: number; detail: unknown };
       error.status = res.status;
       error.detail = err.detail;
       throw error;
@@ -124,6 +127,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ transaction_ids: transactionIds, category_id: categoryId }),
     }),
+  deleteTransaction: (id: number) =>
+    request<void>(`/transactions/${id}`, { method: "DELETE" }),
   uncategorized: () => request<Transaction[]>("/transactions/uncategorized"),
   createTransaction: (data: {
     txnDate: string;
@@ -177,6 +182,16 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ merchant_name, transaction_ids }),
     }),
+  answerBatchQA: (items: { merchant_name: string; category_id: number; apply_rule: boolean; transaction_ids?: number[] }[]) =>
+    request<{ updated: number }>("/qa/answer-batch", {
+      method: "POST",
+      body: JSON.stringify(items),
+    }),
+  unanswerQA: (transactionIds: number[]) =>
+    request<{ reset: number }>("/qa/unanswer", {
+      method: "POST",
+      body: JSON.stringify({ transaction_ids: transactionIds }),
+    }),
 
   // Analytics
   getSummary: (from?: string, to?: string) => {
@@ -201,6 +216,22 @@ export const api = {
   },
   getBalanceTrend: () => request<BalanceTrendPoint[]>("/analytics/balance-trend"),
   getRecurring: () => request<RecurringItem[]>("/analytics/recurring"),
+
+  // Savings Goals
+  listSavingsGoals: () => request<any[]>("/savings-goals"),
+  createSavingsGoal: (data: { name: string; targetAmount: number; targetDate: string; color?: string }) =>
+    request<any>("/savings-goals", { method: "POST", body: JSON.stringify(data) }),
+  deleteSavingsGoal: (id: number) =>
+    request<void>(`/savings-goals/${id}`, { method: "DELETE" }),
+
+  // Recurring rules (manual)
+  listRecurringRules: () => request<any[]>("/recurring-rules"),
+  createRecurringRule: (data: { label: string; merchantPattern?: string; expectedAmount?: number; frequencyDays?: number; nextExpectedDate?: string }) =>
+    request<any>("/recurring-rules", { method: "POST", body: JSON.stringify(data) }),
+  updateRecurringRule: (id: number, data: Partial<{ label: string; active: boolean; expectedAmount: number; nextExpectedDate: string }>) =>
+    request<any>(`/recurring-rules/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  deleteRecurringRule: (id: number) =>
+    request<void>(`/recurring-rules/${id}`, { method: "DELETE" }),
   getMonthComparison: (months?: number) =>
     request<MonthComparison[]>(`/analytics/month-comparison${months ? `?months=${months}` : ""}`),
   exportCSV: async (from?: string, to?: string): Promise<void> => {
@@ -231,7 +262,7 @@ export const api = {
 
   // Reports
   generateReport: (from: string, to: string) =>
-    request<{ data: SavedReport }>(`/reports/generate?from_date=${from}&to_date=${to}`),
+    request<{ data: SavedReport }>(`/reports/generate?from_date=${from}&to_date=${to}`, { method: "POST" }),
   listSavedReports: () => request<SavedReport[]>("/reports/saved"),
   saveReport: (name: string, from_date: string, to_date: string) =>
     request<SavedReport>("/reports/saved", {
@@ -261,7 +292,12 @@ export const api = {
     }),
 
   // Budget Alerts
-  listBudgets: () => request<BudgetStatus[]>("/budgets/status"),
+  listBudgets: (params?: { year?: number; month?: number }) => {
+    const qs = params ? new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)])
+    ).toString() : "";
+    return request<BudgetStatus[]>(`/budgets/status${qs ? `?${qs}` : ""}`);
+  },
   createBudget: (category_id: number, monthly_limit: number) =>
     request<BudgetStatus>("/budgets", { method: "POST", body: JSON.stringify({ category_id, monthly_limit }) }),
   updateBudget: (id: number, data: { monthly_limit?: number; enabled?: boolean }) =>
@@ -285,9 +321,8 @@ export async function* fetchSSE(
   path: string,
   signal?: AbortSignal,
 ): AsyncGenerator<{ event: string; data: unknown }> {
-  const token = getToken();
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: "include",
     signal,
   });
 

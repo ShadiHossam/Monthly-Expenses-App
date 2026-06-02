@@ -5,6 +5,7 @@ import com.expensetracker.dto.response.BillingUsage;
 import com.expensetracker.dto.response.PlanOut;
 import com.expensetracker.dto.response.UsageLogOut;
 import com.expensetracker.exception.EntityNotFoundException;
+import com.expensetracker.model.Plan;
 import com.expensetracker.model.Subscription;
 import com.expensetracker.model.User;
 import com.expensetracker.repository.SubscriptionRepository;
@@ -40,12 +41,6 @@ public class BillingService {
     private final UserRepository userRepository;
     private final AppProperties appProperties;
 
-    private static final Map<String, String> PLAN_LABELS = Map.of(
-        "free", "Free", "solo", "Solo", "pro", "Pro", "business", "Business"
-    );
-    private static final Map<String, Integer> PLAN_LIMITS = Map.of(
-        "free", 15, "solo", 75, "pro", 300, "business", 1500
-    );
 
     @PostConstruct
     public void init() {
@@ -58,8 +53,9 @@ public class BillingService {
         Subscription sub = subscriptionRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Subscription not found"));
 
-        var logs = usageLogRepository.findByUserIdOrderByCreatedAtDesc(userId)
-                .stream().limit(20).map(l -> UsageLogOut.builder()
+        var logs = usageLogRepository.findByUserIdOrderByCreatedAtDesc(userId,
+                        org.springframework.data.domain.PageRequest.of(0, 20))
+                .stream().map(l -> UsageLogOut.builder()
                         .id(l.getId()).statementId(l.getStatementId())
                         .pagesConsumed(l.getPagesConsumed()).action(l.getAction())
                         .createdAt(l.getCreatedAt()).build())
@@ -67,7 +63,7 @@ public class BillingService {
 
         return BillingUsage.builder()
                 .plan(sub.getPlan())
-                .planLabel(PLAN_LABELS.getOrDefault(sub.getPlan(), sub.getPlan()))
+                .planLabel(Plan.fromKey(sub.getPlan()).label)
                 .status(sub.getStatus())
                 .pagesUsed(sub.getPagesUsed())
                 .pagesLimit(sub.getPagesLimit())
@@ -123,13 +119,13 @@ public class BillingService {
         }
 
         String priceId = getPriceId(plan);
-        boolean hasTrial = "free".equals(sub.getPlan());
+        boolean hasTrial = Plan.FREE.key.equals(sub.getPlan());
 
         SessionCreateParams.Builder builder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
                 .setCustomer(customerId)
-                .setSuccessUrl(appProperties.getCorsOriginsList().get(0) + "/billing?success=1")
-                .setCancelUrl(appProperties.getCorsOriginsList().get(0) + "/billing?cancelled=true")
+                .setSuccessUrl(appProperties.getAppUrl() + "/billing?success=1")
+                .setCancelUrl(appProperties.getAppUrl() + "/billing?cancelled=true")
                 .addLineItem(SessionCreateParams.LineItem.builder()
                         .setPrice(priceId).setQuantity(1L).build());
 
@@ -149,7 +145,7 @@ public class BillingService {
         com.stripe.model.billingportal.Session portal = com.stripe.model.billingportal.Session.create(
             com.stripe.param.billingportal.SessionCreateParams.builder()
                 .setCustomer(sub.getStripeCustomerId())
-                .setReturnUrl(appProperties.getCorsOriginsList().get(0) + "/billing")
+                .setReturnUrl(appProperties.getAppUrl() + "/billing")
                 .build()
         );
         return Map.of("portal_url", portal.getUrl());
@@ -172,13 +168,13 @@ public class BillingService {
                     com.stripe.model.Subscription stripeSub = com.stripe.model.Subscription.retrieve(subId);
                     String customerId = session.getCustomer();
                     subscriptionRepository.findByStripeCustomerId(customerId).ifPresent(sub -> {
-                        String plan = getPlanByPriceId(stripeSub.getItems().getData().get(0).getPrice().getId());
-                        sub.setPlan(plan);
+                        Plan plan = Plan.fromKey(getPlanByPriceId(stripeSub.getItems().getData().get(0).getPrice().getId()));
+                        sub.setPlan(plan.key);
                         sub.setStripeSubscriptionId(subId);
                         sub.setPagesUsed(0);
-                        sub.setPagesLimit(PLAN_LIMITS.getOrDefault(plan, 15));
+                        sub.setPagesLimit(plan.pageLimit);
                         sub.setStatus("active");
-                        sub.setOverageEnabled("business".equals(plan));
+                        sub.setOverageEnabled(plan.overageEnabled);
                         subscriptionRepository.save(sub);
                     });
                 }
@@ -193,8 +189,8 @@ public class BillingService {
             case "customer.subscription.deleted" -> {
                 com.stripe.model.Subscription stripeSub = (com.stripe.model.Subscription) event.getDataObjectDeserializer().getObject().orElseThrow();
                 subscriptionRepository.findByStripeSubscriptionId(stripeSub.getId()).ifPresent(sub -> {
-                    sub.setPlan("free");
-                    sub.setPagesLimit(15);
+                    sub.setPlan(Plan.FREE.key);
+                    sub.setPagesLimit(Plan.FREE.pageLimit);
                     sub.setStatus("canceled");
                     sub.setStripeSubscriptionId(null);
                     subscriptionRepository.save(sub);
@@ -226,19 +222,19 @@ public class BillingService {
 
     private String getPriceId(String plan) {
         AppProperties.Stripe s = appProperties.getStripe();
-        return switch (plan) {
-            case "solo" -> s.getPriceSolo();
-            case "pro" -> s.getPricePro();
-            case "business" -> s.getPriceBusiness();
-            default -> throw new IllegalArgumentException("Unknown plan: " + plan);
+        return switch (Plan.fromKey(plan)) {
+            case SOLO -> s.getPriceSolo();
+            case PRO -> s.getPricePro();
+            case BUSINESS -> s.getPriceBusiness();
+            default -> throw new IllegalArgumentException("Unknown paid plan: " + plan);
         };
     }
 
     private String getPlanByPriceId(String priceId) {
         AppProperties.Stripe s = appProperties.getStripe();
-        if (priceId.equals(s.getPriceSolo())) return "solo";
-        if (priceId.equals(s.getPricePro())) return "pro";
-        if (priceId.equals(s.getPriceBusiness())) return "business";
-        return "free";
+        if (priceId.equals(s.getPriceSolo())) return Plan.SOLO.key;
+        if (priceId.equals(s.getPricePro())) return Plan.PRO.key;
+        if (priceId.equals(s.getPriceBusiness())) return Plan.BUSINESS.key;
+        return Plan.FREE.key;
     }
 }

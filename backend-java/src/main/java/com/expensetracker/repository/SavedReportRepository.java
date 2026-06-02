@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface SavedReportRepository extends JpaRepository<SavedReport, Long> {
     List<SavedReport> findByUserIdOrderByCreatedAtDesc(Long userId);
     Optional<SavedReport> findByIdAndUserId(Long id, Long userId);
+    void deleteByUserId(Long userId);
 }

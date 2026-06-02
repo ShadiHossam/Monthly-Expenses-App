@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface MerchantRuleRepository extends JpaRepository<MerchantRule, Long> {
     List<MerchantRule> findByUserIdOrderByPriorityDesc(Long userId);
     Optional<MerchantRule> findByIdAndUserId(Long id, Long userId);
+    void deleteByUserId(Long userId);
 }

@@ -1,6 +1,7 @@
 package com.expensetracker.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -84,6 +85,13 @@ public class SseEmitterRegistry {
             // Client hasn't connected yet — mark terminal so getOrCreate completes it on arrival
             bufferFor(statementId).terminal = TerminalState.COMPLETED;
         }
+    }
+
+    /** Purge stale terminal buffers for statements whose client never connected. */
+    @Scheduled(fixedRate = 5 * 60 * 1000)
+    public void evictStaleBuffers() {
+        buffers.entrySet().removeIf(e ->
+            e.getValue().terminal != TerminalState.NONE && !emitters.containsKey(e.getKey()));
     }
 
     public void completeWithError(Long statementId, Throwable ex) {

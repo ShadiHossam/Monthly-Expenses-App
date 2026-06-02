@@ -70,6 +70,9 @@ public class TesseractParser {
             Path txtFile = Path.of(tempOutput + ".txt");
             String text = Files.readString(txtFile);
             Files.deleteIfExists(txtFile);
+            if (text == null || text.isBlank()) {
+                throw new RuntimeException("Tesseract produced empty output — falling back to AI");
+            }
             log.debug("Tesseract extracted {} chars", text.length());
             return text;
         } catch (Exception e) {

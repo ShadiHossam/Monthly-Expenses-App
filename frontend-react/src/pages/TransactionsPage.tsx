@@ -49,17 +49,28 @@ function TransactionsInner() {
   const pickerRef = useRef<HTMLDivElement>(null);
 
   const [search, setSearch] = useState(() => searchParams.get("search") ?? "");
-  const [filterType, setFilterType] = useState<"" | "debit" | "credit">("");
+  const [filterType, setFilterType] = useState<"" | "debit" | "credit">(() => { const t = searchParams.get("type"); return (t === "debit" || t === "credit") ? t : ""; });
   const [filterCat, setFilterCat] = useState<number | "">(() => { const c = searchParams.get("category_id"); return c ? Number(c) : ""; });
   const [sortBy, setSortBy] = useState<SortBy>("date");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [txns, setTxns] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingCatTxnId, setEditingCatTxnId] = useState<number | null>(null);
+  const editRef = useRef<HTMLDivElement>(null);
+  const [addingCat, setAddingCat] = useState(false);
+  const [newCatName, setNewCatName] = useState("");
+  const [newCatColor, setNewCatColor] = useState("#10b981");
+  const [savingCat, setSavingCat] = useState(false);
+  const [merchantRulePrompt, setMerchantRulePrompt] = useState<{ merchantName: string; categoryId: number; categoryName: string } | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const hasAutoSwitched = useRef(false);
 
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) setShowMonthPicker(false);
+      if (editRef.current && !editRef.current.contains(e.target as Node)) { setEditingCatTxnId(null); setAddingCat(false); setNewCatName(""); setNewCatColor("#10b981"); }
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -109,10 +120,68 @@ function TransactionsInner() {
     if (filterCat) params.category_id = filterCat;
     if (from) params.from = from;
     if (to) params.to = to;
-    api.listTransactions(params).then(t => setTxns((t as any)?.content ?? [])).finally(() => setLoading(false));
+    let autoSwitched = false;
+    api.listTransactions(params).then(t => {
+      const items = (t as any)?.content ?? [];
+      // Auto-switch to "All time" on first load if the current month has no transactions.
+      if (period === "month" && monthOffset === 0 && !search && !filterType && !filterCat && items.length === 0 && !hasAutoSwitched.current) {
+        hasAutoSwitched.current = true;
+        autoSwitched = true;
+        setPeriod("");
+        return;
+      }
+      setTxns(items);
+    }).finally(() => { if (!autoSwitched) setLoading(false); });
   }, [search, filterType, filterCat, period, monthOffset, quarterOffset, yearOffset, customFrom, customTo]);
 
   const catMap = Object.fromEntries(categories.map(c => [c.id, c]));
+
+  async function handleCategoryChange(txnId: number, categoryId: number) {
+    const txn = txns.find(t => t.id === txnId);
+    await api.setCategory(txnId, categoryId);
+    setTxns(prev => prev.map(t => t.id === txnId ? { ...t, category_id: categoryId } : t));
+    setEditingCatTxnId(null);
+    if (txn?.merchant_name) {
+      const cat = categories.find(c => c.id === categoryId);
+      setMerchantRulePrompt({ merchantName: txn.merchant_name, categoryId, categoryName: cat?.name ?? "" });
+    }
+  }
+
+  async function handleMerchantRuleAnswer(always: boolean) {
+    if (always && merchantRulePrompt) {
+      await api.createRule({ pattern: merchantRulePrompt.merchantName, pattern_type: "contains", category_id: merchantRulePrompt.categoryId, priority: 10 });
+    }
+    setMerchantRulePrompt(null);
+  }
+
+  async function handleCreateCategory(txnId: number) {
+    if (!newCatName.trim()) return;
+    setSavingCat(true);
+    try {
+      const created = await api.createCategory(newCatName.trim(), newCatColor, "tag") as any;
+      const refreshed = await api.listCategories();
+      setCategories(Array.isArray(refreshed) ? refreshed : []);
+      setAddingCat(false);
+      setNewCatName("");
+      setNewCatColor("#10b981");
+      if (created?.id) await handleCategoryChange(txnId, created.id);
+    } finally {
+      setSavingCat(false);
+    }
+  }
+
+  async function handleDeleteTransaction(id: number) {
+    setDeletingId(id);
+    try {
+      await api.deleteTransaction(id);
+      setTxns(prev => prev.filter(t => t.id !== id));
+      setConfirmDeleteId(null);
+    } catch (err: any) {
+      alert(err.message || "Failed to delete transaction");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   function clearAll() {
     setFilterType(""); setFilterCat(""); setSearch("");
@@ -322,19 +391,22 @@ function TransactionsInner() {
                     {dayDebits > 0 && <span className="text-xs font-medium text-ft-on-surface-variant dark:text-ve-on-surface-variant tabular-nums">{formatAED(dayDebits)}</span>}
                   </div>
                 )}
-                <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl overflow-hidden">
+                <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl">
                   {items.map((t, i) => {
                     const cat = t.category_id ? catMap[t.category_id] : null;
                     return (
                       <div key={t.id} className={cn(
-                        "flex items-center gap-4 px-5 py-4",
+                        "group relative flex items-center gap-4 px-5 py-4",
                         i < items.length - 1 ? "border-b border-ft-outline-variant dark:border-ve-outline" : ""
                       )}>
                         {/* Category icon */}
                         <div
                           className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", !cat && "bg-ft-surface-low dark:bg-ve-surface-high")}
                           style={{ backgroundColor: cat ? cat.color + "20" : undefined }}>
-                          <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: cat?.color ?? "#9aaa9e" }} />
+                          {cat
+                            ? <MSIcon name={cat.icon || "label"} className="text-[18px] leading-none" style={{ color: cat.color }} />
+                            : <MSIcon name="label_off" className="text-[18px] leading-none text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
+                          }
                         </div>
 
                         {/* Info */}
@@ -342,15 +414,83 @@ function TransactionsInner() {
                           <p className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface truncate">{t.merchant_name || t.description}</p>
                           <div className="flex items-center gap-2 mt-0.5">
                             {!groupByDate && <span className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">{formatShortDate(t.txn_date)}</span>}
-                            {cat && (
-                              <>
-                                {!groupByDate && <span className="text-ft-outline dark:text-ve-outline text-xs">·</span>}
-                                <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-                                  style={{ backgroundColor: cat.color + "20", color: cat.color }}>
-                                  {cat.name}
-                                </span>
-                              </>
-                            )}
+                            {!groupByDate && <span className="text-ft-outline dark:text-ve-outline text-xs">·</span>}
+                            <div className="relative" ref={editingCatTxnId === t.id ? editRef : null}>
+                              <button
+                                onClick={() => { setEditingCatTxnId(prev => prev === t.id ? null : t.id); setAddingCat(false); setNewCatName(""); setNewCatColor("#10b981"); }}
+                                title="Edit category"
+                                className={cn(
+                                  "text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1 hover:opacity-80 transition-opacity",
+                                  !cat && "border border-dashed border-ft-outline-variant dark:border-ve-outline text-ft-on-surface-variant dark:text-ve-on-surface-variant"
+                                )}
+                                style={cat ? { backgroundColor: cat.color + "20", color: cat.color } : undefined}
+                              >
+                                {cat ? cat.name : "Uncategorized"}
+                                <MSIcon name="keyboard_arrow_down" className="text-[11px] leading-none" />
+                              </button>
+                              {editingCatTxnId === t.id && (
+                                <div className="absolute top-full left-0 mt-1 z-50 bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-xl shadow-xl overflow-hidden min-w-[180px] max-h-72 overflow-y-auto">
+                                  {categories.map(c => (
+                                    <button
+                                      key={c.id}
+                                      onClick={() => handleCategoryChange(t.id, c.id)}
+                                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-ft-surface-low dark:hover:bg-ve-surface-high"
+                                    >
+                                      <MSIcon name={c.icon || "label"} className="text-[14px] leading-none shrink-0" style={{ color: c.color }} />
+                                      <span className="text-ft-on-surface dark:text-ve-on-surface">{c.name}</span>
+                                      {t.category_id === c.id && <MSIcon name="check" className="text-[11px] ml-auto text-ft-primary dark:text-ve-primary" />}
+                                    </button>
+                                  ))}
+                                  <div className="border-t border-ft-outline-variant dark:border-ve-outline">
+                                    {!addingCat ? (
+                                      <button
+                                        onClick={() => setAddingCat(true)}
+                                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-ft-primary dark:text-ve-primary hover:bg-ft-surface-low dark:hover:bg-ve-surface-high font-medium"
+                                      >
+                                        <MSIcon name="add" className="text-[14px]" />
+                                        New category
+                                      </button>
+                                    ) : (
+                                      <div className="p-2.5 flex flex-col gap-2">
+                                        <input
+                                          autoFocus
+                                          value={newCatName}
+                                          onChange={e => setNewCatName(e.target.value)}
+                                          onKeyDown={e => { if (e.key === "Enter") handleCreateCategory(t.id); if (e.key === "Escape") setAddingCat(false); }}
+                                          placeholder="Category name"
+                                          className="w-full text-xs px-2 py-1.5 rounded-lg border border-ft-outline-variant dark:border-ve-outline bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface placeholder:text-ft-on-surface-variant dark:placeholder:text-ve-on-surface-variant outline-none focus:border-ft-primary dark:focus:border-ve-primary"
+                                        />
+                                        <div className="flex gap-1 flex-wrap">
+                                          {["#10b981","#ef4444","#f59e0b","#3b82f6","#8b5cf6","#ec4899","#14b8a6","#f97316","#6b7280"].map(color => (
+                                            <button
+                                              key={color}
+                                              onClick={() => setNewCatColor(color)}
+                                              className={cn("w-4 h-4 rounded-full transition-transform", newCatColor === color && "ring-2 ring-offset-1 ring-ft-primary dark:ring-ve-primary scale-125")}
+                                              style={{ backgroundColor: color }}
+                                            />
+                                          ))}
+                                        </div>
+                                        <div className="flex gap-1.5">
+                                          <button
+                                            onClick={() => handleCreateCategory(t.id)}
+                                            disabled={!newCatName.trim() || savingCat}
+                                            className="flex-1 py-1 text-xs font-semibold rounded-lg bg-ft-primary dark:bg-ve-primary text-white disabled:opacity-50"
+                                          >
+                                            {savingCat ? "…" : "Add"}
+                                          </button>
+                                          <button
+                                            onClick={() => { setAddingCat(false); setNewCatName(""); }}
+                                            className="px-2 py-1 text-xs rounded-lg border border-ft-outline-variant dark:border-ve-outline text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:bg-ft-surface-low dark:hover:bg-ve-surface-high"
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                             {t.ref_number && <span className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant font-mono">{t.ref_number}</span>}
                           </div>
                         </div>
@@ -366,6 +506,26 @@ function TransactionsInner() {
                             <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant tabular-nums">{formatAED(t.balance_after)}</p>
                           )}
                         </div>
+
+                        {/* Delete button — shown on row hover */}
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {confirmDeleteId === t.id ? (
+                            <div className="flex items-center gap-1.5 bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-xl px-2 py-1 shadow-sm">
+                              <span className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">Delete?</span>
+                              <button onClick={() => handleDeleteTransaction(t.id)} disabled={deletingId === t.id}
+                                className="text-xs font-medium text-red-500 hover:underline disabled:opacity-50">
+                                {deletingId === t.id ? "…" : "Yes"}
+                              </button>
+                              <button onClick={() => setConfirmDeleteId(null)} className="text-xs text-gray-400 hover:underline">No</button>
+                            </div>
+                          ) : (
+                            <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(t.id); }}
+                              className="w-7 h-7 flex items-center justify-center rounded-lg text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-colors"
+                              title="Delete transaction">
+                              <span className="material-symbols-outlined text-base">delete</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -376,6 +536,19 @@ function TransactionsInner() {
           <p className="text-center text-xs text-ft-outline dark:text-ve-on-surface-variant py-2">
             {txns.length} transactions
           </p>
+        </div>
+      )}
+
+      {merchantRulePrompt && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl shadow-2xl px-5 py-4 flex items-center gap-3 w-[calc(100%-2rem)] max-w-sm">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface">Always use this category?</p>
+            <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5 truncate">
+              "{merchantRulePrompt.merchantName}" → {merchantRulePrompt.categoryName}
+            </p>
+          </div>
+          <button onClick={() => handleMerchantRuleAnswer(false)} className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:text-ft-on-surface dark:hover:text-ve-on-surface px-3 py-1.5 rounded-lg hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors shrink-0">No</button>
+          <button onClick={() => handleMerchantRuleAnswer(true)} className="text-xs font-semibold text-ft-primary dark:text-ve-primary bg-ft-primary/10 dark:bg-ve-primary/10 hover:bg-ft-primary/20 dark:hover:bg-ve-primary/20 px-3 py-1.5 rounded-lg transition-colors shrink-0">Always</button>
         </div>
       )}
     </div>

@@ -18,4 +18,6 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     @Modifying
     @Query("UPDATE Subscription s SET s.pagesUsed = s.pagesUsed + :pages WHERE s.userId = :userId")
     int incrementPagesUsed(@Param("userId") Long userId, @Param("pages") int pages);
+
+    void deleteByUserId(Long userId);
 }
