@@ -41,4 +41,13 @@ public class QaController {
                                                             @AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(qaService.answerBatch(userId, reqs));
     }
+
+    @PostMapping("/unanswer")
+    public ResponseEntity<Map<String, Object>> unanswer(@RequestBody Map<String, Object> body,
+                                                         @AuthenticationPrincipal Long userId) {
+        @SuppressWarnings("unchecked")
+        List<Long> ids = ((List<Number>) body.get("transaction_ids")).stream()
+                .map(Number::longValue).toList();
+        return ResponseEntity.ok(qaService.unanswer(userId, ids));
+    }
 }

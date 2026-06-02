@@ -185,6 +185,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify(items),
     }),
+  unanswerQA: (transactionIds: number[]) =>
+    request<{ reset: number }>("/qa/unanswer", {
+      method: "POST",
+      body: JSON.stringify({ transaction_ids: transactionIds }),
+    }),
 
   // Analytics
   getSummary: (from?: string, to?: string) => {

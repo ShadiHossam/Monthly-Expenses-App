@@ -23,6 +23,19 @@ function formatDate(d: string) {
   return new Date(d).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 }
 
+function parseVerifyErrors(raw: any): string[] {
+  if (!raw) return ["Unknown error"];
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.map(String);
+      return [String(parsed)];
+    } catch { return [raw]; }
+  }
+  if (Array.isArray(raw)) return raw.map(String);
+  return [JSON.stringify(raw)];
+}
+
 export default function StatementsPage() {
   const [statements, setStatements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +45,7 @@ export default function StatementsPage() {
   const [retryAllMsg, setRetryAllMsg] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [errorStatement, setErrorStatement] = useState<any | null>(null);
 
   useEffect(() => {
     api.listStatements()
@@ -221,9 +235,19 @@ export default function StatementsPage() {
                         <span className="font-semibold text-ft-on-surface dark:text-ve-on-surface truncate">
                           {formatMonth(stmt.period_start)} → {formatMonth(stmt.period_end)}
                         </span>
-                        <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", statusCfg.light, statusCfg.dark)}>
-                          {statusCfg.label}
-                        </span>
+                        {stmt.verify_status === "failed" ? (
+                          <button
+                            onClick={() => setErrorStatement(stmt)}
+                            className={cn("text-xs px-2 py-0.5 rounded-full font-medium cursor-pointer hover:opacity-80", statusCfg.light, statusCfg.dark)}
+                            title="Click to see errors"
+                          >
+                            {statusCfg.label} ↗
+                          </button>
+                        ) : (
+                          <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", statusCfg.light, statusCfg.dark)}>
+                            {statusCfg.label}
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5 truncate">{stmt.filename}</p>
                     </div>
@@ -284,5 +308,32 @@ export default function StatementsPage() {
         </div>
       )}
     </div>
+
+    {/* Verification error modal */}
+    {errorStatement && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-ft-surface dark:bg-ve-surface rounded-2xl p-6 max-w-md w-full mx-4 border border-ft-outline-variant dark:border-ve-outline">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-base text-ft-on-surface dark:text-ve-on-surface">Verification Errors</h3>
+            <button onClick={() => setErrorStatement(null)}
+              className="material-symbols-outlined text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:text-ft-on-surface dark:hover:text-ve-on-surface">
+              close
+            </button>
+          </div>
+          <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant mb-3">{errorStatement.filename}</p>
+          <ul className="space-y-2 max-h-64 overflow-y-auto">
+            {parseVerifyErrors(errorStatement.verify_errors).map((e: string, i: number) => (
+              <li key={i} className="text-sm text-red-600 dark:text-ve-error bg-red-50 dark:bg-ve-error/10 rounded-lg px-3 py-2">
+                {e}
+              </li>
+            ))}
+          </ul>
+          <button onClick={() => setErrorStatement(null)}
+            className="mt-4 w-full border border-ft-outline-variant dark:border-ve-outline rounded-xl py-2 text-sm text-ft-on-surface dark:text-ve-on-surface hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors">
+            Close
+          </button>
+        </div>
+      </div>
+    )}
   );
 }

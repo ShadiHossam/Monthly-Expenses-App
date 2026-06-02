@@ -147,7 +147,13 @@ export default function UploadPage({ onClose }: { onClose?: () => void } = {}) {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             {qaIndex > 0 && (
-              <button onClick={() => { setShowNewCatForm(false); setNewCatName(""); setQaIndex(qaIndex - 1); }}
+              <button onClick={async () => {
+                const prevItem = qaItems[qaIndex - 1];
+                if (prevItem?.transaction_ids?.length) {
+                  await api.unanswerQA(prevItem.transaction_ids).catch(() => {});
+                }
+                setShowNewCatForm(false); setNewCatName(""); setQaIndex(qaIndex - 1);
+              }}
                 className="w-9 h-9 flex items-center justify-center rounded-xl border border-ft-outline-variant dark:border-ve-outline text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors">
                 <MSIcon name="chevron_left" className="text-xl" />
               </button>
