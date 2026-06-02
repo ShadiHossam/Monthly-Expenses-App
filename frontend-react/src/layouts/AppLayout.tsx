@@ -20,12 +20,14 @@ const FULL_NAV = [
 ];
 
 const MOBILE_NAV = [
-  { href: "/dashboard",    label: "Home",     icon: "home" },
-  { href: "/upload",       label: "Upload",   icon: "upload" },
-  { href: "/transactions", label: "Txns",     icon: "receipt_long" },
-  { href: "/analytics",    label: "Analytics",icon: "bar_chart" },
-  { href: "/budget",       label: "Budget",   icon: "account_balance_wallet" },
-  { href: "/settings",     label: "Settings", icon: "settings" },
+  { href: "/dashboard",    label: "Home",       icon: "home" },
+  { href: "/upload",       label: "Upload",     icon: "upload" },
+  { href: "/transactions", label: "Txns",       icon: "receipt_long" },
+  { href: "/analytics",    label: "Analytics",  icon: "bar_chart" },
+  { href: "/categories",   label: "Categories", icon: "category" },
+  { href: "/merchants",    label: "Merchants",  icon: "storefront" },
+  { href: "/budget",       label: "Budget",     icon: "account_balance_wallet" },
+  { href: "/settings",     label: "Settings",   icon: "settings" },
 ];
 
 function MSIcon({ name, className }: { name: string; className?: string }) {
@@ -84,7 +86,18 @@ export default function AppLayout() {
   }, [navigate]);
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"));
+    const saved = localStorage.getItem("theme");
+    if (saved === "dark") {
+      document.documentElement.classList.add("dark");
+      setIsDark(true);
+    } else if (saved === "light") {
+      document.documentElement.classList.remove("dark");
+      setIsDark(false);
+    } else {
+      // Default: follow OS preference
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (prefersDark) { document.documentElement.classList.add("dark"); setIsDark(true); }
+    }
   }, []);
 
   function toggleDark() {

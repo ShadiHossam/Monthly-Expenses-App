@@ -64,16 +64,11 @@ export default function RecurringPage() {
               We securely analyze your statements to identify subscriptions and regular payments. Upload your recent financial documents to begin auto-discovery.
             </p>
           </div>
-          <div className="flex gap-3">
-            <Link to="/upload"
-              className="flex items-center gap-2 px-5 py-2.5 bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity">
-              <MSIcon name="description" className="text-lg" />
-              Upload Statements
-            </Link>
-            <button className="px-5 py-2.5 border border-ft-outline-variant dark:border-ve-outline text-ft-on-surface-variant dark:text-ve-on-surface-variant text-sm font-semibold rounded-xl hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors">
-              View Manual Setup
-            </button>
-          </div>
+          <Link to="/upload"
+            className="flex items-center gap-2 px-5 py-2.5 bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity">
+            <MSIcon name="description" className="text-lg" />
+            Upload Statements
+          </Link>
         </div>
       ) : (
         <div className="space-y-3">
