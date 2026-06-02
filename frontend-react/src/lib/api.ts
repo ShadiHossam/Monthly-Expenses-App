@@ -216,6 +216,15 @@ export const api = {
   },
   getBalanceTrend: () => request<BalanceTrendPoint[]>("/analytics/balance-trend"),
   getRecurring: () => request<RecurringItem[]>("/analytics/recurring"),
+
+  // Recurring rules (manual)
+  listRecurringRules: () => request<any[]>("/recurring-rules"),
+  createRecurringRule: (data: { label: string; merchantPattern?: string; expectedAmount?: number; frequencyDays?: number; nextExpectedDate?: string }) =>
+    request<any>("/recurring-rules", { method: "POST", body: JSON.stringify(data) }),
+  updateRecurringRule: (id: number, data: Partial<{ label: string; active: boolean; expectedAmount: number; nextExpectedDate: string }>) =>
+    request<any>(`/recurring-rules/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  deleteRecurringRule: (id: number) =>
+    request<void>(`/recurring-rules/${id}`, { method: "DELETE" }),
   getMonthComparison: (months?: number) =>
     request<MonthComparison[]>(`/analytics/month-comparison${months ? `?months=${months}` : ""}`),
   exportCSV: async (from?: string, to?: string): Promise<void> => {
