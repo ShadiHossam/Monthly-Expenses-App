@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "FinTrack",
+    "slug": "fintrack-expense",
+    "version": "1.0.0",
+    "scheme": "fintrack",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#005e26",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.fintrack.expense",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Used to upload bank statements from your photo library.",
+        "NSCameraUsageDescription": "Used to photograph bank statements for upload.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.fintrack.expense",
+      "adaptiveIcon": {
+        "backgroundColor": "#005e26",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-document-picker",
+        {
+          "iCloudContainerEnvironment": "Production"
+        }
+      ],
+      "expo-image-picker"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f7d10c43-8280-4b99-bbb0-4ee1d809174a"
+      }
+    },
+    "owner": "shadi_hossam"
+  }
+}
