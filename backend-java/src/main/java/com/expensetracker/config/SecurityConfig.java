@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login",
                     "/api/v1/auth/logout", "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password").permitAll()
                 .requestMatchers(HttpMethod.GET,  "/api/v1/billing/plans").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/gmail/callback").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/webhooks/stripe").permitAll()
                 .requestMatchers(HttpMethod.GET,  "/health").permitAll()
                 .anyRequest().authenticated()
