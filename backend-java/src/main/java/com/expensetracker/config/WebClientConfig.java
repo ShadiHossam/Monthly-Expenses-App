@@ -91,4 +91,11 @@ public class WebClientConfig {
                 .clientConnector(httpConnector())
                 .build();
     }
+
+    @Bean("googleClient")
+    public WebClient googleClient(WebClient.Builder builder) {
+        return builder
+                .clientConnector(httpConnector())
+                .build();
+    }
 }
