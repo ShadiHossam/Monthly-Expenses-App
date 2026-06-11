@@ -17,6 +17,7 @@ public class AppProperties {
     private Stripe stripe = new Stripe();
     private Ai ai = new Ai();
     private Resend resend = new Resend();
+    private Gmail gmail = new Gmail();
     private String appUrl = "http://localhost:3000";
     private boolean allowRegistration = true;
 
@@ -50,6 +51,13 @@ public class AppProperties {
     public static class Resend {
         private String apiKey = "";
         private String from = "noreply@expensetracker.app";
+    }
+
+    @Data
+    public static class Gmail {
+        private String clientId = "";
+        private String clientSecret = "";
+        private String redirectUri = "";
     }
 
     @Data
