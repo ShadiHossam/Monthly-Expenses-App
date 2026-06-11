@@ -65,4 +65,15 @@ public class User {
     @Column(name = "locked_until")
     private java.time.OffsetDateTime lockedUntil;
 
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "gmail_refresh_token")
+    private String gmailRefreshToken;
+
+    @Column(name = "gmail_email")
+    private String gmailEmail;
+
+    @Column(name = "gmail_sync_days")
+    @Builder.Default
+    private String gmailSyncDays = "1,2,3,28,29,30,31";
+
 }
