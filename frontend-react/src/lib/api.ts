@@ -168,6 +168,18 @@ export const api = {
 
   // Merchant aliases
   listAliases: () => request<MerchantAlias[]>("/merchant-aliases"),
+  createAlias: (raw_name: string, display_name: string) =>
+    request<MerchantAlias>("/merchant-aliases", {
+      method: "POST",
+      body: JSON.stringify({ raw_name, display_name }),
+    }),
+  updateAlias: (id: number, display_name: string) =>
+    request<MerchantAlias>(`/merchant-aliases/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ display_name }),
+    }),
+  deleteAlias: (id: number) =>
+    request<void>(`/merchant-aliases/${id}`, { method: "DELETE" }),
 
   // Q&A
   getQAPending: (statementId?: number) =>
@@ -303,6 +315,39 @@ export const api = {
   updateBudget: (id: number, data: { monthly_limit?: number; enabled?: boolean }) =>
     request<BudgetStatus>(`/budgets/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   deleteBudget: (id: number) => request<void>(`/budgets/${id}`, { method: "DELETE" }),
+
+  // Gmail
+  getGmailStatus: () =>
+    request<{
+      connected: boolean;
+      gmail_email: string | null;
+      sync_days: string;
+      senders: { id: number; sender_email: string }[];
+    }>("/gmail/status"),
+
+  getGmailConnectUrl: () =>
+    request<{ url: string }>("/gmail/connect-url"),
+
+  disconnectGmail: () =>
+    request<void>("/gmail/disconnect", { method: "DELETE" }),
+
+  syncGmail: () =>
+    request<{ imported: number }>("/gmail/sync", { method: "POST" }),
+
+  addGmailSender: (senderEmail: string) =>
+    request<{ id: number; sender_email: string }>("/gmail/senders", {
+      method: "POST",
+      body: JSON.stringify({ sender_email: senderEmail }),
+    }),
+
+  removeGmailSender: (id: number) =>
+    request<void>(`/gmail/senders/${id}`, { method: "DELETE" }),
+
+  updateGmailSyncDays: (syncDays: string) =>
+    request<{ sync_days: string }>("/gmail/sync-days", {
+      method: "PATCH",
+      body: JSON.stringify({ sync_days: syncDays }),
+    }),
 
   // Billing
   getBillingUsage: () => request<BillingUsage>("/billing/usage"),
