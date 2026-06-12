@@ -3,23 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { cn } from "../lib/utils";
 
-type AISettings = {
-  groq_api_key_set: boolean;
-  openrouter_api_key_set: boolean;
-  anthropic_api_key_set: boolean;
-  ai_provider: string;
-  concurrent_processing: number;
-};
-
-type KeyField = "groq" | "openrouter" | "anthropic";
-
-const PROVIDERS = [
-  { value: "auto",       label: "Auto (try all in order)" },
-  { value: "anthropic",  label: "Claude (Anthropic)" },
-  { value: "groq",       label: "Groq" },
-  { value: "openrouter", label: "OpenRouter" },
-];
-
 function MSIcon({ name, className }: { name: string; className?: string }) {
   return <span className={cn("material-symbols-outlined select-none", className)}>{name}</span>;
 }
@@ -27,15 +10,6 @@ function MSIcon({ name, className }: { name: string; className?: string }) {
 export default function SettingsPage() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
-  const [aiSettings, setAISettings] = useState<AISettings | null>(null);
-  const [keys, setKeys] = useState({ groq: "", openrouter: "", anthropic: "" });
-  const [provider, setProvider] = useState("auto");
-  const [concurrentLimit, setConcurrentLimit] = useState(2);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState("");
-  const [showKey, setShowKey] = useState<Record<KeyField, boolean>>({ groq: false, openrouter: false, anthropic: false });
-
   // Profile state
   const [profileEmail, setProfileEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -45,14 +19,32 @@ export default function SettingsPage() {
   const [profileError, setProfileError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [gmailStatus, setGmailStatus] = useState<{
+    connected: boolean;
+    gmail_email: string | null;
+    sync_days: string;
+    senders: { id: number; sender_email: string }[];
+  } | null>(null);
+  const [gmailLoading, setGmailLoading] = useState(false);
+  const [gmailSyncing, setGmailSyncing] = useState(false);
+  const [gmailSyncResult, setGmailSyncResult] = useState<string | null>(null);
+  const [newSender, setNewSender] = useState("");
+
+  const loadGmailStatus = async () => {
+    try {
+      const s = await api.getGmailStatus();
+      setGmailStatus(s);
+    } catch { /* not critical */ }
+  };
 
   useEffect(() => {
     api.me().then(u => { setUser(u); setProfileEmail(u.email ?? ""); }).catch(() => {});
-    api.getAISettings().then(s => {
-      setAISettings(s);
-      setProvider(s.ai_provider);
-      setConcurrentLimit((s as any).concurrent_processing ?? 2);
-    }).catch(() => {});
+    loadGmailStatus();
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("gmail") === "connected") {
+      setGmailSyncResult("Gmail connected successfully!");
+      window.history.replaceState({}, "", "/settings");
+    }
   }, []);
 
   async function handleProfileSave() {
@@ -87,64 +79,59 @@ export default function SettingsPage() {
     navigate("/login");
   }
 
-  async function handleSave() {
-    setSaving(true);
-    setError("");
-    setSaved(false);
+  const handleGmailConnect = async () => {
+    setGmailLoading(true);
     try {
-      const payload: any = { ai_provider: provider, concurrent_processing: concurrentLimit };
-      if (keys.groq !== "")        payload.groq_api_key = keys.groq;
-      if (keys.openrouter !== "")  payload.openrouter_api_key = keys.openrouter;
-      if (keys.anthropic !== "")   payload.anthropic_api_key = keys.anthropic;
-      const updated = await api.saveAISettings(payload);
-      setAISettings(updated);
-      setKeys({ groq: "", openrouter: "", anthropic: "" });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } catch (e: any) {
-      setError(e.message || "Failed to save");
+      const { url } = await api.getGmailConnectUrl();
+      window.location.href = url;
     } finally {
-      setSaving(false);
+      setGmailLoading(false);
     }
-  }
+  };
 
-  function toggleShow(field: KeyField) {
-    setShowKey(prev => ({ ...prev, [field]: !prev[field] }));
-  }
+  const handleGmailDisconnect = async () => {
+    setGmailLoading(true);
+    try {
+      await api.disconnectGmail();
+      await loadGmailStatus();
+    } finally {
+      setGmailLoading(false);
+    }
+  };
 
-  const KeyInput = ({ field, label, placeholder, isSet }: { field: KeyField; label: string; placeholder: string; isSet: boolean }) => (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between">
-        <label className="text-xs font-medium text-ft-on-surface-variant dark:text-ve-on-surface-variant">{label}</label>
-        {isSet && <span className="text-xs font-semibold text-ft-primary dark:text-ve-primary">Key saved</span>}
-      </div>
-      <div className="relative">
-        <input
-          type={showKey[field] ? "text" : "password"}
-          value={keys[field]}
-          onChange={e => setKeys(prev => ({ ...prev, [field]: e.target.value }))}
-          placeholder={isSet ? "Enter new key to replace…" : placeholder}
-          className="w-full text-sm font-mono bg-ft-surface-low dark:bg-ve-surface-high border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2.5 pr-10 text-ft-on-surface dark:text-ve-on-surface placeholder-ft-on-surface-variant dark:placeholder-ve-on-surface-variant focus:outline-none focus:ring-2 focus:ring-ft-primary dark:focus:ring-ve-primary"
-        />
-        <button type="button" onClick={() => toggleShow(field)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:text-ft-on-surface dark:hover:text-ve-on-surface transition-colors">
-          <MSIcon name={showKey[field] ? "visibility_off" : "visibility"} className="text-lg" />
-        </button>
-      </div>
-      {isSet && keys[field] === "" && (
-        <button type="button" onClick={() => setKeys(prev => ({ ...prev, [field]: " " }))}
-          className="text-xs text-red-500 dark:text-ve-error hover:underline">
-          Clear saved key
-        </button>
-      )}
-    </div>
-  );
+  const handleGmailSync = async () => {
+    setGmailSyncing(true);
+    setGmailSyncResult(null);
+    try {
+      const { imported } = await api.syncGmail();
+      setGmailSyncResult(
+        imported > 0 ? `Imported ${imported} statement(s)!` : "No new statements found."
+      );
+      if (imported > 0) loadGmailStatus();
+    } catch (e: any) {
+      setGmailSyncResult("Sync failed: " + (e.message || "unknown error"));
+    } finally {
+      setGmailSyncing(false);
+    }
+  };
+
+  const handleAddSender = async () => {
+    if (!newSender.trim()) return;
+    await api.addGmailSender(newSender.trim());
+    setNewSender("");
+    await loadGmailStatus();
+  };
+
+  const handleRemoveSender = async (id: number) => {
+    await api.removeGmailSender(id);
+    await loadGmailStatus();
+  };
 
   return (
     <div className="px-6 pt-6 pb-10 max-w-xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-ft-on-surface dark:text-ve-on-surface">Preferences</h1>
-        <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">Manage your account and AI configuration</p>
+        <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">Manage your account</p>
       </div>
 
       {/* ── Account ── */}
@@ -217,69 +204,6 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* ── AI Configuration ── */}
-      <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-5 mb-4 space-y-5">
-        <p className="text-xs font-semibold text-ft-on-surface-variant dark:text-ve-on-surface-variant uppercase tracking-wider">AI Configuration</p>
-
-        {/* Provider preference */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-ft-on-surface-variant dark:text-ve-on-surface-variant block">Preferred Provider</label>
-          <select value={provider} onChange={e => setProvider(e.target.value)}
-            className="w-full text-sm bg-ft-surface-low dark:bg-ve-surface-high border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2.5 text-ft-on-surface dark:text-ve-on-surface focus:outline-none focus:ring-2 focus:ring-ft-primary dark:focus:ring-ve-primary">
-            {PROVIDERS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-          </select>
-          <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">
-            Auto tries Claude → Groq → OpenRouter in order, skipping missing keys.
-          </p>
-        </div>
-
-        {/* Concurrency slider */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-medium text-ft-on-surface-variant dark:text-ve-on-surface-variant">Concurrent Processing</label>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-lg bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface">{concurrentLimit}</span>
-          </div>
-          <input type="range" min={1} max={10} value={concurrentLimit}
-            onChange={e => setConcurrentLimit(Number(e.target.value))}
-            className="w-full accent-ft-primary dark:accent-ve-primary" />
-          <div className="flex justify-between text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">
-            <span>1 (safest)</span>
-            <span>10 (fastest)</span>
-          </div>
-          <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">
-            How many uploads process in parallel. Lower values prevent Groq rate limits.
-          </p>
-        </div>
-
-        {/* API Keys */}
-        <div className="border-t border-ft-outline-variant dark:border-ve-outline pt-4 space-y-4">
-          <KeyInput field="anthropic" label="Anthropic API Key (Claude)" placeholder="sk-ant-…" isSet={aiSettings?.anthropic_api_key_set ?? false} />
-          <KeyInput field="groq"      label="Groq API Key"              placeholder="gsk_…"    isSet={aiSettings?.groq_api_key_set ?? false} />
-          <KeyInput field="openrouter" label="OpenRouter API Key"       placeholder="sk-or-…"  isSet={aiSettings?.openrouter_api_key_set ?? false} />
-        </div>
-
-        {error && (
-          <div className="flex items-center gap-2 text-xs text-red-500 dark:text-ve-error">
-            <MSIcon name="error" className="text-base" />
-            {error}
-          </div>
-        )}
-
-        <button onClick={handleSave} disabled={saving}
-          className={cn(
-            "w-full py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50",
-            saved
-              ? "bg-ft-primary/10 dark:bg-ve-primary/10 text-ft-primary dark:text-ve-primary"
-              : "bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background hover:opacity-90"
-          )}>
-          {saving ? "Saving…" : saved ? "Saved!" : "Save Settings"}
-        </button>
-
-        <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">
-          Keys are stored securely on the server and never exposed to the browser.
-        </p>
-      </div>
-
       {/* ── Install PWA ── */}
       <div className="bg-ft-primary/5 dark:bg-ve-primary/10 border border-ft-primary/20 dark:border-ve-primary/20 rounded-2xl p-5 mb-4">
         <div className="flex items-start gap-3">
@@ -305,6 +229,84 @@ export default function SettingsPage() {
           <span className="text-sm text-ft-on-surface dark:text-ve-on-surface">Upload statement</span>
           <MSIcon name="chevron_right" className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant ml-auto" />
         </a>
+      </div>
+
+      {/* ── Gmail Auto-Import ── */}
+      <div className="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-5 shadow-sm space-y-4 mb-4">
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-blue-500">mail</span>
+          <h2 className="font-semibold text-zinc-800 dark:text-zinc-100">Gmail Auto-Import</h2>
+        </div>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          Connect your Gmail to automatically import bank statement attachments.
+        </p>
+
+        {gmailSyncResult && (
+          <p className="text-sm text-green-600 dark:text-green-400">{gmailSyncResult}</p>
+        )}
+
+        {!gmailStatus?.connected ? (
+          <button
+            onClick={handleGmailConnect}
+            disabled={gmailLoading}
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+          >
+            {gmailLoading ? "Redirecting…" : "Connect Gmail"}
+          </button>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-zinc-600 dark:text-zinc-300">
+              Connected as <span className="font-medium">{gmailStatus.gmail_email}</span>
+            </p>
+
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide">Bank sender addresses</p>
+              {gmailStatus.senders.map(s => (
+                <div key={s.id} className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-800 px-3 py-2 rounded-lg">
+                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{s.sender_email}</span>
+                  <button
+                    onClick={() => handleRemoveSender(s.id)}
+                    className="text-red-400 hover:text-red-600 text-xs"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={newSender}
+                  onChange={e => setNewSender(e.target.value)}
+                  placeholder="e.g. statements@enbd.com"
+                  className="flex-1 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-3 py-2 text-sm text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                <button
+                  onClick={handleAddSender}
+                  className="px-3 py-2 rounded-lg bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 text-sm font-medium hover:opacity-80"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleGmailSync}
+                disabled={gmailSyncing}
+                className="px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-medium hover:opacity-80 disabled:opacity-50"
+              >
+                {gmailSyncing ? "Syncing…" : "Sync Now"}
+              </button>
+              <button
+                onClick={handleGmailDisconnect}
+                disabled={gmailLoading}
+                className="text-sm text-red-500 hover:text-red-700 disabled:opacity-50"
+              >
+                Disconnect Gmail
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Log out ── */}
