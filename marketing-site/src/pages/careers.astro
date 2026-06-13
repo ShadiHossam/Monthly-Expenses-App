@@ -1,0 +1,191 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { SITE } from "../config/site";
+
+const openRoles = [
+  {
+    title: "Senior Full-Stack Engineer",
+    team: "Engineering",
+    location: "Dubai, UAE · Remote-friendly",
+    type: "Full-time",
+    description: "Build the core of FinTrack — from OCR pipelines to real-time dashboards. You'll own entire product surfaces and ship code that touches thousands of users every day.",
+  },
+  {
+    title: "Product Designer",
+    team: "Design",
+    location: "Dubai, UAE · Remote-friendly",
+    type: "Full-time",
+    description: "Own the end-to-end design process from research to polished UI. You care deeply about making complex financial data feel simple, calm, and human.",
+  },
+  {
+    title: "Growth & Marketing Manager",
+    team: "Marketing",
+    location: "Dubai, UAE",
+    type: "Full-time",
+    description: "Drive FinTrack's growth across the UAE and GCC. You understand the local market deeply and know how to build community, content, and campaigns that convert.",
+  },
+  {
+    title: "Customer Success Specialist",
+    team: "Support",
+    location: "Remote · Gulf timezone",
+    type: "Full-time",
+    description: "Be the voice of FinTrack for our users. You'll help customers get the most out of the product, gather their feedback, and make sure no question goes unanswered.",
+  },
+];
+
+const perks = [
+  { icon: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z", title: "Competitive Compensation", body: "Market-rate salary + equity. We share the upside we build together." },
+  { icon: "M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z", title: "Flexible Work", body: "Hybrid office in Dubai with remote-friendly policies. Work where you do your best thinking." },
+  { icon: "M22 12h-4l-3 9L9 3l-3 9H2", title: "Health & Wellness", body: "Comprehensive health insurance for you and your family. Annual wellness budget." },
+  { icon: "M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z", title: "Learning Budget", body: "AED 5,000 / year for courses, books, conferences — whatever makes you sharper." },
+  { icon: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8z", title: "Small, High-Trust Team", body: "No bureaucracy, no silos. You'll have real ownership and direct impact from day one." },
+  { icon: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01", title: "Great Tools", body: "Top-of-the-line hardware, best-in-class software, and no penny-pinching on tools that matter." },
+];
+---
+
+<BaseLayout
+  title="Careers at FinTrack — Join the Team Building the Future of Personal Finance in the UAE"
+  description="Join FinTrack and help build financial clarity for millions of UAE residents and expats. See our open roles and learn what it's like to work here."
+  canonicalPath="/careers"
+>
+
+<!-- HERO -->
+<div class="page-hero" style="padding-top:9rem;padding-bottom:6rem;">
+  <div class="container" style="position:relative;z-index:1;text-align:center;">
+    <div style="display:inline-block;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);border-radius:6px;padding:4px 12px;margin-bottom:1.25rem;">
+      <span style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green-400);font-family:'Plus Jakarta Sans',sans-serif;">We're Hiring</span>
+    </div>
+    <h1 style="color:#ffffff;font-size:clamp(2.25rem,5vw,3.75rem);margin-bottom:1.25rem;">
+      Build something that<br>
+      <span style="background:linear-gradient(135deg,var(--green-400),var(--green-500));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">actually matters.</span>
+    </h1>
+    <p style="color:rgba(255,255,255,0.55);font-size:1.0625rem;max-width:520px;margin:0 auto 2rem;line-height:1.8;">
+      We're a small team on a big mission — making financial clarity accessible to every UAE resident and expat. Join us and do the best work of your career.
+    </p>
+    <a href="#open-roles" class="btn-primary" style="background:var(--green-500);color:var(--green-950);">
+      See Open Roles
+      <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    </a>
+  </div>
+</div>
+
+<!-- WHY FINTRACK -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Why FinTrack</span>
+      <h2>Where your work ships to 50,000+ people.</h2>
+      <p>We move fast, trust each other, and care deeply about the people using what we build.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;" class="perks-grid">
+      {perks.map(p => (
+        <div class="card" style="text-align:center;">
+          <div style="width:52px;height:52px;border-radius:14px;background:var(--green-50);border:1px solid var(--border-green);display:flex;align-items:center;justify-content:center;margin:0 auto 1.125rem;">
+            <svg viewBox="0 0 24 24" fill="none" style="width:22px;height:22px;" stroke="var(--green-700)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d={p.icon}/></svg>
+          </div>
+          <h3 style="font-size:1rem;margin-bottom:.625rem;">{p.title}</h3>
+          <p style="color:var(--text-muted);font-size:.9rem;line-height:1.75;margin:0;">{p.body}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- OPEN ROLES -->
+<section id="open-roles" class="section" style="background:var(--green-50);">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Open Positions</span>
+      <h2>Find your place on the team.</h2>
+      <p>We're growing and looking for exceptional people across engineering, design, and more.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:1rem;max-width:860px;margin:0 auto;">
+      {openRoles.map(role => (
+        <div class="card card-interactive" style="display:flex;align-items:center;justify-content:space-between;gap:2rem;flex-wrap:wrap;">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:.625rem;margin-bottom:.5rem;flex-wrap:wrap;">
+              <span style="font-size:.75rem;font-weight:700;color:var(--green-700);background:var(--green-50);border:1px solid var(--border-green);border-radius:4px;padding:2px 8px;font-family:'Plus Jakarta Sans',sans-serif;">{role.team}</span>
+              <span style="font-size:.8125rem;color:var(--text-muted);">{role.type}</span>
+            </div>
+            <h3 style="font-size:1.125rem;margin-bottom:.375rem;">{role.title}</h3>
+            <p style="font-size:.875rem;color:var(--text-muted);margin-bottom:.625rem;display:flex;align-items:center;gap:4px;">
+              <svg viewBox="0 0 24 24" fill="none" style="width:14px;height:14px;flex-shrink:0;" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              {role.location}
+            </p>
+            <p style="font-size:.9rem;color:var(--text-muted);line-height:1.7;margin:0;">{role.description}</p>
+          </div>
+          <a
+            href={`mailto:${SITE.email}?subject=Application: ${role.title}&body=Hi FinTrack team,%0A%0AI'm applying for the ${role.title} role.%0A%0APlease find my resume and a short intro below.%0A%0A`}
+            class="btn-outline"
+            style="white-space:nowrap;flex-shrink:0;"
+          >
+            Apply Now
+            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      ))}
+    </div>
+
+    <div style="text-align:center;margin-top:2.5rem;">
+      <p style="color:var(--text-muted);font-size:.9375rem;margin-bottom:1rem;">Don't see the right role? We'd still love to hear from you.</p>
+      <a href={`mailto:${SITE.email}?subject=Speculative Application`} class="btn-ghost">
+        Send a speculative application →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- CULTURE -->
+<section class="section">
+  <div class="container" style="max-width:840px;">
+    <div class="section-header">
+      <span class="section-eyebrow">Life at FinTrack</span>
+      <h2>A culture built on trust and craft.</h2>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1.5rem;">
+      {[
+        { num: "01", title: "You own your work.", body: "We hire people we trust and get out of their way. Every team member has real ownership — not just a ticket queue. You'll see the decisions you make shipped directly to users." },
+        { num: "02", title: "We move fast but thoughtfully.", body: "We're not \"move fast and break things.\" We're a fintech — people depend on the accuracy of the data we show them. We move fast with care and communicate openly about trade-offs." },
+        { num: "03", title: "Diversity is our strength.", body: "FinTrack serves one of the most diverse communities in the world. Our team reflects that. Different backgrounds, perspectives, and lived experiences make our product better." },
+        { num: "04", title: "Feedback flows freely.", body: "We have a flat structure with no hidden agendas. You can disagree with a decision openly, challenge an assumption, and change direction when the evidence says you should." },
+      ].map(v => (
+        <div style="display:flex;gap:2rem;align-items:flex-start;padding:1.75rem;background:var(--surface-card);border:1px solid var(--border);border-radius:var(--radius-xl);">
+          <span style="font-size:2rem;font-weight:800;color:var(--border-green);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:-0.04em;flex-shrink:0;min-width:2.5rem;">{v.num}</span>
+          <div>
+            <h3 style="font-size:1.125rem;margin-bottom:.5rem;">{v.title}</h3>
+            <p style="color:var(--text-muted);font-size:.9375rem;line-height:1.8;margin:0;">{v.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section-sm" style="padding-bottom:5rem;">
+  <div class="container">
+    <div class="cta-band" style="max-width:700px;margin:0 auto;">
+      <div style="position:relative;z-index:1;">
+        <h2 style="color:#ffffff;font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:1.25rem;">Ready to Join the Team?</h2>
+        <p style="color:rgba(255,255,255,0.55);margin-bottom:2rem;">Browse open roles or reach out directly. We'd love to meet you.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+          <a href="#open-roles" class="btn-primary" style="background:var(--green-500);color:var(--green-950);">View Open Roles</a>
+          <a href="/contact" class="btn-outline" style="border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.75);background:transparent;">Contact Us →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  @media (max-width: 860px) {
+    .perks-grid { grid-template-columns: 1fr 1fr !important; }
+  }
+  @media (max-width: 520px) {
+    .perks-grid { grid-template-columns: 1fr !important; }
+  }
+</style>
+
+</BaseLayout>

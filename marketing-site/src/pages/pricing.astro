@@ -1,0 +1,230 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { SITE } from "../config/site";
+
+const ldJson = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "FinTrack",
+  "offers": [
+    { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD" },
+    { "@type": "Offer", "name": "Premium", "price": "9.99", "priceCurrency": "USD", "billingIncrement": "P1M" },
+    { "@type": "Offer", "name": "Premium Annual", "price": "89", "priceCurrency": "USD", "billingIncrement": "P1Y" }
+  ]
+};
+---
+
+<BaseLayout
+  title="FinTrack Pricing — Free, Premium & Institutional Plans"
+  description="FinTrack starts free forever. Upgrade to Premium for AED 36/mo (or $89/year) to unlock AI analytics, unlimited statements, budget alerts, and family accounts."
+  canonicalPath="/pricing"
+  ldJson={ldJson}
+>
+
+<!-- PAGE HERO -->
+<div class="page-hero" style="padding-top:9rem;">
+  <div class="container" style="position:relative;z-index:1;">
+    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);border-radius:100px;padding:5px 14px;margin-bottom:1.25rem;">
+      <span style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green-400);font-family:'Plus Jakarta Sans',sans-serif;">Simple, Transparent Pricing</span>
+    </div>
+    <h1 style="color:#ffffff;margin-bottom:1.125rem;">Invest in Your<br>Financial Future.</h1>
+    <p style="color:rgba(255,255,255,0.60);font-size:1.125rem;max-width:520px;margin:0 auto;">
+      Choose the plan that fits your wealth journey. From basic tracking to full AI-powered clarity — we've got you covered.
+    </p>
+
+    <!-- Annual toggle -->
+    <div style="display:inline-flex;align-items:center;gap:.875rem;margin-top:2rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:100px;padding:6px 6px 6px 1.25rem;">
+      <span id="toggle-label" style="font-size:.9375rem;font-weight:600;color:rgba(255,255,255,0.70);font-family:'Plus Jakarta Sans',sans-serif;">Monthly</span>
+      <button id="billing-toggle" onclick="toggleBilling()" style="width:52px;height:28px;background:var(--green-700);border-radius:100px;border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background .2s;" aria-label="Toggle annual billing">
+        <span id="toggle-thumb" style="position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s;display:block;"></span>
+      </button>
+      <div style="background:var(--green-700);border-radius:100px;padding:3px 12px;font-size:.75rem;font-weight:700;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;">Annual — save 26%</div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING CARDS -->
+<section class="section-sm" style="background:var(--surface);">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:960px;margin:0 auto -3rem;position:relative;z-index:2;top:-3rem;">
+
+      <!-- Free -->
+      <div class="price-card">
+        <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.10em;color:var(--text-muted);margin-bottom:1.5rem;font-family:'Plus Jakarta Sans',sans-serif;">Free</p>
+        <p style="font-size:.875rem;color:var(--text-muted);margin-bottom:1rem;">The basics to get you started on your savings path.</p>
+        <div style="margin-bottom:1.75rem;">
+          <span class="price-amount">$0</span>
+          <span class="price-period"> / forever</span>
+        </div>
+        <a href={SITE.appUrl + '/register'} class="btn-outline" style="width:100%;justify-content:center;margin-bottom:2rem;">Start Free</a>
+        <div style="height:1px;background:var(--border);margin-bottom:1.5rem;"></div>
+        <div style="display:flex;flex-direction:column;">
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Basic transaction tracking</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>1 bank / statement per month</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Safe-to-Spend dashboard</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>3 months history</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Monthly spending reports</div>
+          <div class="price-feature" style="opacity:.45;"><div class="price-check" style="background:var(--border);border-color:var(--border);"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="#9ca3af" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>AI analytics</div>
+          <div class="price-feature" style="opacity:.45;"><div class="price-check" style="background:var(--border);border-color:var(--border);"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="#9ca3af" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>Budget alerts</div>
+        </div>
+      </div>
+
+      <!-- Premium -->
+      <div class="price-card featured" style="padding:2.5rem;">
+        <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--green-700);color:#fff;font-size:.75rem;font-weight:700;padding:4px 18px;border-radius:100px;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;">MOST POPULAR</div>
+        <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.10em;color:var(--green-700);margin-bottom:1.5rem;font-family:'Plus Jakarta Sans',sans-serif;">Premium</p>
+        <p style="font-size:.875rem;color:var(--text-muted);margin-bottom:1rem;">Our most powerful tools for serious personal finance.</p>
+        <div style="margin-bottom:1.75rem;">
+          <span class="price-amount" id="premium-price">$9.99</span>
+          <span class="price-period" id="premium-period"> / month</span>
+          <p id="annual-note" style="display:none;font-size:.8125rem;color:var(--green-700);font-weight:600;margin:.375rem 0 0;">Billed $89/year — save $30.88</p>
+        </div>
+        <a href={SITE.appUrl + '/register?plan=premium'} class="btn-primary" style="width:100%;justify-content:center;margin-bottom:2rem;">Upgrade to Premium</a>
+        <div style="height:1px;background:var(--border-green);margin-bottom:1.5rem;"></div>
+        <div style="display:flex;flex-direction:column;">
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div><strong>Everything in Free</strong></div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Unlimited banks &amp; statements</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Daily Safe-to-Spend widget</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>AI conversational analytics</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Custom categories &amp; rules</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Smart budget alerts</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Goal tracking with visuals</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Net worth tracker</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Family accounts (up to 3)</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Priority support</div>
+        </div>
+      </div>
+
+      <!-- Institutional -->
+      <div class="price-card">
+        <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.10em;color:var(--text-muted);margin-bottom:1.5rem;font-family:'Plus Jakarta Sans',sans-serif;">Institutional</p>
+        <p style="font-size:.875rem;color:var(--text-muted);margin-bottom:1rem;">Built for professional wealth managers and large families.</p>
+        <div style="margin-bottom:1.75rem;">
+          <span class="price-amount">Custom</span>
+        </div>
+        <a href={`mailto:${SITE.email}?subject=Institutional Plan Inquiry`} class="btn-outline" style="width:100%;justify-content:center;margin-bottom:2rem;">Contact Sales</a>
+        <div style="height:1px;background:var(--border);margin-bottom:1.5rem;"></div>
+        <div style="display:flex;flex-direction:column;">
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div><strong>Everything in Premium</strong></div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Multi-client dashboards</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Enterprise-grade security</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Advanced portfolio tracking</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Dedicated account manager</div>
+          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>White-label option</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY UPGRADE -->
+<section class="section" style="background:var(--green-50);padding-top:6rem;">
+  <div class="container" style="max-width:820px;">
+    <div class="section-header">
+      <span class="section-eyebrow">Why Premium?</span>
+      <h2>More Than a Tracker — A Financial Partner.</h2>
+    </div>
+    <div class="bento-grid bento-grid-2">
+      <div style="display:flex;align-items:flex-start;gap:1rem;padding:1.5rem;background:var(--surface-card);border:1px solid var(--border);border-radius:var(--radius-xl);">
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--green-50);border:1px solid var(--border-green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" style="width:20px;height:20px;" stroke="var(--green-700)" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div>
+          <h3 style="font-size:1rem;margin-bottom:.375rem;">Real-time Syncing</h3>
+          <p style="font-size:.875rem;color:var(--text-muted);margin:0;line-height:1.7;">No more waiting days for transactions to clear. See your true balance instantly after every upload.</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:1rem;padding:1.5rem;background:var(--surface-card);border:1px solid var(--border);border-radius:var(--radius-xl);">
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--green-50);border:1px solid var(--border-green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" style="width:20px;height:20px;" stroke="var(--green-700)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+          <h3 style="font-size:1rem;margin-bottom:.375rem;">Bank-Level Security</h3>
+          <p style="font-size:.875rem;color:var(--text-muted);margin:0;line-height:1.7;">Zero-knowledge encryption via AES-256 keeps your financial data invisible to everyone but you.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <span class="section-eyebrow">FAQ</span>
+      <h2>Frequently Asked Questions</h2>
+    </div>
+
+    <div style="border-top:1px solid var(--border);">
+      {[
+        { q: "Can I cancel my subscription at any time?", a: "Yes — cancel any time, no questions asked. Your Premium features stay active until the end of your current billing period. We'll never charge you after that." },
+        { q: "Is my financial data safe?", a: "Absolutely. We use AES-256 encryption at rest and TLS 1.3 in transit. Your statement data is processed and then never shared with third parties. You can also delete your data at any time from Settings." },
+        { q: "Do you offer a student discount?", a: "Yes! Students get 40% off Premium with a valid .ac.ae or .edu email address. Use promo code STUDENT40 at checkout." },
+        { q: "What happens to my data if I downgrade?", a: "Your data is always yours. If you downgrade to Free, you'll lose access to Premium features but your historical data is preserved for 12 months. You can export everything to CSV at any time." },
+        { q: "Can I share my account with my spouse?", a: "Yes! Premium includes up to 3 users on the same account. Each person has their own view, but you can also see a shared household overview with combined budgets and goals." },
+        { q: "Does FinTrack connect directly to my bank?", a: "FinTrack works via statement upload — you download your PDF from your bank's app and upload it to FinTrack. This means no shared credentials, no third-party bank connections, and total privacy." },
+      ].map(item => (
+        <div class="faq-item">
+          <button class="faq-btn">
+            {item.q}
+            <span class="faq-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--green-700)" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </span>
+          </button>
+          <div class="faq-body">{item.a}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- BOTTOM CTA -->
+<section class="section-sm" style="background:var(--green-50);padding-bottom:5rem;">
+  <div class="container">
+    <div class="cta-band" style="max-width:760px;margin:0 auto;">
+      <div style="position:relative;z-index:1;">
+        <h2 style="color:#ffffff;font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:1rem;">Ready to Take Control?</h2>
+        <p style="color:rgba(255,255,255,0.55);margin-bottom:2rem;max-width:420px;margin-left:auto;margin-right:auto;">
+          Join over 100,000+ users tracking their way to financial freedom with FinTrack.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+          <a href={SITE.appUrl + '/register'} class="btn-primary" style="background:var(--green-500);color:var(--green-950);">Get Started for Free</a>
+          <a href={`mailto:${SITE.email}`} class="btn-outline" style="border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.75);background:transparent;">Talk to an Advisor</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  let annual = false;
+  (window as any).toggleBilling = function() {
+    annual = !annual;
+    const thumb  = document.getElementById('toggle-thumb') as HTMLElement;
+    const label  = document.getElementById('toggle-label') as HTMLElement;
+    const price  = document.getElementById('premium-price') as HTMLElement;
+    const period = document.getElementById('premium-period') as HTMLElement;
+    const note   = document.getElementById('annual-note') as HTMLElement;
+    if (annual) {
+      thumb.style.transform  = 'translateX(24px)';
+      label.textContent      = 'Annual';
+      price.textContent      = '$7.42';
+      period.textContent     = ' / month';
+      note.style.display     = 'block';
+    } else {
+      thumb.style.transform  = 'translateX(0)';
+      label.textContent      = 'Monthly';
+      price.textContent      = '$9.99';
+      period.textContent     = ' / month';
+      note.style.display     = 'none';
+    }
+  };
+</script>
+
+<style>
+  @media (max-width: 860px) {
+    .container > div[style*="grid-template-columns:repeat(3"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>

@@ -5,13 +5,11 @@ import com.expensetracker.dto.response.BudgetStatusOut;
 import com.expensetracker.exception.BusinessException;
 import com.expensetracker.exception.EntityNotFoundException;
 import com.expensetracker.model.BudgetAlert;
-import com.expensetracker.model.BudgetBreachNotification;
 import com.expensetracker.model.Category;
 import com.expensetracker.repository.BudgetAlertRepository;
 import com.expensetracker.repository.BudgetBreachNotificationRepository;
 import com.expensetracker.repository.CategoryRepository;
 import com.expensetracker.repository.TransactionRepository;
-import com.expensetracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -31,8 +29,7 @@ public class BudgetService {
     private final CategoryRepository categoryRepository;
     private final TransactionRepository transactionRepository;
     private final BudgetBreachNotificationRepository breachNotificationRepository;
-    private final UserRepository userRepository;
-    private final EmailService emailService;
+    private final BudgetBreachNotifier breachNotifier;
 
     public List<BudgetAlert> list(Long userId) {
         return budgetAlertRepository.findByUserId(userId);
@@ -56,10 +53,21 @@ public class BudgetService {
         BudgetAlert alert = budgetAlertRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new EntityNotFoundException("Budget not found"));
         if (updates.containsKey("monthly_limit")) {
-            alert.setMonthlyLimit(new BigDecimal(updates.get("monthly_limit").toString()));
+            try {
+                alert.setMonthlyLimit(new BigDecimal(updates.get("monthly_limit").toString()));
+            } catch (NumberFormatException e) {
+                throw new BusinessException("monthly_limit must be a valid number", HttpStatus.BAD_REQUEST);
+            }
         }
         if (updates.containsKey("enabled")) {
-            alert.setEnabled((Boolean) updates.get("enabled"));
+            Object val = updates.get("enabled");
+            if (val instanceof Boolean b) {
+                alert.setEnabled(b);
+            } else if (val instanceof String s) {
+                alert.setEnabled(Boolean.parseBoolean(s));
+            } else {
+                throw new BusinessException("enabled must be a boolean", HttpStatus.BAD_REQUEST);
+            }
         }
         return budgetAlertRepository.save(alert);
     }
@@ -89,20 +97,13 @@ public class BudgetService {
             String status = pct >= 100 ? "exceeded" : pct >= 80 ? "warning" : "ok";
             Category cat = cats.get(alert.getCategoryId());
 
-            // Fire breach email once per category per month
+            // Dispatch breach email asynchronously — returns immediately, unblocks status response.
             if ("exceeded".equals(status) && alert.isEnabled()) {
                 boolean alreadySent = breachNotificationRepository
                     .existsByUserIdAndCategoryIdAndYearAndMonth(userId, alert.getCategoryId(), year, month);
                 if (!alreadySent) {
-                    breachNotificationRepository.save(BudgetBreachNotification.builder()
-                        .userId(userId).categoryId(alert.getCategoryId()).year(year).month(month).build());
-                    BigDecimal finalSpent = spent;
-                    userRepository.findById(userId).ifPresent(u -> {
-                        if (u.getEmail() != null && !u.getEmail().endsWith("@noemail.local")) {
-                            emailService.sendBudgetAlert(u.getEmail(),
-                                cat != null ? cat.getName() : "category", finalSpent, alert.getMonthlyLimit());
-                        }
-                    });
+                    breachNotifier.notify(userId, alert.getCategoryId(), year, month,
+                        cat != null ? cat.getName() : "category", spent, alert.getMonthlyLimit());
                 }
             }
 

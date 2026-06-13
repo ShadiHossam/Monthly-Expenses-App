@@ -32,19 +32,19 @@ public class EmailService {
         sendEmail(toEmail, "Reset your Expense Tracker password", html);
     }
 
-    @Async
-    public void sendBudgetAlert(String toEmail, String categoryName,
-                                BigDecimal spent, BigDecimal limit) {
+    // Synchronous so callers can decide whether to record the alert only after a successful send.
+    public boolean sendBudgetAlert(String toEmail, String categoryName,
+                                   BigDecimal spent, BigDecimal limit) {
         String html = "<p>You have exceeded your <strong>" + categoryName + "</strong> budget.</p>"
                 + "<p>Spent: AED " + spent + " / Limit: AED " + limit + "</p>"
                 + "<p><a href=\"" + appProperties.getAppUrl() + "/budget\">View your budgets</a></p>";
-        sendEmail(toEmail, "Budget Alert: " + categoryName + " limit exceeded", html);
+        return sendEmail(toEmail, "Budget Alert: " + categoryName + " limit exceeded", html);
     }
 
-    private void sendEmail(String to, String subject, String html) {
+    private boolean sendEmail(String to, String subject, String html) {
         if (appProperties.getResend().getApiKey().isBlank()) {
             log.warn("RESEND_API_KEY not configured — skipping email to {}", to);
-            return;
+            return false;
         }
         try {
             resendClient.post()
@@ -59,8 +59,10 @@ public class EmailService {
                     .bodyToMono(String.class)
                     .block();
             log.info("Email sent to {} — subject: {}", to, subject);
+            return true;
         } catch (Exception e) {
             log.error("Failed to send email to {}: {}", to, e.getMessage());
+            return false;
         }
     }
 }

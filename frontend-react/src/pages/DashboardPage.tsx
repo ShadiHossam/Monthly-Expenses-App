@@ -41,7 +41,8 @@ export default function DashboardPage() {
   const [showAskAI, setShowAskAI] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const hasAutoSwitched = useRef(false);
+  const hasAutoSwitched = useRef(sessionStorage.getItem("dash_autoSwitched") === "1");
+  const [autoSwitchedBanner, setAutoSwitchedBanner] = useState(false);
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -125,7 +126,9 @@ export default function DashboardPage() {
       // until the "all time" data loads — prevents a flash of the empty state.
       if (!hasAutoSwitched.current && period === "month" && monthOffset === 0 && (summary?.transaction_count ?? 0) === 0) {
         hasAutoSwitched.current = true;
+        sessionStorage.setItem("dash_autoSwitched", "1");
         autoSwitched = true;
+        setAutoSwitchedBanner(true);
         setPeriod("all");
         return;
       }
@@ -142,6 +145,19 @@ export default function DashboardPage() {
 
   const { from: rangeFrom, to: rangeTo } =
     period !== "custom" || (customFrom && customTo) ? getRange() : { from: customFrom, to: customTo };
+
+  function formatDateRange(from: string, to: string) {
+    const f = new Date(from + "T00:00:00");
+    const t = new Date(to + "T00:00:00");
+    const fmt = (d: Date) => d.toLocaleDateString("en-AE", { day: "numeric", month: "short", year: "numeric" });
+    if (period === "month") return f.toLocaleDateString("en-AE", { month: "long", year: "numeric" });
+    if (period === "year") return String(f.getFullYear());
+    return `${fmt(f)} – ${fmt(t)}`;
+  }
+
+  const cardDateRange = summary?.first_txn_date && summary?.last_txn_date
+    ? formatDateRange(summary.first_txn_date, summary.last_txn_date)
+    : formatDateRange(rangeFrom, rangeTo);
 
   // Use actual first/last transaction dates for avg/day so "All Time" doesn't divide by ~26 years
   const effectiveFrom = summary?.first_txn_date ?? rangeFrom;
@@ -343,6 +359,15 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {autoSwitchedBanner && (
+        <div className="flex items-center justify-between gap-3 mb-4 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 text-amber-800 dark:text-amber-300 text-sm">
+          <span>No transactions for this month — showing <strong>all-time</strong> data instead.</span>
+          <button onClick={() => setAutoSwitchedBanner(false)} className="text-amber-500 hover:text-amber-700 dark:hover:text-amber-200 shrink-0">
+            <MSIcon name="close" className="text-base" />
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex justify-center py-24">
           <div className="w-8 h-8 border-4 border-ft-primary dark:border-ve-primary border-t-transparent rounded-full animate-spin" />
@@ -404,7 +429,10 @@ export default function DashboardPage() {
               onClick={() => navigate(`/transactions?from=${rangeFrom}&to=${rangeTo}&type=credit`)}
             >
               <div className="flex items-start justify-between mb-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-ft-on-surface-variant dark:text-ve-on-surface-variant">{periodIncomeLabel}</p>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-ft-on-surface-variant dark:text-ve-on-surface-variant">{periodIncomeLabel}</p>
+                  <p className="text-[10px] text-ft-on-surface-variant/60 dark:text-ve-on-surface-variant/60 mt-0.5">{cardDateRange}</p>
+                </div>
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-ve-surface-high flex items-center justify-center">
                   <MSIcon name="arrow_downward" className="text-lg text-emerald-600 dark:text-ve-primary" />
                 </div>
@@ -424,7 +452,10 @@ export default function DashboardPage() {
               onClick={() => navigate(`/transactions?from=${rangeFrom}&to=${rangeTo}&type=debit`)}
             >
               <div className="flex items-start justify-between mb-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-ft-on-surface-variant dark:text-ve-on-surface-variant">{periodExpenseLabel}</p>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-ft-on-surface-variant dark:text-ve-on-surface-variant">{periodExpenseLabel}</p>
+                  <p className="text-[10px] text-ft-on-surface-variant/60 dark:text-ve-on-surface-variant/60 mt-0.5">{cardDateRange}</p>
+                </div>
                 <div className="w-8 h-8 rounded-xl bg-red-50 dark:bg-ve-surface-high flex items-center justify-center">
                   <MSIcon name="arrow_upward" className="text-lg text-red-500 dark:text-ve-error" />
                 </div>
@@ -470,7 +501,7 @@ export default function DashboardPage() {
                       className="cursor-pointer group"
                       onClick={() => {
                         const qs = new URLSearchParams({ from: rangeFrom, to: rangeTo });
-                        if (cat.category_id) qs.set("category_id", String(cat.category_id));
+                        qs.set("category_id", cat.category_id ? String(cat.category_id) : "-1");
                         navigate(`/transactions?${qs}`);
                       }}
                     >

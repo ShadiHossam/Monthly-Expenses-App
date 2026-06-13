@@ -76,4 +76,8 @@ public class User {
     @Builder.Default
     private String gmailSyncDays = "1,2,3,28,29,30,31";
 
+    @Column(nullable = false)
+    @Builder.Default
+    private String role = "user";
+
 }

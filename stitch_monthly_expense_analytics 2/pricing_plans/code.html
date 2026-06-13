@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pricing | FinTrack - Financial Freedom Starts Here</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .premium-glow {
+            box-shadow: 0 20px 40px -15px rgba(0, 122, 51, 0.15);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-container": "#00714d",
+                      "on-primary-fixed-variant": "#005320",
+                      "on-primary": "#ffffff",
+                      "surface-tint": "#006e2d",
+                      "tertiary": "#1b5b47",
+                      "surface-container-highest": "#d9e3f6",
+                      "inverse-primary": "#77dc88",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#005236",
+                      "on-tertiary-fixed": "#002117",
+                      "on-secondary-fixed": "#002113",
+                      "surface-container-high": "#dee9fc",
+                      "primary-fixed-dim": "#77dc88",
+                      "primary-fixed": "#93f9a2",
+                      "inverse-on-surface": "#eaf1ff",
+                      "outline-variant": "#becabb",
+                      "on-surface-variant": "#3f4a3e",
+                      "surface": "#f8f9ff",
+                      "on-surface": "#121c2a",
+                      "surface-dim": "#d0dbed",
+                      "background": "#f8f9ff",
+                      "inverse-surface": "#27313f",
+                      "tertiary-fixed": "#b0f0d6",
+                      "surface-variant": "#d9e3f6",
+                      "on-primary-container": "#a1ffad",
+                      "on-error": "#ffffff",
+                      "on-background": "#121c2a",
+                      "surface-container-low": "#eff4ff",
+                      "secondary-fixed": "#6ffbbe",
+                      "outline": "#6f7a6d",
+                      "surface-bright": "#f8f9ff",
+                      "secondary-fixed-dim": "#4edea3",
+                      "on-tertiary-fixed-variant": "#0b513d",
+                      "error-container": "#ffdad6",
+                      "tertiary-container": "#37745f",
+                      "surface-container": "#e6eeff",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "primary-container": "#007a33",
+                      "secondary-container": "#6cf8bb",
+                      "on-tertiary-container": "#b7f7dd",
+                      "on-primary-fixed": "#002109",
+                      "primary": "#005e26",
+                      "secondary": "#006c49",
+                      "tertiary-fixed-dim": "#95d3ba",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error-container": "#93000a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "4px",
+                      "container-max": "1280px",
+                      "margin-mobile": "20px",
+                      "margin-desktop": "80px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "display-xl": ["Plus Jakarta Sans"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "button": ["Plus Jakarta Sans"],
+                      "body-lg": ["Inter"],
+                      "display-xl-mobile": ["Plus Jakarta Sans"],
+                      "headline-lg": ["Plus Jakarta Sans"],
+                      "body-md": ["Inter"],
+                      "label-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "display-xl": ["60px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "button": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "display-xl-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto bg-surface/80 backdrop-blur-md dark:bg-on-background/80 border-b border-outline-variant/30 dark:border-outline/20">
+<div class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed">FinTrack</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm" href="#">Features</a>
+<a class="text-primary dark:text-primary-fixed font-bold border-b-2 border-primary font-label-sm text-label-sm" href="#">Pricing</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm" href="#">About</a>
+</div>
+<button class="bg-primary-container text-on-primary font-button text-button px-6 py-2 rounded-full hover:opacity-80 transition-opacity active:scale-95 transition-transform">Get Started</button>
+</nav>
+<!-- Hero Section -->
+<header class="pt-32 pb-20 px-margin-mobile md:px-margin-desktop text-center max-w-4xl mx-auto">
+<span class="inline-block px-4 py-1.5 rounded-full bg-secondary-container/20 text-on-secondary-container font-label-sm text-label-sm mb-6">Simple, Transparent Pricing</span>
+<h1 class="font-display-xl text-display-xl-mobile md:text-display-xl text-on-surface mb-6">Invest in your financial future</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Choose the plan that fits your wealth journey. From basic tracking to institutional-grade insights, we've got you covered.</p>
+</header>
+<!-- Pricing Grid -->
+<section class="pb-24 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+<!-- Free Tier -->
+<div class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/50 flex flex-col h-full hover:shadow-lg transition-shadow">
+<div class="mb-8">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Free</h3>
+<p class="font-body-md text-on-surface-variant">The basics to get you started on your savings path.</p>
+</div>
+<div class="mb-8">
+<span class="text-4xl font-bold text-on-surface">$0</span>
+<span class="text-on-surface-variant">/mo</span>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-on-surface-variant font-body-md">Basic transaction tracking</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-on-surface-variant font-body-md">Connect 1 financial account</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-on-surface-variant font-body-md">Monthly spending reports</span>
+</li>
+<li class="flex items-center gap-3 opacity-40">
+<span class="material-symbols-outlined">block</span>
+<span class="text-on-surface-variant font-body-md">Custom categories</span>
+</li>
+</ul>
+<button class="w-full py-4 rounded-lg border-2 border-primary text-primary font-button hover:bg-primary/5 transition-colors">Start Free</button>
+</div>
+<!-- Premium Tier (Most Popular) -->
+<div class="bg-surface-container-lowest p-8 rounded-2xl border-2 border-primary-container relative flex flex-col h-full premium-glow transform md:scale-105 z-10">
+<div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary-container text-on-primary text-label-sm font-label-sm rounded-full">MOST POPULAR</div>
+<div class="mb-8">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Premium</h3>
+<p class="font-body-md text-on-surface-variant">Our most powerful tools for serious personal finance.</p>
+</div>
+<div class="mb-8">
+<span class="text-4xl font-bold text-on-surface">$9.99</span>
+<span class="text-on-surface-variant">/mo</span>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-on-surface font-body-md font-semibold">Unlimited accounts</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div class="flex flex-col">
+<span class="text-on-surface font-body-md font-semibold">"Safe to Spend" widget</span>
+<span class="text-label-sm text-on-surface-variant">Daily dynamic budget insights</span>
+</div>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-on-surface font-body-md font-semibold">Custom categories &amp; tags</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-on-surface font-body-md font-semibold">Net worth trend tracking</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-on-surface font-body-md font-semibold">Priority support</span>
+</li>
+</ul>
+<button class="w-full py-4 rounded-lg bg-primary-container text-on-primary font-button shadow-lg shadow-primary-container/20 hover:opacity-90 transition-opacity">Upgrade to Premium</button>
+</div>
+<!-- Institutional Tier -->
+<div class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/50 flex flex-col h-full hover:shadow-lg transition-shadow">
+<div class="mb-8">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Institutional</h3>
+<p class="font-body-md text-on-surface-variant">Built for professional wealth managers and large families.</p>
+</div>
+<div class="mb-8">
+<span class="text-4xl font-bold text-on-surface">Custom</span>
+</div>
+<ul class="space-y-4 mb-10 flex-grow">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
+<span class="text-on-surface-variant font-body-md">Multi-client dashboards</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="text-on-surface-variant font-body-md">Enterprise-grade security</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="text-on-surface-variant font-body-md">Advanced portfolio modeling</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">support_agent</span>
+<span class="text-on-surface-variant font-body-md">Dedicated account manager</span>
+</li>
+</ul>
+<button class="w-full py-4 rounded-lg border-2 border-on-surface text-on-surface font-button hover:bg-on-surface/5 transition-colors">Contact Sales</button>
+</div>
+</div>
+</section>
+<!-- Trusted By / Value Section -->
+<section class="py-20 bg-surface-container-low">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+<div class="relative rounded-2xl overflow-hidden shadow-2xl h-96">
+<img alt="FinTrack App" class="w-full h-full object-cover" data-alt="A premium close-up of a high-tech sleek smartphone displaying the FinTrack app interface with vibrant green financial growth charts and a clean minimalist dashboard. The device sits on a polished marble desk in a bright airy modern office environment with soft morning light filtering through large windows. The overall aesthetic is professional, sophisticated, and evokes a sense of financial clarity and calm." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDr7mNnV1oiD6CCMfo0zoyAc3b4AgYhflIrG1NzfGAf1CCtf4u5jdVEPQ-8mBCiN0sgVjJNzwxDedeUepDHy5Y797F4Rabx1f4OJe2WOiiYkk9K3VVSOPsVY-z3Gk4cxTA2IRJqF-aPS29ZQQqyfb4Mm0sKDEWjIbyElEkDJHsbpVZzKmsQvlFovdS6c1Z007AMPp2EwTJKeriG58bsL_BTvv4fjX4K7znyaD79u1RUU5mxkg-8J_XOxefUcpbs1g5ivZg5MSjf9Ig"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+</div>
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-6">Why upgrade to Premium?</h2>
+<div class="space-y-8">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary-container">speed</span>
+</div>
+<div>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-1">Real-time Syncing</h4>
+<p class="font-body-md text-on-surface-variant">No more waiting days for transactions to clear. See your true balance instantly.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary-container">shield</span>
+</div>
+<div>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-1">Bank-Level Security</h4>
+<p class="font-body-md text-on-surface-variant">We use AES-256 encryption to keep your data invisible to everyone but you.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- FAQ Section -->
+<section class="py-24 px-margin-mobile md:px-margin-desktop max-w-3xl mx-auto">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-12 text-center">Frequently Asked Questions</h2>
+<div class="space-y-6">
+<div class="border-b border-outline-variant pb-6">
+<button class="w-full flex justify-between items-center text-left" onclick="toggleFaq(this)">
+<span class="font-headline-md text-headline-md text-on-surface">Can I cancel my subscription at any time?</span>
+<span class="material-symbols-outlined transition-transform">expand_more</span>
+</button>
+<div class="hidden mt-4 font-body-md text-on-surface-variant">
+                    Yes, you can cancel your Premium subscription at any time from your account settings. You will continue to have access to Premium features until the end of your current billing period.
+                </div>
+</div>
+<div class="border-b border-outline-variant pb-6">
+<button class="w-full flex justify-between items-center text-left" onclick="toggleFaq(this)">
+<span class="font-headline-md text-headline-md text-on-surface">Is my financial data safe?</span>
+<span class="material-symbols-outlined transition-transform">expand_more</span>
+</button>
+<div class="hidden mt-4 font-body-md text-on-surface-variant">
+                    Absolutely. We use read-only connections via industry leaders like Plaid. We never see your login credentials and can never move money in or out of your accounts.
+                </div>
+</div>
+<div class="border-b border-outline-variant pb-6">
+<button class="w-full flex justify-between items-center text-left" onclick="toggleFaq(this)">
+<span class="font-headline-md text-headline-md text-on-surface">Do you offer a student discount?</span>
+<span class="material-symbols-outlined transition-transform">expand_more</span>
+</button>
+<div class="hidden mt-4 font-body-md text-on-surface-variant">
+                    Yes! We love supporting the next generation of savers. Students with a valid .edu email can get Premium for 50% off. Contact our support team to activate.
+                </div>
+</div>
+<div class="border-b border-outline-variant pb-6">
+<button class="w-full flex justify-between items-center text-left" onclick="toggleFaq(this)">
+<span class="font-headline-md text-headline-md text-on-surface">What happens to my data if I downgrade?</span>
+<span class="material-symbols-outlined transition-transform">expand_more</span>
+</button>
+<div class="hidden mt-4 font-body-md text-on-surface-variant">
+                    Your data is never deleted. If you downgrade to the Free plan, you will only be able to view your primary account, but all previous transaction history is securely archived for when you decide to return.
+                </div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-20 px-margin-mobile md:px-margin-desktop text-center bg-primary-container text-on-primary rounded-3xl mx-margin-mobile md:mx-margin-desktop mb-24 overflow-hidden relative">
+<div class="absolute inset-0 opacity-10 pointer-events-none">
+<div class="absolute top-0 right-0 w-96 h-96 bg-white rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+<div class="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
+</div>
+<div class="relative z-10">
+<h2 class="font-display-xl text-display-xl-mobile md:text-display-xl mb-6">Ready to take control?</h2>
+<p class="font-body-lg text-body-lg mb-10 max-w-xl mx-auto opacity-90">Join over 100,000+ people tracking their way to financial freedom with FinTrack.</p>
+<div class="flex flex-col md:flex-row gap-4 justify-center">
+<button class="bg-white text-primary-container px-8 py-4 rounded-full font-button text-button hover:bg-opacity-90 transition-all shadow-xl">Get Started for Free</button>
+<button class="bg-primary text-white border border-white/20 px-8 py-4 rounded-full font-button text-button hover:bg-primary/80 transition-all">Talk to an Advisor</button>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="w-full py-20 px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between gap-gutter max-w-container-max mx-auto bg-surface-container-lowest dark:bg-on-background border-t border-outline-variant/50 dark:border-outline/20">
+<div class="max-w-xs">
+<div class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed mb-4">FinTrack</div>
+<p class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant mb-6">Empowering everyone to build lasting wealth through intelligent tracking and actionable insights.</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-12">
+<div>
+<h5 class="font-label-sm text-label-sm font-bold text-on-surface mb-4 uppercase tracking-widest">Product</h5>
+<ul class="space-y-3">
+<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors font-body-md" href="#">Features</a></li>
+<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors font-body-md" href="#">Pricing</a></li>
+<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors font-body-md" href="#">Security</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-sm text-label-sm font-bold text-on-surface mb-4 uppercase tracking-widest">Company</h5>
+<ul class="space-y-3">
+<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors font-body-md" href="#">About</a></li>
+<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors font-body-md" href="#">Privacy Policy</a></li>
+<li><a class="text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors font-body-md" href="#">Terms of Service</a></li>
+</ul>
+</div>
+<div class="col-span-2 md:col-span-1">
+<h5 class="font-label-sm text-label-sm font-bold text-on-surface mb-4 uppercase tracking-widest">Connect</h5>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:border-primary hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">share</span>
+</a>
+<a class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:border-primary hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">mail</span>
+</a>
+</div>
+</div>
+</div>
+</footer>
+<div class="py-8 text-center bg-surface-container-lowest dark:bg-on-background border-t border-outline-variant/10">
+<p class="font-label-sm text-label-sm text-on-surface-variant dark:text-surface-variant opacity-60">© 2024 FinTrack Inc. All rights reserved.</p>
+</div>
+<script>
+        function toggleFaq(button) {
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('.material-symbols-outlined');
+            
+            const isHidden = content.classList.contains('hidden');
+            
+            // Close all first (optional, for accordion effect)
+            // document.querySelectorAll('.faq-content').forEach(el => el.classList.add('hidden'));
+
+            if (isHidden) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+    </script>
+</body></html>

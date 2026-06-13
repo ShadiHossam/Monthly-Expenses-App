@@ -82,11 +82,38 @@ public class MerchantService {
         return switch (patternType != null ? patternType : "contains") {
             case "startswith" -> text.toLowerCase().startsWith(pattern.toLowerCase());
             case "regex" -> {
-                try { yield Pattern.compile(pattern, Pattern.CASE_INSENSITIVE).matcher(text).find(); }
+                if (pattern.length() > 200) yield false;
+                try {
+                    Pattern p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+                    java.util.regex.Matcher m = p.matcher(text);
+                    java.util.concurrent.FutureTask<Boolean> task =
+                        new java.util.concurrent.FutureTask<>(m::find);
+                    Thread.ofVirtual().start(task);
+                    try {
+                        yield task.get(200, java.util.concurrent.TimeUnit.MILLISECONDS);
+                    } catch (java.util.concurrent.TimeoutException te) {
+                        task.cancel(true);
+                        yield false;
+                    }
+                }
                 catch (Exception e) { yield false; }
             }
             default -> text.toLowerCase().contains(pattern.toLowerCase()); // contains
         };
+    }
+
+    public void applyMerchantAliases(List<Transaction> transactions, Long userId) {
+        List<MerchantAlias> aliases = merchantAliasRepository.findByUserId(userId);
+        if (aliases.isEmpty()) return;
+        for (Transaction tx : transactions) {
+            String name = tx.getMerchantName() != null ? tx.getMerchantName() : tx.getDescription();
+            for (MerchantAlias alias : aliases) {
+                if (alias.getRawName().equalsIgnoreCase(name)) {
+                    tx.setMerchantName(alias.getDisplayName());
+                    break;
+                }
+            }
+        }
     }
 
     public List<MerchantAlias> listAliases(Long userId) {
@@ -97,6 +124,14 @@ public class MerchantService {
     public MerchantAlias createAlias(Long userId, String rawName, String displayName) {
         MerchantAlias alias = MerchantAlias.builder()
                 .userId(userId).rawName(rawName).displayName(displayName).build();
+        return merchantAliasRepository.save(alias);
+    }
+
+    @Transactional
+    public MerchantAlias updateAlias(Long id, Long userId, String displayName) {
+        MerchantAlias alias = merchantAliasRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new EntityNotFoundException("Alias not found"));
+        alias.setDisplayName(displayName);
         return merchantAliasRepository.save(alias);
     }
 

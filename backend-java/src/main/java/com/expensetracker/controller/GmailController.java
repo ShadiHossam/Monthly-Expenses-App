@@ -125,10 +125,26 @@ public class GmailController {
     public ResponseEntity<Map<String, String>> updateSyncDays(
             @AuthenticationPrincipal Long userId,
             @RequestBody GmailSyncDaysRequest req) {
+        String raw = req.getSyncDays();
+        if (raw != null && !raw.isBlank()) {
+            // Validate: must be comma-separated integers each in 1–31
+            try {
+                for (String part : raw.split(",")) {
+                    int day = Integer.parseInt(part.trim());
+                    if (day < 1 || day > 31) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "syncDays values must be between 1 and 31");
+                    }
+                }
+            } catch (NumberFormatException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "syncDays must be comma-separated integers");
+            }
+        }
         userRepository.findById(userId).ifPresent(user -> {
-            user.setGmailSyncDays(req.getSyncDays());
+            user.setGmailSyncDays(raw);
             userRepository.save(user);
         });
-        return ResponseEntity.ok(Map.of("syncDays", req.getSyncDays()));
+        return ResponseEntity.ok(Map.of("syncDays", raw != null ? raw : ""));
     }
 }

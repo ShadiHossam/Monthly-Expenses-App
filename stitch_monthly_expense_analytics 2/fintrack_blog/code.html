@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Insights &amp; Wealth Management | FinTrack Blog</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#00714d",
+                    "on-primary-fixed-variant": "#005320",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#006e2d",
+                    "tertiary": "#1b5b47",
+                    "surface-container-highest": "#d9e3f6",
+                    "inverse-primary": "#77dc88",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#005236",
+                    "on-tertiary-fixed": "#002117",
+                    "on-secondary-fixed": "#002113",
+                    "surface-container-high": "#dee9fc",
+                    "primary-fixed-dim": "#77dc88",
+                    "primary-fixed": "#93f9a2",
+                    "inverse-on-surface": "#eaf1ff",
+                    "outline-variant": "#becabb",
+                    "on-surface-variant": "#3f4a3e",
+                    "surface": "#f8f9ff",
+                    "on-surface": "#121c2a",
+                    "surface-dim": "#d0dbed",
+                    "background": "#f8f9ff",
+                    "inverse-surface": "#27313f",
+                    "tertiary-fixed": "#b0f0d6",
+                    "surface-variant": "#d9e3f6",
+                    "on-primary-container": "#a1ffad",
+                    "on-error": "#ffffff",
+                    "on-background": "#121c2a",
+                    "surface-container-low": "#eff4ff",
+                    "secondary-fixed": "#6ffbbe",
+                    "outline": "#6f7a6d",
+                    "surface-bright": "#f8f9ff",
+                    "secondary-fixed-dim": "#4edea3",
+                    "on-tertiary-fixed-variant": "#0b513d",
+                    "error-container": "#ffdad6",
+                    "tertiary-container": "#37745f",
+                    "surface-container": "#e6eeff",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "primary-container": "#007a33",
+                    "secondary-container": "#6cf8bb",
+                    "on-tertiary-container": "#b7f7dd",
+                    "on-primary-fixed": "#002109",
+                    "primary": "#005e26",
+                    "secondary": "#006c49",
+                    "tertiary-fixed-dim": "#95d3ba",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "container-max": "1280px",
+                    "margin-mobile": "20px",
+                    "margin-desktop": "80px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "display-xl": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "button": ["Plus Jakarta Sans"],
+                    "body-lg": ["Inter"],
+                    "display-xl-mobile": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "display-xl": ["60px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "button": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-xl-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+        .image-zoom-hover:hover img {
+            transform: scale(1.05);
+        }
+        .shadow-ambient {
+            box-shadow: 0 4px 20px -2px rgba(0, 122, 51, 0.05);
+        }
+        .shadow-ambient-hover:hover {
+            box-shadow: 0 8px 30px -4px rgba(0, 122, 51, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md antialiased">
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto bg-surface/80 backdrop-blur-md border-b border-outline-variant/30">
+<div class="flex items-center gap-8">
+<span class="text-headline-md font-headline-md font-bold text-primary">FinTrack</span>
+<div class="hidden md:flex gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Features</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Pricing</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">About</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden md:block font-button text-button text-primary px-4 py-2 hover:opacity-80 transition-opacity">Log In</button>
+<button class="bg-primary-container text-on-primary font-button text-button px-6 py-3 rounded-lg hover:opacity-90 transition-opacity active:scale-95">Get Started</button>
+</div>
+</nav>
+<main class="pt-24 pb-20">
+<!-- Hero Section -->
+<section class="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto mb-20">
+<div class="relative rounded-2xl overflow-hidden group image-zoom-hover h-[500px] md:h-[600px] flex items-end">
+<img alt="Financial Wellness" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700" data-alt="A sophisticated home office interior with a large window showing a serene green garden. On a polished wooden desk sits a modern laptop displaying a clean financial dashboard with green growth charts. Beside the laptop is a high-end ceramic mug and a small, lush succulent plant. The lighting is soft and natural, emphasizing a calm, professional, and wealthy atmosphere aligned with a modern corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuArULKMgzMWUbwpEqHIr4h0qt6NwP5Dw4sXGxC6uwreXF6wU_MD2jxjFMj1qsL2w5I3vH1IWO2kE_BEkNHHjVjSf7k2034qk8_BoExvqzQU3Trl6UW1Fv8SeCMbPCiH59UOJZc3WVlmgekkAoB4Hb6mugCwkgY2DbI-9GleS-eFXSIQsmyAFt5YfDSrtJUjHF9KVRBWPWl89ijtyLQ2AurRkfVG7quO64IamhAPgcDRZ1K9CMcTTuBMXoxgumZOwVYF-AnZyC0k7CI"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-background/90 via-on-background/40 to-transparent"></div>
+<div class="relative p-8 md:p-16 w-full max-w-3xl">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full mb-6">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Featured Insight</span>
+</div>
+<h1 class="font-display-xl-mobile md:font-display-xl text-display-xl-mobile md:text-display-xl text-white mb-6">Financial Wellness in 2024: The Holistic Approach</h1>
+<p class="text-white/80 font-body-lg text-body-lg mb-8 line-clamp-2 md:line-clamp-none">Discover how the convergence of technology and human-centric planning is redefining what it means to be financially secure in the modern era.</p>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary overflow-hidden border-2 border-white/20">
+<img alt="Author" data-alt="Close up professional headshot of a mature financial advisor with a kind, trustworthy expression. He wears a dark navy suit and white shirt. The background is a blurred office environment with soft bokeh highlights. The style is crisp, clean, and high-quality photography suitable for a premium fintech brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsGTVoEzBN1Uv_MGEhYT8JfpS5XEsNqM-U8EYRYAYTfjMAGwlwCfIqtaOVvXjUPytiR4h8vOxyqnhwTslUZniwchPmULh781ryPdXj_x23wN2HpOHchdMWCsrdalOAmk4lQiU4gp38gZyjDSQHmb-PfBvIVY3OXldBGz1AMk7Cd2L-ph6suKJh-GvxjgROL98kmVXbV82AHTwlFP7PdRlKv8ri5GJOepTcAXrusgl0uffQPTdR13ZH1u67MhHtgesJur4kVXJjifY"/>
+</div>
+<div class="text-white">
+<p class="font-label-sm text-label-sm">Marcus Thorne</p>
+<p class="text-[12px] opacity-60">Chief Strategy Officer</p>
+</div>
+</div>
+<span class="text-white/40">•</span>
+<span class="text-white/60 font-label-sm text-label-sm">12 Min Read</span>
+</div>
+</div>
+<a aria-label="Read featured article" class="absolute inset-0" href="#"></a>
+</div>
+</section>
+<!-- Category Filter -->
+<section class="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto mb-12">
+<div class="flex flex-wrap items-center gap-3">
+<button class="px-6 py-2 rounded-full bg-primary text-white font-label-sm text-label-sm">All Posts</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-sm text-label-sm">Tips</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-sm text-label-sm">Product Updates</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-sm text-label-sm">Wealth Management</button>
+<button class="px-6 py-2 rounded-full bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-sm text-label-sm">Market Analysis</button>
+</div>
+</section>
+<!-- Post Grid -->
+<section class="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Post Card 1 -->
+<article class="group flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden shadow-ambient hover:shadow-ambient-hover transition-all duration-300">
+<div class="aspect-video overflow-hidden">
+<img alt="Wealth Management" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A clean, minimalist high-angle shot of a smartphone and a pair of designer eyeglasses on a white marble tabletop. The phone screen shows a sophisticated investment app with green trend lines. Beside the phone is a single sprig of eucalyptus in a small vase. The overall feel is bright, airy, and expensive, emphasizing clarity and smart wealth management for B2C users." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbGiS9RwbcKGUwjtmlY1HFus2Ewq-GRJnb4STBNpPbxEkXrkCn4U1zZ8RfCKsu9qsdN3ONCTLGT0SsmZqsADhZaVIlQpYmMkgx67b2wW8i9QsxR_djM2WRlXFm1vhwU2zu4w5R35JIpEpOTY0zkF5k03kjxzXYE52UqpVWAhv26YZqhr7DorHorGBaMNF1DVqKgxJ3-dddjWZ9_q1JADevvsE9IkDWi5HhJUuzvev6xyqiYkd0LZXJQLjlVowW5LLek7R5Dk-0MT8"/>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex items-center justify-between mb-4">
+<span class="px-3 py-1 rounded-full bg-secondary-container/20 text-on-secondary-container font-label-sm text-label-sm">Wealth Management</span>
+<span class="text-on-surface-variant text-[12px]">Oct 24, 2023</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3 group-hover:text-primary transition-colors">Diversifying Your Portfolio in Volatile Markets</h3>
+<p class="text-on-surface-variant font-body-md text-body-md line-clamp-3 mb-6">Learn the core principles of defensive asset allocation and how to protect your long-term wealth during short-term market fluctuations.</p>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-variant"></div>
+<span class="font-label-sm text-label-sm text-on-surface">Sarah Jenkins</span>
+</div>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+<a class="absolute inset-0" href="#"></a>
+</article>
+<!-- Post Card 2 -->
+<article class="group flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden shadow-ambient hover:shadow-ambient-hover transition-all duration-300">
+<div class="aspect-video overflow-hidden">
+<img alt="Product Updates" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Modern geometric abstract art displaying a series of interlocking rings and spheres in various shades of emerald green and brushed silver. The lighting is dramatic, with soft shadows creating a sense of depth and precision. The visual style is high-end corporate fintech, representing interconnected financial systems and technological agility." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHvu3v8iemmN3izOjxpg9FWo9f1KRVrwtz5E0DklU9mPrgnSXdKRz_lEcPRCbS-RVMdkfRx-O0w8xVlhsdCMXLBQDFuAyd_CsbUJzX-xR4Ie3sQ7wO6Bqtw0sFRFY9-pqwuChqOpK0uwBcCmnxqmH71h8APTuNPyey4iP-z2p-ShLcfTVJq5YTwwMILT_HdCt5aesGgYRFGA6ZoGm7VfmY6-CmtkwbOAfReff6HqHEepJGtd9D4LDCdliDTW2MSVQzlZTweOUbBQg"/>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex items-center justify-between mb-4">
+<span class="px-3 py-1 rounded-full bg-primary-container/10 text-primary font-label-sm text-label-sm">Product Updates</span>
+<span class="text-on-surface-variant text-[12px]">Oct 21, 2023</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3 group-hover:text-primary transition-colors">Introducing AI-Powered Smart Savings</h3>
+<p class="text-on-surface-variant font-body-md text-body-md line-clamp-3 mb-6">Our newest feature uses machine learning to analyze your spending habits and automatically optimize your savings rate every week.</p>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-variant"></div>
+<span class="font-label-sm text-label-sm text-on-surface">Engineering Team</span>
+</div>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+<a class="absolute inset-0" href="#"></a>
+</article>
+<!-- Post Card 3 -->
+<article class="group flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden shadow-ambient hover:shadow-ambient-hover transition-all duration-300">
+<div class="aspect-video overflow-hidden">
+<img alt="Tips" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A focused close-up of a person's hands holding a premium metal credit card over a leather wallet on a clean wooden surface. Beside them is a notepad with neat, organized notes and a luxury fountain pen. The lighting is warm and directional, creating a mood of mindful spending and intentional financial planning. The color palette is earthy with rich greens and deep browns." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjHHPO2CntQq7G1XGHFfA9ls9w6jnXlMkEnGMXqnuXpiqJcfbbAfl6OfakNWN1vK1Hon4GICSfhLJCMelNBumBWioGK68Qyp5QqvUtLIJO0yZ5sQL4pBw77LpS8d4A8fZUbEoPGe5CYg_7htt6LD59aQ13yYbE1b1Og1DtDymTVoCrJ3e4Xyhk-sdfijiku1idqsQVVnw5LkdQEtkHaidp8FA1bbw-IO_-sSxFMe27hSUyt23KcN6GB0nqWWhJt_NlM-xrO8ApTxk"/>
+</div>
+<div class="p-6 flex flex-col flex-grow">
+<div class="flex items-center justify-between mb-4">
+<span class="px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm">Tips</span>
+<span class="text-on-surface-variant text-[12px]">Oct 18, 2023</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-3 group-hover:text-primary transition-colors">5 Habits of Highly Successful Investors</h3>
+<p class="text-on-surface-variant font-body-md text-body-md line-clamp-3 mb-6">Success in the market isn't just about picking the right stocks; it's about the psychological discipline and daily routines you maintain.</p>
+<div class="mt-auto flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-variant"></div>
+<span class="font-label-sm text-label-sm text-on-surface">David Chen</span>
+</div>
+<span class="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</div>
+</div>
+<a class="absolute inset-0" href="#"></a>
+</article>
+</div>
+<!-- More Posts Button -->
+<div class="flex justify-center mt-16">
+<button class="px-8 py-4 border-2 border-primary text-primary rounded-xl font-button text-button hover:bg-primary/5 transition-colors flex items-center gap-2">
+                    Load More Insights
+                    <span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</section>
+<!-- Newsletter CTA -->
+<section class="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto mt-32">
+<div class="relative rounded-3xl bg-primary overflow-hidden p-8 md:p-16 text-center">
+
+<div class="relative z-10 max-w-2xl mx-auto">
+<h2 class="font-headline-lg text-headline-lg text-white mb-4">Stay ahead of the curve</h2>
+<p class="text-on-primary-container font-body-lg text-body-lg mb-8">Weekly financial insights, market updates, and exclusive FinTrack tips delivered straight to your inbox.</p>
+<form class="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
+<input class="flex-grow rounded-lg border-none bg-white/10 text-white placeholder:text-white/60 focus:ring-2 focus:ring-white/50 py-3 px-4" placeholder="Enter your email" type="email"/>
+<button class="bg-white text-primary font-button text-button px-8 py-3 rounded-lg hover:bg-on-primary-fixed transition-colors" type="submit">Subscribe</button>
+</form>
+<p class="text-white/40 text-[12px] mt-4">By subscribing, you agree to our Privacy Policy and Terms of Service.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-20 px-margin-mobile md:px-margin-desktop bg-surface-container-lowest border-t border-outline-variant/50 max-w-container-max mx-auto">
+<div class="flex flex-col md:flex-row justify-between gap-gutter mb-16">
+<div class="max-w-xs">
+<span class="text-headline-md font-headline-md font-bold text-primary mb-6 block">FinTrack</span>
+<p class="text-on-surface-variant font-body-md text-body-md">Empowering your financial journey with intelligent tracking and premium wealth management tools.</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-12">
+<div class="flex flex-col gap-4">
+<h4 class="font-label-sm text-label-sm text-on-surface font-bold uppercase tracking-widest">Platform</h4>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Features</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Pricing</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Security</a>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-label-sm text-label-sm text-on-surface font-bold uppercase tracking-widest">Company</h4>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">About</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Careers</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Blog</a>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-label-sm text-label-sm text-on-surface font-bold uppercase tracking-widest">Legal</h4>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Cookie Policy</a>
+</div>
+</div>
+</div>
+<div class="pt-8 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-on-surface-variant font-label-sm text-label-sm">© 2024 FinTrack Inc. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">share</span></a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">public</span></a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">account_balance</span></a>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interaction for navigation highlight on scroll
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 20) {
+                nav.classList.add('shadow-md');
+            } else {
+                nav.classList.remove('shadow-md');
+            }
+        });
+    </script>
+</body></html>

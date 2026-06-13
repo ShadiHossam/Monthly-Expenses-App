@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, RefObject } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../lib/api";
+import { MerchantAlias } from "../types";
 import { cn, formatAED, formatDate } from "../lib/utils";
 import { exportToExcel, exportToPDF } from "../lib/exportUtils";
 
@@ -20,23 +21,38 @@ export default function MerchantsPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [merchantEdit, setMerchantEdit] = useState<{ name: string; applyRule: boolean } | null>(null);
   const merchantEditRef = useRef<HTMLDivElement>(null);
+  const [aliasMap, setAliasMap] = useState<Map<string, MerchantAlias>>(new Map());
+  const [aliasEdit, setAliasEdit] = useState<string | null>(null);
+  const aliasEditRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { api.listCategories().then(c => setCategories(Array.isArray(c) ? c : [])); }, []);
 
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (merchantEditRef.current && !merchantEditRef.current.contains(e.target as Node)) setMerchantEdit(null);
+      if (aliasEditRef.current && !aliasEditRef.current.contains(e.target as Node)) setAliasEdit(null);
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  function loadAliases() {
+    api.listAliases().then(list => {
+      const map = new Map<string, MerchantAlias>();
+      (list as MerchantAlias[]).forEach(a => map.set(a.raw_name, a));
+      setAliasMap(map);
+    });
+  }
+
   useEffect(() => {
-    Promise.all([api.listMerchants(), api.getFrequent(), api.getMerchantRanking()])
-      .then(([m, f, r]) => {
+    Promise.all([api.listMerchants(), api.getFrequent(), api.getMerchantRanking(), api.listAliases()])
+      .then(([m, f, r, al]) => {
         setMerchants((m as any).data || []);
         setFrequent((f as any).data || []);
         setRanking((r as any).data || []);
+        const map = new Map<string, MerchantAlias>();
+        (al as MerchantAlias[]).forEach(a => map.set(a.raw_name, a));
+        setAliasMap(map);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -202,6 +218,14 @@ export default function MerchantsPage() {
                         </p>
                       </button>
                       <div className="flex items-center gap-1.5 shrink-0">
+                        <MerchantAliasButton
+                          merchantName={p.merchant_name}
+                          aliasMap={aliasMap}
+                          aliasEdit={aliasEdit}
+                          setAliasEdit={setAliasEdit}
+                          aliasEditRef={aliasEditRef}
+                          onSaved={loadAliases}
+                        />
                         <MerchantCategoryButton
                           merchantName={p.merchant_name}
                           merchantEdit={merchantEdit}
@@ -254,6 +278,14 @@ export default function MerchantsPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
+                      <MerchantAliasButton
+                        merchantName={m.merchant_name}
+                        aliasMap={aliasMap}
+                        aliasEdit={aliasEdit}
+                        setAliasEdit={setAliasEdit}
+                        aliasEditRef={aliasEditRef}
+                        onSaved={loadAliases}
+                      />
                       <MerchantCategoryButton
                         merchantName={m.merchant_name}
                         merchantEdit={merchantEdit}
@@ -295,6 +327,14 @@ export default function MerchantsPage() {
                         </p>
                       </button>
                       <div className="flex items-center gap-1.5 shrink-0">
+                        <MerchantAliasButton
+                          merchantName={m.merchant_name}
+                          aliasMap={aliasMap}
+                          aliasEdit={aliasEdit}
+                          setAliasEdit={setAliasEdit}
+                          aliasEditRef={aliasEditRef}
+                          onSaved={loadAliases}
+                        />
                         <MerchantCategoryButton
                           merchantName={m.merchant_name}
                           merchantEdit={merchantEdit}
@@ -325,6 +365,105 @@ export default function MerchantsPage() {
             )}
           </div>
 
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MerchantAliasButton({ merchantName, aliasMap, aliasEdit, setAliasEdit, aliasEditRef, onSaved }: {
+  merchantName: string;
+  aliasMap: Map<string, MerchantAlias>;
+  aliasEdit: string | null;
+  setAliasEdit: (v: string | null) => void;
+  aliasEditRef: RefObject<HTMLDivElement>;
+  onSaved: () => void;
+}) {
+  const existing = aliasMap.get(merchantName);
+  const isOpen = aliasEdit === merchantName;
+  const [input, setInput] = useState(existing?.display_name ?? merchantName);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) setInput(existing?.display_name ?? merchantName);
+  }, [isOpen, merchantName, existing?.display_name]);
+
+  async function handleSave() {
+    const trimmed = input.trim();
+    if (!trimmed || trimmed === merchantName) { setAliasEdit(null); return; }
+    setSaving(true);
+    try {
+      if (existing) {
+        await api.updateAlias(existing.id, trimmed);
+      } else {
+        await api.createAlias(merchantName, trimmed);
+      }
+      onSaved();
+      setAliasEdit(null);
+    } finally { setSaving(false); }
+  }
+
+  async function handleRemove() {
+    if (!existing) return;
+    setSaving(true);
+    try {
+      await api.deleteAlias(existing.id);
+      onSaved();
+      setAliasEdit(null);
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <div className="relative" ref={isOpen ? aliasEditRef : null}>
+      <button
+        onClick={() => setAliasEdit(isOpen ? null : merchantName)}
+        title={existing ? `Alias: ${existing.display_name}` : "Set display name"}
+        className={cn(
+          "p-1.5 rounded-lg transition-colors",
+          existing
+            ? "text-ft-primary dark:text-ve-primary bg-ft-primary/10 dark:bg-ve-primary/10"
+            : isOpen
+            ? "bg-ft-primary/10 dark:bg-ve-primary/10 text-ft-primary dark:text-ve-primary"
+            : "text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:bg-ft-surface-low dark:hover:bg-ve-surface-high"
+        )}
+      >
+        <MSIcon name="drive_file_rename_outline" className="text-base" />
+      </button>
+      {isOpen && (
+        <div className="absolute top-full right-0 mt-1 z-50 bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-xl shadow-xl p-3 min-w-[220px]">
+          <p className="text-xs font-semibold text-ft-on-surface-variant dark:text-ve-on-surface-variant mb-2">Display name</p>
+          <input
+            autoFocus
+            type="text"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") setAliasEdit(null); }}
+            className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-ft-outline-variant dark:border-ve-outline bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface focus:outline-none focus:ring-2 focus:ring-ft-primary dark:focus:ring-ve-primary mb-2"
+          />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleSave}
+              disabled={saving || !input.trim()}
+              className="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background disabled:opacity-50 hover:opacity-90 transition-opacity"
+            >
+              {saving ? "Saving…" : "Save"}
+            </button>
+            {existing && (
+              <button
+                onClick={handleRemove}
+                disabled={saving}
+                title="Remove alias"
+                className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+              >
+                <MSIcon name="delete" className="text-base" />
+              </button>
+            )}
+          </div>
+          {existing && (
+            <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-2 truncate">
+              Raw: {existing.raw_name}
+            </p>
+          )}
         </div>
       )}
     </div>
@@ -373,7 +512,7 @@ function MerchantCategoryButton({ merchantName, merchantEdit, setMerchantEdit, m
                 onClick={() => onSet(merchantName, c.id)}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-xs hover:bg-ft-surface-low dark:hover:bg-ve-surface-high"
               >
-                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
+                <MSIcon name={c.icon || "label"} className="text-[14px] leading-none shrink-0" style={{ color: c.color }} />
                 <span className="text-ft-on-surface dark:text-ve-on-surface">{c.name}</span>
               </button>
             ))}

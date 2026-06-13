@@ -102,6 +102,8 @@ public class StatementService {
             throw new BusinessException("Only JPG, PNG, and PDF files are supported", HttpStatus.BAD_REQUEST);
         }
 
+        validateMagicBytes(file, ext);
+
         boolean isPdf = "pdf".equals(ext);
 
         // Enforce per-user concurrent processing limit
@@ -266,7 +268,10 @@ public class StatementService {
 
             sendProgress(statementId, 88, "Applying merchant rules", "categorizing");
 
+            // Rules run first against raw bank strings; aliases rename for display only.
+            // Swapping the order would break any user rule that matches the raw name.
             merchantService.applyMerchantRules(toSave, stmt.getUserId());
+            merchantService.applyMerchantAliases(toSave, stmt.getUserId());
             transactionRepository.saveAll(toSave);
 
             stmt.setPeriodStart(minDate);
@@ -492,6 +497,23 @@ public class StatementService {
         } catch (Exception e) {
             log.warn("Image resize failed, using original: {}", e.getMessage());
             return imageBytes;
+        }
+    }
+
+    private void validateMagicBytes(MultipartFile file, String ext) throws IOException {
+        byte[] header = new byte[8];
+        int read = file.getInputStream().read(header);
+        if (read < 4) {
+            throw new BusinessException("Uploaded file is too small or empty", HttpStatus.BAD_REQUEST);
+        }
+        boolean valid = switch (ext) {
+            case "jpg", "jpeg" -> header[0] == (byte) 0xFF && header[1] == (byte) 0xD8 && header[2] == (byte) 0xFF;
+            case "png"         -> header[0] == (byte) 0x89 && header[1] == 0x50 && header[2] == 0x4E && header[3] == 0x47;
+            case "pdf"         -> header[0] == 0x25 && header[1] == 0x50 && header[2] == 0x44 && header[3] == 0x46; // %PDF
+            default            -> false;
+        };
+        if (!valid) {
+            throw new BusinessException("File content does not match the declared type", HttpStatus.BAD_REQUEST);
         }
     }
 

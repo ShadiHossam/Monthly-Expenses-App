@@ -1,0 +1,11 @@
+UPDATE categories SET icon = 'shopping_cart'  WHERE name = 'Groceries'     AND is_system = true AND icon = 'shopping-cart';
+UPDATE categories SET icon = 'restaurant'     WHERE name = 'Dining'         AND is_system = true AND icon = 'utensils';
+UPDATE categories SET icon = 'directions_car' WHERE name = 'Transport'      AND is_system = true AND icon = 'car';
+UPDATE categories SET icon = 'bolt'           WHERE name = 'Utilities'      AND is_system = true AND icon = 'zap';
+UPDATE categories SET icon = 'favorite'       WHERE name = 'Healthcare'     AND is_system = true AND icon = 'heart';
+UPDATE categories SET icon = 'movie'          WHERE name = 'Entertainment'  AND is_system = true AND icon = 'music';
+UPDATE categories SET icon = 'shopping_bag'   WHERE name = 'Shopping'       AND is_system = true AND icon = 'bag';
+UPDATE categories SET icon = 'south'          WHERE name = 'Income'         AND is_system = true AND icon = 'arrow-down';
+UPDATE categories SET icon = 'sync_alt'       WHERE name = 'Transfer'       AND is_system = true AND icon = 'arrows';
+UPDATE categories SET icon = 'autorenew'      WHERE name = 'Subscriptions'  AND is_system = true AND icon = 'refresh';
+UPDATE categories SET icon = 'label'          WHERE name = 'Uncategorized'  AND is_system = true AND icon = 'tag';

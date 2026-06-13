@@ -8,7 +8,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,10 +22,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
         User user = userRepository.findById(Long.parseLong(userId))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userId));
+        String roleName = "ROLE_" + (user.getRole() != null ? user.getRole().toUpperCase() : "USER");
         return new org.springframework.security.core.userdetails.User(
                 userId,
                 user.getPasswordHash(),
-                Collections.emptyList()
+                List.of(new SimpleGrantedAuthority(roleName))
         );
     }
 }

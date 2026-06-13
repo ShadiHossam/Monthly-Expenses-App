@@ -43,6 +43,11 @@ stitch_monthly_expense_analytics/
 # DB backups — local only
 backups/
 
+# Java / Gradle build cache — never commit
+.gradle/
+backend-java/build/
+*.class
+
 # Misc
 .DS_Store
 *.pem

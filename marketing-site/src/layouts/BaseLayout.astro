@@ -1,0 +1,108 @@
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../config/site';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  ogImage?: string;
+  ogType?: string;
+  ldJson?: object | object[];
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  canonicalPath,
+  ogImage = '/og-home.jpg',
+  ogType = 'website',
+  ldJson,
+  noindex = false,
+} = Astro.props;
+
+const canonicalURL = `https://${SITE.domain}${canonicalPath}`;
+const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${SITE.domain}${ogImage}`;
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#007a33" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  {noindex && <meta name="robots" content="noindex, nofollow" />}
+  <link rel="canonical" href={canonicalURL} />
+
+  <meta property="og:site_name" content="FinTrack" />
+  <meta property="og:type" content={ogType} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonicalURL} />
+  <meta property="og:image" content={ogImageURL} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content={SITE.twitter} />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImageURL} />
+
+  {ldJson && <script type="application/ld+json" set:html={JSON.stringify(ldJson)} />}
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<Navbar />
+<slot />
+<Footer />
+
+<script>
+  /* Navbar scroll effect */
+  const navbar = document.getElementById('navbar');
+  if (navbar) {
+    const onScroll = () => navbar.classList.toggle('scrolled', window.scrollY > 80);
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
+  /* FAQ accordion */
+  document.querySelectorAll<HTMLButtonElement>('.faq-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = btn.nextElementSibling as HTMLElement;
+      const icon = btn.querySelector('.faq-icon');
+      const isOpen = body?.classList.contains('open');
+      document.querySelectorAll('.faq-body').forEach(b => b.classList.remove('open'));
+      document.querySelectorAll('.faq-icon').forEach(i => i.classList.remove('open'));
+      if (!isOpen) { body?.classList.add('open'); icon?.classList.add('open'); }
+    });
+  });
+
+  /* Mobile menu */
+  (window as any).toggleMenu = function() {
+    const menu = document.getElementById('mobile-menu');
+    const ham  = document.getElementById('ham-icon');
+    const close = document.getElementById('close-icon');
+    const hamburger = document.getElementById('hamburger');
+    if (!menu) return;
+    const open = menu.classList.toggle('open');
+    ham?.classList.toggle('hidden', open);
+    close?.classList.toggle('hidden', !open);
+    hamburger?.setAttribute('aria-expanded', String(open));
+  };
+
+  /* Copyright year */
+  const yr = document.getElementById('copyright-year');
+  if (yr) yr.textContent = String(new Date().getFullYear());
+</script>
+</body>
+</html>

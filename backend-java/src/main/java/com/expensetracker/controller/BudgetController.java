@@ -54,6 +54,10 @@ public class BudgetController {
         LocalDate now = LocalDate.now();
         int y = year != null ? year : now.getYear();
         int m = month != null ? month : now.getMonthValue();
+        if (m < 1 || m > 12) {
+            throw new com.expensetracker.exception.BusinessException(
+                "month must be between 1 and 12", org.springframework.http.HttpStatus.BAD_REQUEST);
+        }
         return ResponseEntity.ok(budgetService.status(userId, y, m));
     }
 }

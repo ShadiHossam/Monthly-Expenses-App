@@ -66,6 +66,7 @@ function TransactionsInner() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const hasAutoSwitched = useRef(false);
+  const [isAutoAllTime, setIsAutoAllTime] = useState(false);
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -128,6 +129,7 @@ function TransactionsInner() {
         hasAutoSwitched.current = true;
         autoSwitched = true;
         setPeriod("");
+        setIsAutoAllTime(true);
         return;
       }
       setTxns(items);
@@ -186,7 +188,7 @@ function TransactionsInner() {
   function clearAll() {
     setFilterType(""); setFilterCat(""); setSearch("");
     setPeriod("month"); setMonthOffset(0); setQuarterOffset(0); setYearOffset(0);
-    setCustomFrom(""); setCustomTo("");
+    setCustomFrom(""); setCustomTo(""); setIsAutoAllTime(false);
   }
 
   const sortedTxns = [...txns].sort((a, b) => {
@@ -238,7 +240,7 @@ function TransactionsInner() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {(filterType || filterCat || search || period !== "month" || monthOffset !== 0) && (
+          {(filterType || filterCat || search || monthOffset !== 0 || quarterOffset !== 0 || yearOffset !== 0 || (period !== "month" && !isAutoAllTime)) && (
             <button onClick={clearAll} className="text-xs font-semibold text-ft-primary dark:text-ve-primary flex items-center gap-1 hover:opacity-80">
               <MSIcon name="close" className="text-base" />
               Clear
@@ -270,6 +272,7 @@ function TransactionsInner() {
             onChange={e => setFilterCat(e.target.value ? Number(e.target.value) : "")}
           >
             <option value="">All Categories</option>
+            <option value="-1">Uncategorized</option>
             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
 

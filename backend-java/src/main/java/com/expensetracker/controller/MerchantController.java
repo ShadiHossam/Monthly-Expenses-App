@@ -85,8 +85,30 @@ public class MerchantController {
     @PostMapping("/api/v1/merchant-aliases")
     public ResponseEntity<MerchantAlias> createAlias(@RequestBody Map<String, String> req,
                                                      @AuthenticationPrincipal Long userId) {
+        String rawName = req.get("raw_name");
+        String displayName = req.get("display_name");
+        if (rawName == null || rawName.isBlank()) {
+            throw new com.expensetracker.exception.BusinessException(
+                "raw_name is required", org.springframework.http.HttpStatus.BAD_REQUEST);
+        }
+        if (displayName == null || displayName.isBlank()) {
+            throw new com.expensetracker.exception.BusinessException(
+                "display_name is required", org.springframework.http.HttpStatus.BAD_REQUEST);
+        }
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(merchantService.createAlias(userId, req.get("raw_name"), req.get("display_name")));
+                .body(merchantService.createAlias(userId, rawName, displayName));
+    }
+
+    @PatchMapping("/api/v1/merchant-aliases/{id}")
+    public ResponseEntity<MerchantAlias> updateAlias(@PathVariable Long id,
+                                                     @RequestBody Map<String, String> req,
+                                                     @AuthenticationPrincipal Long userId) {
+        String displayName = req.get("display_name");
+        if (displayName == null || displayName.isBlank()) {
+            throw new com.expensetracker.exception.BusinessException(
+                "display_name is required", org.springframework.http.HttpStatus.BAD_REQUEST);
+        }
+        return ResponseEntity.ok(merchantService.updateAlias(id, userId, displayName));
     }
 
     @DeleteMapping("/api/v1/merchant-aliases/{id}")

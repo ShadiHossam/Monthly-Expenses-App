@@ -69,17 +69,18 @@ public class AuthService {
     private final AppProperties appProperties;
 
     private static final List<Object[]> SYSTEM_CATEGORIES = List.of(
-        new Object[]{"Groceries",    "#10b981", "shopping-cart"},
-        new Object[]{"Dining",       "#f59e0b", "utensils"},
-        new Object[]{"Transport",    "#3b82f6", "car"},
-        new Object[]{"Utilities",    "#8b5cf6", "zap"},
-        new Object[]{"Healthcare",   "#ef4444", "heart"},
-        new Object[]{"Entertainment","#ec4899", "music"},
-        new Object[]{"Shopping",     "#f97316", "bag"},
-        new Object[]{"Income",       "#22c55e", "arrow-down"},
-        new Object[]{"Transfer",     "#6b7280", "arrows"},
-        new Object[]{"Subscriptions","#14b8a6", "refresh"},
-        new Object[]{"Uncategorized","#9ca3af", "tag"}
+        new Object[]{"Groceries",    "#10b981", "shopping_cart"},
+        new Object[]{"Dining",       "#f59e0b", "restaurant"},
+        new Object[]{"Transport",    "#3b82f6", "directions_car"},
+        new Object[]{"Utilities",    "#8b5cf6", "bolt"},
+        new Object[]{"Healthcare",   "#ef4444", "favorite"},
+        new Object[]{"Entertainment","#ec4899", "movie"},
+        new Object[]{"Shopping",     "#f97316", "shopping_bag"},
+        new Object[]{"Income",       "#22c55e", "south"},
+        new Object[]{"Transfer",     "#6b7280", "sync_alt"},
+        new Object[]{"Subscriptions","#14b8a6", "autorenew"},
+        new Object[]{"Cashback",     "#f59e0b", "redeem"}
+        // "Uncategorized" removed: null category_id is the canonical uncategorized state (V14).
     );
 
     @Transactional
@@ -168,13 +169,20 @@ public class AuthService {
         }
     }
 
-    @Transactional
+    // Not @Transactional — a rollback on RateLimitException would undo the save,
+    // leaving the count never committed and the limiter permanently bypassed.
     void checkRateLimit(String ip) {
         Instant now = Instant.now();
         LoginAttempt attempt = loginAttemptRepository.findByIp(ip).orElse(null);
         if (attempt == null) {
-            loginAttemptRepository.save(LoginAttempt.builder()
-                .ip(ip).attemptCount(1).windowStart(now).build());
+            try {
+                loginAttemptRepository.save(LoginAttempt.builder()
+                    .ip(ip).attemptCount(1).windowStart(now).build());
+            } catch (org.springframework.dao.DataIntegrityViolationException ignored) {
+                // Two concurrent first-logins from the same IP both saw null and raced to
+                // INSERT. The unique constraint (V16) rejected the second — that's fine; the
+                // first row was committed and this request should proceed normally.
+            }
             return;
         }
         // Reset window if older than 60s
@@ -190,6 +198,10 @@ public class AuthService {
         }
         attempt.setAttemptCount(attempt.getAttemptCount() + 1);
         if (attempt.getAttemptCount() > 10) {
+            // Persist the lock before throwing — without this save the throw would
+            // be caught by the caller's @Transactional and the count rolled back.
+            attempt.setLockedUntil(now.plusSeconds(300));
+            loginAttemptRepository.save(attempt);
             throw new RateLimitException("Too many login attempts. Please try again later.");
         }
         loginAttemptRepository.save(attempt);
@@ -207,6 +219,9 @@ public class AuthService {
             .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         if (email != null && !email.isBlank() && !email.equals(user.getEmail())) {
+            if (currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+                throw new BusinessException("Current password is required to change email", HttpStatus.BAD_REQUEST);
+            }
             if (userRepository.existsByEmail(email)) {
                 throw new BusinessException("Email already in use", HttpStatus.CONFLICT);
             }
@@ -292,6 +307,7 @@ public class AuthService {
                 .anthropicApiKeySet(StringUtils.hasText(user.getAnthropicApiKey()))
                 .aiProvider(user.getAiProvider())
                 .concurrentProcessing(user.getConcurrentProcessing())
+                .role(user.getRole())
                 .build();
     }
 }

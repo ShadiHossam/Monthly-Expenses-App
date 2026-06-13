@@ -1,0 +1,205 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { SITE } from "../config/site";
+---
+
+<BaseLayout
+  title="Contact FinTrack — We'd Love to Hear From You"
+  description="Have a question, feedback, or need support? Reach out to the FinTrack team. We typically respond within one business day."
+  canonicalPath="/contact"
+>
+
+<!-- HERO -->
+<div class="page-hero" style="padding-top:9rem;padding-bottom:5rem;">
+  <div class="container" style="position:relative;z-index:1;text-align:center;">
+    <div style="display:inline-block;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);border-radius:6px;padding:4px 12px;margin-bottom:1.25rem;">
+      <span style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green-400);font-family:'Plus Jakarta Sans',sans-serif;">Get in Touch</span>
+    </div>
+    <h1 style="color:#ffffff;font-size:clamp(2.25rem,5vw,3.5rem);margin-bottom:1.25rem;">
+      We're here to<br>
+      <span style="background:linear-gradient(135deg,var(--green-400),var(--green-500));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">help you.</span>
+    </h1>
+    <p style="color:rgba(255,255,255,0.55);font-size:1.0625rem;max-width:480px;margin:0 auto;line-height:1.8;">
+      Whether you have a question about features, pricing, or anything else — our team is ready to answer all your questions.
+    </p>
+  </div>
+</div>
+
+<!-- CONTACT SECTION -->
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="contact-grid">
+
+      <!-- Info cards -->
+      <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+        <div class="card" style="display:flex;gap:1rem;align-items:flex-start;">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--green-50);border:1px solid var(--border-green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" fill="none" style="width:20px;height:20px;" stroke="var(--green-700)" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <div>
+            <h3 style="font-size:1rem;margin-bottom:.25rem;">Email Us</h3>
+            <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:.5rem;line-height:1.6;">We reply within one business day.</p>
+            <a href={`mailto:${SITE.email}`} style="color:var(--green-700);font-weight:600;font-size:.9375rem;text-decoration:none;">{SITE.email}</a>
+          </div>
+        </div>
+
+        <div class="card" style="display:flex;gap:1rem;align-items:flex-start;">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--green-50);border:1px solid var(--border-green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" fill="none" style="width:20px;height:20px;" stroke="var(--green-700)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div>
+            <h3 style="font-size:1rem;margin-bottom:.25rem;">Response Time</h3>
+            <p style="color:var(--text-muted);font-size:.9rem;margin:0;line-height:1.6;">Monday – Friday, 9am – 6pm GST.<br>We aim to respond within 24 hours.</p>
+          </div>
+        </div>
+
+        <div class="card" style="display:flex;gap:1rem;align-items:flex-start;">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--green-50);border:1px solid var(--border-green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" fill="none" style="width:20px;height:20px;" stroke="var(--green-700)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div>
+            <h3 style="font-size:1rem;margin-bottom:.25rem;">Support Resources</h3>
+            <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:.5rem;line-height:1.6;">Find quick answers in our help docs.</p>
+            <a href="/faq" style="color:var(--green-700);font-weight:600;font-size:.9375rem;text-decoration:none;">Browse FAQ →</a>
+          </div>
+        </div>
+
+        <div class="card" style="display:flex;gap:1rem;align-items:flex-start;">
+          <div style="width:44px;height:44px;border-radius:12px;background:var(--green-50);border:1px solid var(--border-green);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" fill="none" style="width:20px;height:20px;" stroke="var(--green-700)" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </div>
+          <div>
+            <h3 style="font-size:1rem;margin-bottom:.25rem;">Interested in Joining?</h3>
+            <p style="color:var(--text-muted);font-size:.9rem;margin-bottom:.5rem;line-height:1.6;">See open roles at FinTrack.</p>
+            <a href="/careers" style="color:var(--green-700);font-weight:600;font-size:.9375rem;text-decoration:none;">View Careers →</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Form -->
+      <div class="card" style="padding:2.5rem;">
+        <h2 style="font-size:1.5rem;margin-bottom:.5rem;">Send us a message</h2>
+        <p style="color:var(--text-muted);font-size:.9375rem;margin-bottom:2rem;">Fill in the form below and we'll get back to you shortly.</p>
+
+        <form
+          id="contact-form"
+          action={`https://formsubmit.co/${SITE.email}`}
+          method="POST"
+          style="display:flex;flex-direction:column;gap:1.25rem;"
+        >
+          <!-- Honeypot spam filter -->
+          <input type="text" name="_honey" style="display:none;" />
+          <!-- Disable CAPTCHA -->
+          <input type="hidden" name="_captcha" value="false" />
+          <!-- Redirect after submit -->
+          <input type="hidden" name="_next" value={`https://${SITE.domain}/contact?sent=true`} />
+          <input type="hidden" name="_subject" value="New contact from FinTrack website" />
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;" class="form-row">
+            <div>
+              <label class="form-label" for="name">Full Name</label>
+              <input class="form-input" id="name" name="name" type="text" placeholder="Sarah Chen" required />
+            </div>
+            <div>
+              <label class="form-label" for="email">Email Address</label>
+              <input class="form-input" id="email" name="email" type="email" placeholder="sarah@example.com" required />
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label" for="subject">Subject</label>
+            <select class="form-input" id="subject" name="subject" required>
+              <option value="" disabled selected>Select a topic…</option>
+              <option value="General Question">General Question</option>
+              <option value="Account / Billing">Account / Billing</option>
+              <option value="Bank Statement Issue">Bank Statement Issue</option>
+              <option value="Feature Request">Feature Request</option>
+              <option value="Bug Report">Bug Report</option>
+              <option value="Partnership">Partnership</option>
+              <option value="Press / Media">Press / Media</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label" for="message">Message</label>
+            <textarea class="form-input" id="message" name="message" rows="5" placeholder="Tell us how we can help…" required style="resize:vertical;min-height:130px;"></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width:100%;justify-content:center;font-size:1rem;padding:0.875rem 1.5rem;">
+            Send Message
+            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+          </button>
+        </form>
+
+        <!-- Success message (shown after redirect with ?sent=true) -->
+        <div id="success-msg" style="display:none;text-align:center;padding:2rem 0;">
+          <div style="width:60px;height:60px;border-radius:50%;background:var(--green-50);border:2px solid var(--border-green);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
+            <svg viewBox="0 0 24 24" fill="none" style="width:28px;height:28px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h3 style="margin-bottom:.5rem;">Message sent!</h3>
+          <p style="color:var(--text-muted);font-size:.9375rem;">Thanks for reaching out. We'll get back to you within one business day.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('sent') === 'true') {
+    const form = document.getElementById('contact-form');
+    const msg  = document.getElementById('success-msg');
+    if (form) form.style.display = 'none';
+    if (msg)  msg.style.display = 'block';
+  }
+</script>
+
+<style>
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 2.5rem;
+    align-items: start;
+    max-width: 1060px;
+    margin: 0 auto;
+  }
+  .form-label {
+    display: block;
+    font-size: .875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: .5rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .form-input {
+    width: 100%;
+    padding: .75rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    color: var(--text-primary);
+    font-size: .9375rem;
+    font-family: 'Inter', sans-serif;
+    transition: border-color .2s, box-shadow .2s;
+    box-sizing: border-box;
+    appearance: none;
+  }
+  .form-input:focus {
+    outline: none;
+    border-color: var(--green-500);
+    box-shadow: 0 0 0 3px rgba(16,185,129,0.12);
+  }
+  .form-input::placeholder { color: var(--text-muted); opacity: .7; }
+  @media (max-width: 860px) {
+    .contact-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .form-row { grid-template-columns: 1fr !important; }
+  }
+</style>
+
+</BaseLayout>

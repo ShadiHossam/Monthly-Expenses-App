@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>How to Master Your 'Safe to Spend' Number | FinTrack Blog</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#00714d",
+                    "on-primary-fixed-variant": "#005320",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#006e2d",
+                    "tertiary": "#1b5b47",
+                    "surface-container-highest": "#d9e3f6",
+                    "inverse-primary": "#77dc88",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#005236",
+                    "on-tertiary-fixed": "#002117",
+                    "on-secondary-fixed": "#002113",
+                    "surface-container-high": "#dee9fc",
+                    "primary-fixed-dim": "#77dc88",
+                    "primary-fixed": "#93f9a2",
+                    "inverse-on-surface": "#eaf1ff",
+                    "outline-variant": "#becabb",
+                    "on-surface-variant": "#3f4a3e",
+                    "surface": "#f8f9ff",
+                    "on-surface": "#121c2a",
+                    "surface-dim": "#d0dbed",
+                    "background": "#f8f9ff",
+                    "inverse-surface": "#27313f",
+                    "tertiary-fixed": "#b0f0d6",
+                    "surface-variant": "#d9e3f6",
+                    "on-primary-container": "#a1ffad",
+                    "on-error": "#ffffff",
+                    "on-background": "#121c2a",
+                    "surface-container-low": "#eff4ff",
+                    "secondary-fixed": "#6ffbbe",
+                    "outline": "#6f7a6d",
+                    "surface-bright": "#f8f9ff",
+                    "secondary-fixed-dim": "#4edea3",
+                    "on-tertiary-fixed-variant": "#0b513d",
+                    "error-container": "#ffdad6",
+                    "tertiary-container": "#37745f",
+                    "surface-container": "#e6eeff",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "primary-container": "#007a33",
+                    "secondary-container": "#6cf8bb",
+                    "on-tertiary-container": "#b7f7dd",
+                    "on-primary-fixed": "#002109",
+                    "primary": "#005e26",
+                    "secondary": "#006c49",
+                    "tertiary-fixed-dim": "#95d3ba",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "container-max": "1280px",
+                    "margin-mobile": "20px",
+                    "margin-desktop": "80px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "display-xl": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "button": ["Plus Jakarta Sans"],
+                    "body-lg": ["Inter"],
+                    "display-xl-mobile": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "display-xl": ["60px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "button": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-xl-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .prose p { margin-bottom: 1.5rem; line-height: 1.75; }
+        .prose h2 { margin-top: 2.5rem; margin-bottom: 1rem; }
+        .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0, 122, 51, 0.1); }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-fixed-dim selection:text-on-primary-fixed">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto bg-surface/80 backdrop-blur-md dark:bg-on-background/80 border-b border-outline-variant/30 dark:border-outline/20">
+<div class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed">FinTrack</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="font-label-sm text-label-sm text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors" href="#">Features</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant dark:text-surface-variant hover:text-primary transition-colors" href="#">Pricing</a>
+<a class="font-label-sm text-label-sm text-primary dark:text-primary-fixed font-bold border-b-2 border-primary" href="#">About</a>
+</nav>
+<button class="bg-primary-container text-on-primary px-6 py-2.5 rounded-full font-button text-button hover:opacity-80 transition-opacity active:scale-95 transition-transform">
+            Get Started
+        </button>
+</header>
+<main class="pt-32 pb-20 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Article Content -->
+<article class="lg:col-span-8">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 mb-8 text-on-surface-variant">
+<span class="font-label-sm text-label-sm">Resources</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="font-label-sm text-label-sm">Budgeting</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="font-label-sm text-label-sm text-primary">Masterclass</span>
+</nav>
+<!-- Header Section -->
+<header class="mb-12">
+<h1 class="font-display-xl-mobile md:font-display-xl text-display-xl-mobile md:text-display-xl text-on-surface mb-6 leading-tight">
+                        How to Master Your 'Safe to Spend' Number
+                    </h1>
+<div class="flex flex-wrap items-center gap-6 py-6 border-y border-outline-variant/30">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container-high">
+<img alt="Author" class="w-full h-full object-cover" data-alt="A professional headshot of a financial advisor in a bright, modern office. The lighting is soft and natural, emphasizing a trustworthy and friendly personality. The background is slightly blurred with minimalist decor and lush green plants, maintaining a clean corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeBxff_eyyYLAStL_zJn0cbuPLCP1Pl_uiRmGVAj248PPTfaQgd9P6ImrR3p7rYUGJxd9YUVR80sohFgqPqJdGOmxtZv5FQvQPoPbUGtLl5KAZqtpDAZ7xhLR3HaG4cuJk-dTtco_9K26_XLzHYrBsMPYt3OQ8qz13F_2_dn0hFAcUImlsUpMtnJECWJar7xXvkrEX80E_MEgRzV9sXNTO1P1m6FtfFi7BekNMEmvt4VvceeLQ_PAyTXtbLOmpF7u6S4Aq1FguuMg"/>
+</div>
+<div>
+<p class="font-button text-on-surface">Elena Rodriguez</p>
+<p class="text-label-sm text-on-surface-variant">Senior Financial Strategist</p>
+</div>
+</div>
+<div class="h-8 w-px bg-outline-variant/30 hidden md:block"></div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+<span class="text-label-sm">Oct 24, 2024</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+<span class="text-label-sm">8 min read</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Hero Image -->
+<div class="rounded-xl overflow-hidden mb-12 shadow-lg">
+<img class="w-full aspect-[2/1] object-cover" data-alt="A premium, minimalist workspace featuring a sleek laptop displaying clean financial charts. Beside it sits a high-end fountain pen and a leather-bound notebook. The scene is bathed in soft, diffused morning light filtering through a large window, with accents of deep primary green and crisp whites defining the modern corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyndco0kHo0eVGvUQuumG_D26puonroOlr6gMLyEC3lsrmJWm-Twu8hLJR5Ka80VY0CSqprQAYkqY3QES-wgQ5hSIHynQgCmQAKQRng-NVPmD7zPhIpbw4wGj-ppgzH7X-SRVE66GCVUYfYxzl65vgy2t1kYxzgK12ElgH3AyLC6PZQo0fbbOTlTMe0GjIhZyYsaGie3_M8mWZ2sDJ90WzTIQpve38jRV_5MSmFuKGByMojuO8F7IM7xx_3r7qGSbED7ek2RG8b9Q"/>
+</div>
+<!-- Main Text -->
+<div class="prose font-body-lg text-body-lg text-on-surface-variant max-w-none">
+<p class="font-medium text-on-surface">
+                        Most budgeting apps tell you what you've already spent. But the real secret to financial freedom isn't looking backward—it's knowing exactly how much you can spend <em class="italic">right now</em> without compromising your future goals.
+                    </p>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">The Psychology of Spending</h2>
+<p>
+                        We often treat our bank balance as a green light. If there's money in the account, we feel safe to swipe. However, that number is a mirage. It doesn't account for the rent due in ten days, the annual car insurance payment next month, or the $200 you've committed to save for your summer vacation.
+                    </p>
+<!-- Pull Quote -->
+<blockquote class="my-12 px-8 py-4 border-l-4 border-primary bg-surface-container-low rounded-r-xl">
+<p class="font-headline-md text-headline-md text-primary italic leading-relaxed mb-0">
+                            "A 'Safe to Spend' number isn't a restriction; it's the ultimate permission to enjoy your money without guilt."
+                        </p>
+</blockquote>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Calculating Your True North</h2>
+<p>
+                        To find your real number, you need to subtract your "Committed Expenses" and your "Savings Goals" from your current liquid balance. This sounds simple, but the mastery lies in the granular details of your timing.
+                    </p>
+<ul class="space-y-4 mb-8 list-none">
+<li class="flex gap-3">
+<span class="material-symbols-outlined text-secondary" data-weight="fill">check_circle</span>
+<span><strong>Account for irregular bills:</strong> Divide annual costs by 12 and set that aside every month.</span>
+</li>
+<li class="flex gap-3">
+<span class="material-symbols-outlined text-secondary" data-weight="fill">check_circle</span>
+<span><strong>The 72-hour rule:</strong> Before any non-essential purchase over $50, wait three days.</span>
+</li>
+<li class="flex gap-3">
+<span class="material-symbols-outlined text-secondary" data-weight="fill">check_circle</span>
+<span><strong>Buffer your buffer:</strong> Always keep a $500 'untouchable' floor in your checking account.</span>
+</li>
+</ul>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Automation is Your Best Friend</h2>
+<p>
+                        The human brain isn't wired for complex mental math every time we see a "Buy Now" button. This is why FinTrack automates the calculation in real-time. By connecting your accounts and setting your goals once, you transform your banking app from a ledger into a dashboard for decision-making.
+                    </p>
+</div>
+<!-- Tags & Share -->
+<div class="mt-16 pt-8 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-secondary/10 text-secondary rounded-full text-label-sm font-medium">Budgeting</span>
+<span class="px-3 py-1 bg-secondary/10 text-secondary rounded-full text-label-sm font-medium">Financial Planning</span>
+<span class="px-3 py-1 bg-secondary/10 text-secondary rounded-full text-label-sm font-medium">Wealth</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-label-sm text-on-surface-variant">Share article:</span>
+<div class="flex gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full border border-outline-variant hover:bg-surface-container transition-colors">
+<img alt="X" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOYkDdV3VkEnhEHkXuBnfKnh0cWYUiGv-EleA8X2x8zyJQfJetWMUclMiuhtGWnCbnzp7UgjSZ9j_xNPoSX1XcVkPMqNozApkzU7OV2iaMDA2RDBqeXDtJQoPzt_ec8ZA1AkCEXLLHQ0lZCsYxkDFlTzb1SgZmdEUdxpfO10t6FzAzp5ECf_yYABHtpNGGd9_vxbuz1q-hyVbDeptvHlONBJgMgKA7dghaZuv4v4vDGYd4MFQrbWTnF5_dSs6kN593v_1xbT6N-zc"/>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full border border-outline-variant hover:bg-surface-container transition-colors">
+<img alt="LinkedIn" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACAkuMtnUsftjErJwkcFIbwOuKFXHlMxfdDhNLPglOUgIm4n45RpvX75zF3X-hQed7B0WqJE9aDH7Ys2B3DLT5H-esJVzyiXZNrhvyomsO31QxtfJVbt7BZgbbAP4ie9wiX_uVFGKtJbshHKWkEKYU6n5w3V2b798x0C2G_133EVvgZ4WwuYksHUC9t0oJd-VVwt8MQ91xJU_wSAJJFAQ5BR4UmIzL2FtpUIZ4Qw0aOu1DX3KRjR5qPIWDWZZ0JT_rjie2ciPYz70"/>
+</button>
+</div>
+</div>
+</div>
+</article>
+<!-- Sidebar -->
+<aside class="lg:col-span-4 space-y-gutter">
+<!-- Newsletter Signup -->
+<section class="p-8 rounded-xl bg-primary text-on-primary shadow-xl overflow-hidden relative">
+<div class="relative z-10">
+<h3 class="font-headline-md text-headline-md mb-3">Wealth Weekly</h3>
+<p class="font-body-md text-on-primary/80 mb-6">Join 25,000+ others receiving actionable financial insights every Tuesday.</p>
+<form class="space-y-3">
+<input class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary-fixed" placeholder="Email address" type="email"/>
+<button class="w-full bg-white text-primary font-button py-3 rounded-lg hover:bg-on-primary-container transition-colors" type="submit">
+                                Subscribe Now
+                            </button>
+</form>
+<p class="text-[12px] mt-4 opacity-60">No spam. Ever. Unsubscribe anytime.</p>
+</div>
+<!-- Decorative element -->
+<div class="absolute -bottom-10 -right-10 w-40 h-40 bg-on-primary-fixed-variant/20 rounded-full blur-3xl"></div>
+</section>
+<!-- Related Articles -->
+<section class="space-y-6">
+<h3 class="font-headline-md text-headline-md text-on-surface">Related Articles</h3>
+<div class="space-y-4">
+<!-- Article Card -->
+<a class="block p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest hover-lift group" href="#">
+<div class="flex gap-4">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="A close-up of high-quality glass jars filled with various international coins and some green foliage growing out of one. The lighting is crisp and airy, following a minimalist financial growth theme with soft green tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuArTu-udQBUoMpF97O2GDsdmb_PWG_lhHIAz28vHJFsq1LDuldKG0RijT41D_Wea_0f5zurGGsuKZDb0k4fqg1jheWwA4g1vWQw2gEPyFv3hztSj8mchf9F98FZCKxdGVnNidyfA8hduizhcpoR6nzemlArUSEoR5hnITeliOl0vYPar0yaOKYaqQrencdkqANZMkeczdVG-vUtto_Kv-n9s8_BzKKQj56fhkYh5SwaIAzNL2WpDPvqazRG-c-9qzlvRR8KLRd5xtI"/>
+</div>
+<div>
+<span class="text-label-sm text-secondary font-medium">Savings</span>
+<h4 class="font-button text-on-surface group-hover:text-primary transition-colors line-clamp-2 mt-1">
+                                        The High-Yield Trap: Why APY Isn't Everything
+                                    </h4>
+</div>
+</div>
+</a>
+<!-- Article Card -->
+<a class="block p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest hover-lift group" href="#">
+<div class="flex gap-4">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="A macro shot of a modern smartphone screen displaying a sophisticated stock market interface with subtle glowing green lines indicating upward trends. The background is a blurred dark office at night with city lights, representing 24/7 financial activity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT_MGHC-mS1tuqwDKYdgkL36ZDHrfZDwzqcR5Z9cRJ5gmMuHrQyYbxKjzXNtIyTzBwhzDDrcWEyLBTsqhnoN-XRG6PproOeTKkso0ISkBjHmnZ631PtCD1SUiXqgjcyXBx6_RQs9x8o63TL84i27eJiKqvUr6I0XAYMfjCAyLQPurRdSA3c7h_YpGlndCxuDxDppwv9wErZZ-pJSvOjLVDFefXCtfQCMLeC7x3hwYwT9EYUFTvvftcgiCP66zuLqBLi_zc10nRbw8"/>
+</div>
+<div>
+<span class="text-label-sm text-secondary font-medium">Investing</span>
+<h4 class="font-button text-on-surface group-hover:text-primary transition-colors line-clamp-2 mt-1">
+                                        Modern Portfolio Theory for the B2C Investor
+                                    </h4>
+</div>
+</div>
+</a>
+<!-- Article Card -->
+<a class="block p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest hover-lift group" href="#">
+<div class="flex gap-4">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="A high-end interior shot of a clean, minimalist kitchen where a young professional is peacefully drinking coffee while looking at a tablet. The morning sun creates a serene, successful atmosphere, embodying financial stability and peace of mind." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkgqG8kuRyWvFDBwPEaltG-j3oR6gh_J1oetVGAN-eezQo3ZV6iypfmL_VMWXQRJLzxti5LLiE87vFrgQW13MoQgZNfnBksPXVh1DnRUEt0mtF4t2GWSITOPggsf3xtazJ9ZprOUcYWjyM3fbpt8EW4UCdGPahW71w2pX-j3IJcfmvOqYuuow_JYnQ8UTfmBwW2wm7aRfwochSy11ivjLTy53yG77w7oqn7PcbFwsZZtZmt17rliArUvn6Omyuitai4DH8eyxlnAc"/>
+</div>
+<div>
+<span class="text-label-sm text-secondary font-medium">Lifestyle</span>
+<h4 class="font-button text-on-surface group-hover:text-primary transition-colors line-clamp-2 mt-1">
+                                        How We Redefined "Rich" in the Digital Age
+                                    </h4>
+</div>
+</div>
+</a>
+</div>
+</section>
+<!-- Ad/CTA -->
+<section class="p-6 rounded-xl border-2 border-dashed border-primary/20 bg-primary/5">
+<p class="font-label-sm text-label-sm text-primary uppercase tracking-widest mb-4">Try FinTrack</p>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-3">Ready to find your number?</h4>
+<p class="text-body-md text-on-surface-variant mb-6">See your 'Safe to Spend' balance in under 2 minutes. Free for 30 days.</p>
+<button class="w-full bg-primary text-on-primary font-button py-3 rounded-lg hover:opacity-90 transition-opacity">
+                        Launch Free Trial
+                    </button>
+</section>
+</aside>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-20 px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between gap-gutter max-w-container-max mx-auto bg-surface-container-lowest dark:bg-on-background border-t border-outline-variant/50 dark:border-outline/20">
+<div class="max-w-xs">
+<div class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed mb-6">FinTrack</div>
+<p class="text-body-md text-on-surface-variant dark:text-surface-variant mb-8">Empowering your financial journey with precision-engineered tools and human-centered design.</p>
+<div class="flex gap-4">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#"><img alt="Facebook" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGhBVFanfBnR5Hs_W9m4eFnjYBRtaxRfpBJYN04-gbFguvwLsziilYC8gCl9kZeeklfMUNHRKqnbOQFOeApe5-RrtBxgd8bIDT8PijODzAr8MqxcuRCEJ9qdnKNsGNjr0kYhfipC0Xxyt_Da5N73ZRcS_lCnNFeKd44ouQvKf7A7IqPhiyRuqhJ-C5ubHRoaMiMFcxJgmrL_Vp9DbftD3xfirG1w5y_dfQ7lFlFQl4AZjJKfA3W7Nqhg4i3jO7C62Oj5b7wfaQ5sk"/></a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#"><img alt="Instagram" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBk4VahBM4t_4jJh366sNT_wOHLyBq0umgUzK5OK065QKa_9UjsVUgNM0nS0z0UMd_lUPI-00kHSml7Dee-65peosMy78_3CoXZb_LEOO2mRJSkVtKUHzl6LHyZ929r4is4V7Hl5q5HwPsGNC1NS5PpI-DaJFAdiIspfMft57JHbI8ZRhCkBVnelraS5hdZBs2TLrKmFH0o0qN5TI9hAeRjFx8CyYwaWcwdn7GQRIKrM2RNyIh6MO3E8T5C1a6Pm7Dqg2qmY-j5OU"/></a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#"><img alt="X" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaBke_yIFYb07PXg54MDDC4H1KFamUlMVhhUhDfWxL2Hae7Gw_ArT5v5N1x3DTpVaowjqvN2fv8dUwJf78Bxw8x8KZJVG--WakGCH5pZcJNXIV-UtMdfbIMn252hKLszXiIo8d8r7iIm4gMQ1k5AGe0pDjeCTRj8g0As-gqwiHQsmtsu8VuTgN-Qt_3gqTefxvJbQD5QKYZbeT1Xmlwg7Da7xv0NLbkhi7HBcDkgUkujcnvrpBimmtY2Ghowt3xD3FdrK_nByYpuQ"/></a>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-12">
+<div>
+<h5 class="font-button text-on-surface mb-6">Platform</h5>
+<ul class="space-y-4">
+<li><a class="text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Features</a></li>
+<li><a class="text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Pricing</a></li>
+<li><a class="text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Security</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-button text-on-surface mb-6">Company</h5>
+<ul class="space-y-4">
+<li><a class="text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">About Us</a></li>
+<li><a class="text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Careers</a></li>
+<li><a class="text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Blog</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-button text-on-surface mb-6">Legal</h5>
+<ul class="space-y-4">
+<li><a class="text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a></li>
+</ul>
+</div>
+</div>
+<div class="mt-12 pt-12 border-t border-outline-variant/30 w-full flex flex-col md:flex-row justify-between items-center gap-6">
+<p class="text-label-sm text-on-surface-variant">© 2024 FinTrack Inc. All rights reserved.</p>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
+<span class="text-label-sm text-on-surface-variant">All systems operational</span>
+</div>
+</div>
+</footer>
+<script>
+        // Simple progress bar script
+        document.addEventListener('scroll', () => {
+            const article = document.querySelector('article');
+            const articleHeight = article.offsetHeight;
+            const scrollPos = window.scrollY - article.offsetTop;
+            const progress = Math.min(Math.max((scrollPos / articleHeight) * 100, 0), 100);
+            
+            // If we wanted a top progress bar, we'd update it here
+            // console.log(`Reading progress: ${Math.round(progress)}%`);
+        });
+
+        // Form submission prevention for demo
+        document.querySelector('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'Subscribed!';
+            btn.classList.add('bg-on-primary-container');
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('bg-on-primary-container');
+                e.target.reset();
+            }, 3000);
+        });
+    </script>
+</body></html>

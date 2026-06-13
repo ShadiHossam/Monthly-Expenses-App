@@ -69,10 +69,17 @@ export default function StatementsPage() {
     if (!window.confirm(`Delete ${ids.length} statement${ids.length !== 1 ? "s" : ""}? This will also remove all associated transactions.`)) return;
     setBulkDeleting(true);
     try {
-      await Promise.all(ids.map(id => api.deleteStatement(id)));
-      setStatements(prev => prev.filter(s => !selectedIds.has(s.id)));
-      setSelectedIds(new Set());
-    } catch {} finally { setBulkDeleting(false); }
+      const results = await Promise.allSettled(ids.map(id => api.deleteStatement(id)));
+      const succeeded = new Set(ids.filter((_, i) => results[i].status === "fulfilled"));
+      if (succeeded.size > 0) {
+        setStatements(prev => prev.filter(s => !succeeded.has(s.id)));
+        setSelectedIds(prev => { const next = new Set(prev); succeeded.forEach(id => next.delete(id)); return next; });
+      }
+      const failedCount = results.filter(r => r.status === "rejected").length;
+      if (failedCount > 0) {
+        alert(`${failedCount} statement${failedCount !== 1 ? "s" : ""} could not be deleted — please try again.`);
+      }
+    } finally { setBulkDeleting(false); }
   }
 
   function toggleSelect(id: number) {
@@ -109,7 +116,8 @@ export default function StatementsPage() {
           ? { ...s, verify_status: "pending" }
           : s
       ));
-      setRetryAllMsg(`Queued ${result.queued} statement${result.queued !== 1 ? "s" : ""} for reprocessing`);
+      const queued = result.queued ?? 0;
+      setRetryAllMsg(`Queued ${queued} statement${queued !== 1 ? "s" : ""} for reprocessing`);
     } catch {
       setRetryAllMsg("Failed to queue statements — please try again");
     } finally {
@@ -126,6 +134,7 @@ export default function StatementsPage() {
   }
 
   return (
+    <>
     <div className="px-6 pt-6 pb-10 max-w-4xl mx-auto">
       <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
         <div>
@@ -335,5 +344,6 @@ export default function StatementsPage() {
         </div>
       </div>
     )}
+    </>
   );
 }

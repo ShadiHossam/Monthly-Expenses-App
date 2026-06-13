@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Download FinTrack | Take Control of Your Finances</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#00714d",
+                    "on-primary-fixed-variant": "#005320",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#006e2d",
+                    "tertiary": "#1b5b47",
+                    "surface-container-highest": "#d9e3f6",
+                    "inverse-primary": "#77dc88",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#005236",
+                    "on-tertiary-fixed": "#002117",
+                    "on-secondary-fixed": "#002113",
+                    "surface-container-high": "#dee9fc",
+                    "primary-fixed-dim": "#77dc88",
+                    "primary-fixed": "#93f9a2",
+                    "inverse-on-surface": "#eaf1ff",
+                    "outline-variant": "#becabb",
+                    "on-surface-variant": "#3f4a3e",
+                    "surface": "#f8f9ff",
+                    "on-surface": "#121c2a",
+                    "surface-dim": "#d0dbed",
+                    "background": "#f8f9ff",
+                    "inverse-surface": "#27313f",
+                    "tertiary-fixed": "#b0f0d6",
+                    "surface-variant": "#d9e3f6",
+                    "on-primary-container": "#a1ffad",
+                    "on-error": "#ffffff",
+                    "on-background": "#121c2a",
+                    "surface-container-low": "#eff4ff",
+                    "secondary-fixed": "#6ffbbe",
+                    "outline": "#6f7a6d",
+                    "surface-bright": "#f8f9ff",
+                    "secondary-fixed-dim": "#4edea3",
+                    "on-tertiary-fixed-variant": "#0b513d",
+                    "error-container": "#ffdad6",
+                    "tertiary-container": "#37745f",
+                    "surface-container": "#e6eeff",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "primary-container": "#007a33",
+                    "secondary-container": "#6cf8bb",
+                    "on-tertiary-container": "#b7f7dd",
+                    "on-primary-fixed": "#002109",
+                    "primary": "#005e26",
+                    "secondary": "#006c49",
+                    "tertiary-fixed-dim": "#95d3ba",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "4px",
+                    "container-max": "1280px",
+                    "margin-mobile": "20px",
+                    "margin-desktop": "80px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "display-xl": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "button": ["Plus Jakarta Sans"],
+                    "body-lg": ["Inter"],
+                    "display-xl-mobile": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "display-xl": ["60px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "button": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-xl-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .ambient-shadow { box-shadow: 0 4px 20px -2px rgba(0, 122, 51, 0.05); }
+        .ambient-shadow-hover:hover { box-shadow: 0 8px 30px -4px rgba(0, 122, 51, 0.1); }
+        .glass-morphism { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .scroll-reveal { opacity: 0; transform: translateY(20px); transition: all 0.6s ease-out; }
+        .scroll-reveal.visible { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto bg-surface/80 backdrop-blur-md border-b border-outline-variant/30">
+<div class="font-headline-md text-headline-md font-bold text-primary">FinTrack</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Features</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Pricing</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">About</a>
+</div>
+<button class="bg-primary-container text-on-primary-container px-6 py-2 rounded-full font-button text-button hover:opacity-80 transition-opacity active:scale-95">Get Started</button>
+</nav>
+<main class="pt-24 overflow-hidden">
+<!-- Hero Section: Bento Style -->
+<section class="px-margin-mobile md:px-margin-desktop py-20 max-w-container-max mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-stretch">
+<!-- Main CTA Card -->
+<div class="lg:col-span-7 bg-white rounded-3xl p-8 md:p-12 ambient-shadow flex flex-col justify-center relative overflow-hidden">
+<div class="relative z-10">
+<span class="inline-flex items-center gap-2 bg-secondary-container/20 text-on-secondary-container px-4 py-1 rounded-full font-label-sm text-label-sm mb-6">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">stars</span>
+                            Ranked #1 Personal Finance App 2024
+                        </span>
+<h1 class="font-display-xl-mobile md:font-display-xl text-display-xl-mobile md:text-display-xl text-primary mb-6 leading-tight">
+                            Financial freedom in the <span class="text-secondary">palm of your hand.</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-xl">
+                            Track every penny, set smart budgets, and grow your wealth with FinTrack's intelligent assistant. Available now for iOS and Android.
+                        </p>
+<div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+<a class="group bg-on-background text-surface flex items-center gap-4 px-8 py-4 rounded-2xl hover:opacity-90 transition-all active:scale-95" href="#">
+<span class="material-symbols-outlined text-4xl">apps</span>
+<div class="text-left">
+<div class="text-[10px] uppercase tracking-widest opacity-70">Download on the</div>
+<div class="text-xl font-bold leading-none">App Store</div>
+</div>
+</a>
+<a class="group bg-on-background text-surface flex items-center gap-4 px-8 py-4 rounded-2xl hover:opacity-90 transition-all active:scale-95" href="#">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<div class="text-left">
+<div class="text-[10px] uppercase tracking-widest opacity-70">Get it on</div>
+<div class="text-xl font-bold leading-none">Google Play</div>
+</div>
+</a>
+</div>
+</div>
+<!-- Background Decoration -->
+<div class="absolute -right-20 -bottom-20 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
+</div>
+<!-- QR Code & App Card -->
+<div class="lg:col-span-5 grid grid-rows-2 gap-gutter">
+<div class="bg-primary-container text-white rounded-3xl p-8 flex flex-col items-center justify-center text-center relative group overflow-hidden">
+<div class="relative z-10">
+<div class="bg-white p-4 rounded-2xl inline-block mb-4 shadow-lg">
+<div class="w-32 h-32 bg-gray-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-6xl">qr_code_2</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-md mb-2">Scan to Download</h3>
+<p class="font-label-sm text-label-sm opacity-80">Instant access from your phone's camera</p>
+</div>
+<div class="absolute inset-0 bg-gradient-to-br from-primary to-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+</div>
+<div class="bg-surface-container rounded-3xl p-8 flex items-center justify-between overflow-hidden relative">
+<div class="max-w-[50%]">
+<h3 class="font-headline-md text-headline-md text-primary mb-2">Web Dashboard</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-4">Sync perfectly across all your devices.</p>
+<a class="text-primary font-bold flex items-center gap-1 hover:gap-2 transition-all" href="#">
+                                Try Online <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+<div class="absolute -right-10 top-1/2 -translate-y-1/2 w-48 h-48 bg-white/50 rounded-2xl rotate-12 shadow-xl border border-white flex items-center justify-center">
+<img alt="Web App" class="w-full h-full object-cover rounded-xl" data-alt="A clean and modern financial dashboard interface displayed on a sleek laptop screen with soft teal and emerald green accents. The setting is a bright, minimalist home office with natural light pouring in, emphasizing high-quality white space and professional fintech aesthetics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYIxpBoeOGB9GKRlQT5jTB0yhoYJhyU8SCBpZA_rbVA5_UImj2ruyrFXiSWVKB254PkGB1KHLRnQ2smVHkHhtjzITumbemWz-wiRGyeE7AzsKGhPE7yMxU9LdQG-i9zdyWd9OKW7ixudDHtQogYtf9mhTzA2IrL6K8hkPKqLsb6speAvZybMlXzkuRblvFjWEcAL0F7XHAY8DtjsHLNzqUL0aTTP5cTZnuwvis2mQNpegeLUOb4H_SOmP4bPGXRoSWqQYc8IzPbhE"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- What's New Section: Horizontal Scroll/Cards -->
+<section class="bg-surface-container-low py-20 px-margin-mobile md:px-margin-desktop">
+<div class="max-w-container-max mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-4">What's new in v2.4</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl">We're constantly evolving to provide you with the most precise and intuitive financial tools on the market.</p>
+</div>
+<div class="flex gap-2">
+<button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center hover:bg-white transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center hover:bg-white transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Feature Card 1 -->
+<div class="bg-white p-8 rounded-3xl border border-outline-variant/30 ambient-shadow-hover transition-all scroll-reveal">
+<div class="w-14 h-14 bg-secondary-container/20 rounded-2xl flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">insights</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-primary mb-3">AI Predictions</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Our new neural engine predicts your monthly expenses with 98% accuracy based on historical patterns.</p>
+<div class="mt-6 pt-6 border-t border-outline-variant/20 flex items-center gap-2 text-secondary font-bold text-sm">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                            Now Active
+                        </div>
+</div>
+<!-- Feature Card 2 -->
+<div class="bg-white p-8 rounded-3xl border border-outline-variant/30 ambient-shadow-hover transition-all scroll-reveal">
+<div class="w-14 h-14 bg-secondary-container/20 rounded-2xl flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-primary mb-3">Global Sync</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Connect over 12,000 financial institutions worldwide including crypto wallets and offline assets.</p>
+<div class="mt-6 pt-6 border-t border-outline-variant/20 flex items-center gap-2 text-secondary font-bold text-sm">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                            Premium Feature
+                        </div>
+</div>
+<!-- Feature Card 3 -->
+<div class="bg-white p-8 rounded-3xl border border-outline-variant/30 ambient-shadow-hover transition-all scroll-reveal">
+<div class="w-14 h-14 bg-secondary-container/20 rounded-2xl flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+</div>
+<h4 class="font-headline-md text-headline-md text-primary mb-3">Privacy First</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Zero-knowledge encryption ensures that only you can access your sensitive financial data.</p>
+<div class="mt-6 pt-6 border-t border-outline-variant/20 flex items-center gap-2 text-secondary font-bold text-sm">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                            Standard Security
+                        </div>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonial Section: High-end UI -->
+<section class="py-20 px-margin-mobile md:px-margin-desktop relative overflow-hidden">
+<div class="max-w-container-max mx-auto text-center">
+<div class="mb-16 inline-flex flex-col items-center">
+<div class="flex -space-x-3 mb-4">
+<img alt="User 1" class="w-12 h-12 rounded-full border-4 border-surface object-cover" data-alt="Portrait of a smiling young professional man with short dark hair in a clean minimalist studio setting. High-quality lighting and a professional corporate aesthetic that matches the wealthy green and blue fintech brand colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpArYqjhBxpV0pHWapqn-Ngnmyu8w6nBLA8nKioap1TscBjiCmDu0zDmU8FgJHDzoPiMoJZ-krWyR95JQNfpeZLUJBOf1hk60knd1OqswPHc661ENU6F6VXUg-IzUl4kh4LDD6KvNoSASM36cpTLZPePHucOX6DMKKE5pN23s1XBlUgO9_g6rUPH_u6F_5d9f2xjupb0OQctrxLZaSZCRBHHrG4UbjF_foJTZXym1cK4ZfghwTNfoZOOyXEDgDqooCKihFHxWh8GE"/>
+<img alt="User 2" class="w-12 h-12 rounded-full border-4 border-surface object-cover" data-alt="Close up portrait of a successful young woman with long brown hair, smiling warmly. The image has a clean, professional, and slightly corporate aesthetic with a bright, soft-focused background, emphasizing trust and clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHe8rGQJLRQXR6wkGYa1zYphZH2_podrK_WZozB9F7CNJAYWawSdwKl6kDqkO_hG60jwNs9KwTnHqR7iJ3Ukb2-CFJaVwjmLwsBD00B5UOLcfEm47WT78_bksptNst-4D9XyeE5aA1QPdCBo7uUUJ_szIcCEvZt0MWh0Dzzu_GSJG_-JP0ylM00t7AwDUU1pSYf5BNyD1GBAYewd7hMi7TV2Yx5me34tDCscEaA_KqPVe2Bc83vz4EV1YFTdNhLdM8XShcC7ZOcGQ"/>
+<img alt="User 3" class="w-12 h-12 rounded-full border-4 border-surface object-cover" data-alt="Portrait of an approachable middle-aged man wearing glasses and a smart casual shirt, looking directly at the camera with confidence. The lighting is soft and professional, capturing a sense of reliability and financial security." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBltYoJYH47RgolW5QG5Vf1B0YoXlWPncNtq_sKwSP3ngz7yrtxMb2wLvn82Sm9i8hs_otrZiwUbk__mVCwpw-RYZx6vuLUNpeq8WKflKxTXZBBopHvnZYenI4veyeu-Urh6EAg7iCGGMD5tMhj2Vpca2tXXGBlHlvW8GkOfVY-U0V5iZ9bvTTD6yjj7lCw0Kgj8bWXdOpuua8omx6okMCIRvjWqDAMSDdpqFNHVJcK3FbbrQI1ZtKDpfdbiTgAakln5MXho-PEYWY"/>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Trusted by over 2 Million users worldwide</p>
+</div>
+<div class="max-w-4xl mx-auto px-4">
+<p class="font-headline-lg text-headline-lg text-primary italic leading-snug">
+                        "FinTrack changed the way I look at my money. In just three months, I've managed to save more than I did in the entire previous year. The interface is just beautiful."
+                    </p>
+<div class="mt-8">
+<p class="font-button text-button text-on-surface">Sarah Jenkins</p>
+<p class="font-label-sm text-label-sm text-secondary">Creative Director, NYC</p>
+</div>
+</div>
+</div>
+<!-- Decorative Elements -->
+<div class="absolute top-0 left-0 w-64 h-64 bg-primary/5 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+<div class="absolute bottom-0 right-0 w-96 h-96 bg-secondary/5 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl"></div>
+</section>
+<!-- Final CTA: Glassmorphism -->
+<section class="px-margin-mobile md:px-margin-desktop py-20">
+<div class="max-w-container-max mx-auto rounded-[3rem] overflow-hidden relative min-h-[400px] flex items-center justify-center text-center px-6">
+<img alt="CTA Background" class="absolute inset-0 w-full h-full object-cover" data-alt="A wide panoramic shot of an abstract, high-tech landscape featuring soft green and deep blue gradients. The visual style is ethereal and modern, with glowing data lines and soft-focus elements that represent digital financial connectivity and futuristic wealth management." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAESi0OGotg4CENQJOGopLmWvBUwLJWouIbnIrbws-iS6CRJPnp9fMtDwPCUOY6hc5asuCy9meFr74Yqc4pHhXKKRajKpe8z0DL-COcP9taeqmM2YLeBVuMmWtQuR5I0_XrGWbHcrWBjraX5RElDltstW_Fg5QzgvsmnJtzA6Kv3CSvc0Klt0e0z9xJ-6SIeRMJIE2R81V8ZsSMQeqxqn9WKKiWk96oD30Z4Fw3_MZsCsvoe7HukyMGA0Ae_M4gGCNmJWFjKXQxpv0"/>
+<div class="absolute inset-0 bg-primary/60 backdrop-blur-sm"></div>
+<div class="relative z-10 max-w-2xl">
+<h2 class="font-display-xl text-display-xl-mobile md:text-display-xl text-white mb-6">Ready to reach your goals?</h2>
+<p class="font-body-lg text-body-lg text-white/80 mb-10">Start your 14-day free trial of FinTrack Premium today. No credit card required.</p>
+<div class="flex flex-wrap justify-center gap-4">
+<button class="bg-white text-primary px-10 py-4 rounded-full font-button text-button hover:bg-surface transition-colors shadow-xl">Get FinTrack Now</button>
+<button class="bg-transparent border-2 border-white/30 text-white px-10 py-4 rounded-full font-button text-button hover:bg-white/10 transition-colors">Compare Plans</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-20 px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between gap-gutter max-w-container-max mx-auto bg-surface-container-lowest border-t border-outline-variant/50">
+<div class="max-w-xs">
+<div class="font-headline-md text-headline-md font-bold text-primary mb-6">FinTrack</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">Empowering individuals to master their financial destiny through intelligent technology and human-centric design.</p>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">share</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">mail</span>
+</a>
+</div>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-10">
+<div>
+<h5 class="font-label-sm text-label-sm text-primary mb-6 uppercase tracking-wider">Product</h5>
+<ul class="space-y-4">
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Features</a></li>
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Pricing</a></li>
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Security</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-sm text-label-sm text-primary mb-6 uppercase tracking-wider">Company</h5>
+<ul class="space-y-4">
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">About</a></li>
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Careers</a></li>
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Contact</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-sm text-label-sm text-primary mb-6 uppercase tracking-wider">Legal</h5>
+<ul class="space-y-4">
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a></li>
+</ul>
+</div>
+</div>
+</footer>
+<div class="w-full py-6 text-center border-t border-outline-variant/20">
+<p class="font-label-sm text-label-sm text-on-surface-variant opacity-60">© 2024 FinTrack Inc. All rights reserved.</p>
+</div>
+<script>
+        // Simple scroll reveal logic
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+        // Micro-interactions for buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => button.style.transform = 'scale(0.95)');
+            button.addEventListener('mouseup', () => button.style.transform = 'scale(1)');
+            button.addEventListener('mouseleave', () => button.style.transform = 'scale(1)');
+        });
+    </script>
+</body></html>

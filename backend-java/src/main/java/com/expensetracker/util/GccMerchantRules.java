@@ -53,6 +53,8 @@ public final class GccMerchantRules {
         put("supermarket",        "Groceries");
         put("supermercado",       "Groceries");
         put("minimarket",         "Groceries");
+        put("minimart",           "Groceries");
+        put("mini mart",          "Groceries");
         put("mini market",        "Groceries");
         put("superstore",         "Groceries");
         put("grocery",            "Groceries");
@@ -247,9 +249,15 @@ public final class GccMerchantRules {
         put("tuition",            "Education");
         put("nursery",            "Education");
 
+        // ── Transfers ───────────────────────────────────────────────────────
+        // "from " is intentionally omitted here and handled via startsWith in match()
+        // to avoid false positives for mid-string occurrences like "Refund from Amazon".
+
         // ── Income ──────────────────────────────────────────────────────────
         put("salary",             "Income");
         put("payroll",            "Income");
+        put("cashback reward",    "Cashback");  // specific before generic
+        put("cash back reward",   "Cashback");
         put("cash back",          "Income");
         put("cashback",           "Income");
         put("refund",             "Income");
@@ -274,11 +282,16 @@ public final class GccMerchantRules {
     public static Optional<String> match(String merchantName) {
         if (merchantName == null || merchantName.isBlank()) return Optional.empty();
         String lower = merchantName.toLowerCase();
+        // Check keyword rules first so specific entries (salary, payroll, refund …)
+        // win over the generic "from " Transfer fallback below.
         for (Map.Entry<String, String> entry : RULES.entrySet()) {
             if (lower.contains(entry.getKey())) {
                 return Optional.of(entry.getValue());
             }
         }
+        // "from " as Transfer only when no keyword matched — catches person-to-person
+        // transfers like "From Faress Salloum" but not "From Salary Transfer" (salary wins above).
+        if (lower.startsWith("from ")) return Optional.of("Transfer");
         return Optional.empty();
     }
 }

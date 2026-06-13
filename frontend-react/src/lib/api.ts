@@ -34,7 +34,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers, credentials: "include" });
 
   if (res.status === 401) {
-    if (!window.location.pathname.startsWith("/login") && !window.location.pathname.startsWith("/register")) {
+    const isAdminPath = window.location.pathname.startsWith("/admin");
+    if (!window.location.pathname.startsWith("/login") && !window.location.pathname.startsWith("/register") && !isAdminPath) {
       window.location.href = "/login";
     }
     const err = await res.json().catch(() => ({ detail: "Unauthorized" }));
@@ -359,6 +360,26 @@ export const api = {
     }),
   createPortal: () =>
     request<{ portal_url: string }>("/billing/portal", { method: "POST" }),
+
+  // Admin
+  adminStats: () =>
+    request<{
+      totalUsers: number;
+      totalTransactions: number;
+      totalStatements: number;
+      newUsersThisWeek: number;
+      signupsLast30Days: { date: string; count: number }[];
+    }>("/admin/stats"),
+  adminUsers: () =>
+    request<{
+      id: number;
+      username: string;
+      email: string;
+      createdAt: string;
+      role: string;
+      transactionCount: number;
+      statementCount: number;
+    }[]>("/admin/users"),
 };
 
 /** Read an SSE stream using fetch (supports Authorization header, unlike EventSource). */

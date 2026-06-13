@@ -15,4 +15,6 @@ public interface StatementRepository extends JpaRepository<Statement, Long> {
     List<Statement> findByUserIdAndVerifyStatusIn(Long userId, List<String> statuses);
     List<Statement> findByVerifyStatus(String verifyStatus);
     void deleteByUserId(Long userId);
+
+    long countByUserId(Long userId);
 }

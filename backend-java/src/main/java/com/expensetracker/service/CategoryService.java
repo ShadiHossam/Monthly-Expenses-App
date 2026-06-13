@@ -63,15 +63,7 @@ public class CategoryService {
             throw new BusinessException("Cannot delete system categories", HttpStatus.BAD_REQUEST);
         }
 
-        Category uncategorized = categoryRepository.findByUserIdAndName(userId, "Uncategorized")
-                .orElse(null);
-
-        if (uncategorized != null) {
-            transactionRepository.bulkCategorize(uncategorized.getId(),
-                    transactionRepository.findByUserIdAndIsCategorizedFalse(userId)
-                            .stream().map(t -> t.getId()).toList(), userId);
-        }
-
+        transactionRepository.nullifyCategoryTransactions(cat.getId(), userId);
         categoryRepository.delete(cat);
     }
 

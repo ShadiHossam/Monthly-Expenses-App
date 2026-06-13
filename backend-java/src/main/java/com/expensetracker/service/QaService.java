@@ -118,11 +118,18 @@ public class QaService {
 
     @Transactional
     public Map<String, Object> skip(Long userId, QaAnswerRequest req) {
-        Category uncategorized = categoryRepository.findByUserIdAndName(userId, "Uncategorized").orElse(null);
-        if (uncategorized != null && req.getTransactionIds() != null) {
-            transactionRepository.bulkCategorize(uncategorized.getId(), req.getTransactionIds(), userId);
+        if (req.getTransactionIds() == null || req.getTransactionIds().isEmpty()) {
+            return Map.of("skipped", 0);
         }
-        return Map.of("skipped", req.getTransactionIds() != null ? req.getTransactionIds().size() : 0);
+        Category uncategorized = categoryRepository.findByUserIdAndName(userId, "Uncategorized").orElse(null);
+        if (uncategorized != null) {
+            transactionRepository.bulkCategorize(uncategorized.getId(), req.getTransactionIds(), userId);
+        } else {
+            // Post-V14: no Uncategorized category — mark isCategorized=true with null
+            // categoryId so transactions leave the QA queue but remain visibly uncategorized.
+            transactionRepository.markCategorized(req.getTransactionIds(), userId);
+        }
+        return Map.of("skipped", req.getTransactionIds().size());
     }
 
     @Transactional
@@ -139,15 +146,15 @@ public class QaService {
     public Map<String, Object> unanswer(Long userId, List<Long> transactionIds) {
         if (transactionIds == null || transactionIds.isEmpty()) return Map.of("reset", 0);
         // Reset each transaction to uncategorized
-        int count = 0;
+        java.util.concurrent.atomic.AtomicInteger count = new java.util.concurrent.atomic.AtomicInteger();
         for (Long txnId : transactionIds) {
             transactionRepository.findByIdAndUserId(txnId, userId).ifPresent(txn -> {
                 txn.setCategorized(false);
                 txn.setCategoryId(null);
                 transactionRepository.save(txn);
+                count.incrementAndGet();
             });
-            count++;
         }
-        return Map.of("reset", count);
+        return Map.of("reset", count.get());
     }
 }

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>About FinTrack | Making Finance Human</title>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-container": "#00714d",
+                      "on-primary-fixed-variant": "#005320",
+                      "on-primary": "#ffffff",
+                      "surface-tint": "#006e2d",
+                      "tertiary": "#1b5b47",
+                      "surface-container-highest": "#d9e3f6",
+                      "inverse-primary": "#77dc88",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#005236",
+                      "on-tertiary-fixed": "#002117",
+                      "on-secondary-fixed": "#002113",
+                      "surface-container-high": "#dee9fc",
+                      "primary-fixed-dim": "#77dc88",
+                      "primary-fixed": "#93f9a2",
+                      "inverse-on-surface": "#eaf1ff",
+                      "outline-variant": "#becabb",
+                      "on-surface-variant": "#3f4a3e",
+                      "surface": "#f8f9ff",
+                      "on-surface": "#121c2a",
+                      "surface-dim": "#d0dbed",
+                      "background": "#f8f9ff",
+                      "inverse-surface": "#27313f",
+                      "tertiary-fixed": "#b0f0d6",
+                      "surface-variant": "#d9e3f6",
+                      "on-primary-container": "#a1ffad",
+                      "on-error": "#ffffff",
+                      "on-background": "#121c2a",
+                      "surface-container-low": "#eff4ff",
+                      "secondary-fixed": "#6ffbbe",
+                      "outline": "#6f7a6d",
+                      "surface-bright": "#f8f9ff",
+                      "secondary-fixed-dim": "#4edea3",
+                      "on-tertiary-fixed-variant": "#0b513d",
+                      "error-container": "#ffdad6",
+                      "tertiary-container": "#37745f",
+                      "surface-container": "#e6eeff",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "primary-container": "#007a33",
+                      "secondary-container": "#6cf8bb",
+                      "on-tertiary-container": "#b7f7dd",
+                      "on-primary-fixed": "#002109",
+                      "primary": "#005e26",
+                      "secondary": "#006c49",
+                      "tertiary-fixed-dim": "#95d3ba",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error-container": "#93000a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "4px",
+                      "container-max": "1280px",
+                      "margin-mobile": "20px",
+                      "margin-desktop": "80px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "display-xl": ["Plus Jakarta Sans"],
+                      "headline-md": ["Plus Jakarta Sans"],
+                      "button": ["Plus Jakarta Sans"],
+                      "body-lg": ["Inter"],
+                      "display-xl-mobile": ["Plus Jakarta Sans"],
+                      "headline-lg": ["Plus Jakarta Sans"],
+                      "body-md": ["Inter"],
+                      "label-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "display-xl": ["60px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "button": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "display-xl-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .ambient-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 122, 51, 0.05);
+        }
+        .ambient-shadow-hover:hover {
+            box-shadow: 0 8px 30px -4px rgba(0, 122, 51, 0.1);
+        }
+        body {
+            background-color: #f8f9ff;
+            color: #121c2a;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-x-hidden">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 left-0 w-full z-50 bg-surface/80 backdrop-blur-md flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto border-b border-outline-variant/30">
+<div class="text-headline-md font-headline-md font-bold text-primary">FinTrack</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Features</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Pricing</a>
+<a class="font-label-sm text-label-sm text-primary font-bold border-b-2 border-primary" href="#">About</a>
+</div>
+<button class="bg-primary-container text-on-primary px-6 py-2.5 rounded-full font-button text-button hover:opacity-80 transition-opacity active:scale-95">Get Started</button>
+</nav>
+<main class="mt-20">
+<!-- Hero Section: Our Story -->
+<section class="py-20 md:py-32 px-margin-mobile md:px-margin-desktop">
+<div class="max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center">
+<div class="space-y-6">
+<span class="inline-block px-4 py-1.5 rounded-full bg-secondary-container/10 text-on-secondary-container font-label-sm text-label-sm">Our Story</span>
+<h1 class="font-display-xl-mobile md:font-display-xl text-display-xl-mobile md:text-display-xl leading-tight">Born from a <span class="text-primary">frustration</span> with complexity.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+                        A few years ago, we realized that managing money felt more like a chore than a path to freedom. Complex banking apps, hidden fees, and confusing jargon were the norm. We decided to change that.
+                    </p>
+<div class="flex flex-wrap gap-4 pt-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-4xl">history_edu</span>
+<div>
+<p class="font-bold">Founded 2021</p>
+<p class="text-label-sm opacity-70">Started in a small garage</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-4xl">groups</span>
+<div>
+<p class="font-bold">1M+ Users</p>
+<p class="text-label-sm opacity-70">Trusting our platform</p>
+</div>
+</div>
+</div>
+</div>
+<div class="relative">
+<div class="rounded-xl overflow-hidden ambient-shadow">
+<img alt="Founders working together" class="w-full h-[500px] object-cover" data-alt="A candid, professional photograph of a group of diverse founders working intensely around a modern, wooden table in a brightly lit, glass-walled office space. The environment is minimalist and high-end, with soft natural light pouring in from large windows. The overall tone uses the Emerald Trust palette, featuring clean white surfaces and sophisticated green office plants that symbolize growth and clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-7ADS7Sj92ETYGlbe5Iw46YWaPzw4NwIIWGlUpjaeWZIalezIKK2BNI7E64uhuEJFek9JwFuxe_9U9OVFTZimhQyI-qClYZgSiXXcgwbcAahTEd5NFdAc7ULSbvvn8C0XGOuzcPzVluby8YfLO20KOpBYnD6d4Tm0gNWmc0rRUH3vB8zUgQkphGYVsevSkXNZt86MoC9Itt0V9ha_F-82l0HiDwoNkv-Hr-KCt3CqSzf-WUflntvL2W2OFCESjpKjn1I1qbLD0w0"/>
+</div>
+<div class="absolute -bottom-6 -left-6 bg-white p-6 rounded-xl ambient-shadow hidden md:block max-w-[240px]">
+<p class="text-primary font-bold italic">"We didn't just want to build another bank. We wanted to build a financial partner that speaks human."</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Mission Section -->
+<section class="py-20 md:py-32 bg-white px-margin-mobile md:px-margin-desktop">
+<div class="max-w-container-max mx-auto text-center space-y-12">
+<div class="max-w-2xl mx-auto space-y-4">
+<h2 class="font-headline-lg text-headline-lg">Our Mission</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">We are on a relentless pursuit to make personal finance human, accessible, and actually enjoyable.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Value 1 -->
+<div class="p-8 rounded-xl border border-outline-variant/30 text-left hover:border-primary transition-colors group">
+<div class="w-12 h-12 rounded-lg bg-primary-container/10 flex items-center justify-center mb-6 group-hover:bg-primary-container group-hover:text-white transition-all">
+<span class="material-symbols-outlined">favorite</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-3">Empathy First</h3>
+<p class="text-on-surface-variant">We design every feature by asking how it helps a real person solve a real problem, not just how it improves a metric.</p>
+</div>
+<!-- Value 2 -->
+<div class="p-8 rounded-xl border border-outline-variant/30 text-left hover:border-primary transition-colors group">
+<div class="w-12 h-12 rounded-lg bg-primary-container/10 flex items-center justify-center mb-6 group-hover:bg-primary-container group-hover:text-white transition-all">
+<span class="material-symbols-outlined">visibility</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-3">Radical Clarity</h3>
+<p class="text-on-surface-variant">No hidden fees. No fine print. Just clear insights and transparent tools that give you back control of your wealth.</p>
+</div>
+<!-- Value 3 -->
+<div class="p-8 rounded-xl border border-outline-variant/30 text-left hover:border-primary transition-colors group">
+<div class="w-12 h-12 rounded-lg bg-primary-container/10 flex items-center justify-center mb-6 group-hover:bg-primary-container group-hover:text-white transition-all">
+<span class="material-symbols-outlined">auto_graph</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-3">Shared Growth</h3>
+<p class="text-on-surface-variant">We only succeed when our users succeed. Our tools are built to help you grow your net worth, one step at a time.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Team Section -->
+<section class="py-20 md:py-32 px-margin-mobile md:px-margin-desktop">
+<div class="max-w-container-max mx-auto space-y-16">
+<div class="flex flex-col md:flex-row justify-between items-end gap-6">
+<div class="space-y-4 max-w-xl">
+<h2 class="font-headline-lg text-headline-lg">Meet the Humans Behind the Tech</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">A diverse collective of designers, engineers, and financial experts dedicated to your success.</p>
+</div>
+<a class="text-primary font-button text-button flex items-center gap-2 hover:gap-3 transition-all" href="#">
+                        View Open Roles <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Member 1 -->
+<div class="group">
+<div class="aspect-square rounded-xl overflow-hidden mb-4 relative">
+<img alt="Sarah Chen" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A professional and approachable headshot of a female executive in her late 30s. She is smiling warmly, wearing a smart-casual blazer in a dark forest green. The background is a clean, softly blurred modern office environment with hints of white and emerald tones. The lighting is bright and even, highlighting her friendly yet authoritative demeanor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxRVbwoBhxV80FYTQh35Ngm5xmM6MVjnPRT5_y354cgv5ygo2ymUcWsYGTFARonxEyCnyKMvO1XvgbmdXG3ktJez-4I3RZHUqlIrVMGsIBj-sraPp77c04XNCkgDUgU0GRUHs19oi8cTuWYiVtxSWORG8t1sUOuFZY0vS8fliHU4Fn-JbN104Gu1iV4CSYItPVGQG6BvQRUFM7uyOCybmHseYhTqJH_E4IF7rQ_0rikJsTu1geq45OyqP-vRkGvm5mDR5k4gPKGDM"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+<p class="text-white font-label-sm italic text-sm">"Finance should be a tool for freedom, not a source of stress."</p>
+</div>
+</div>
+<h4 class="font-headline-md text-headline-md">Sarah Chen</h4>
+<p class="text-on-surface-variant">CEO &amp; Co-Founder</p>
+</div>
+<!-- Member 2 -->
+<div class="group">
+<div class="aspect-square rounded-xl overflow-hidden mb-4 relative">
+<img alt="Marcus Thorne" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A professional headshot of a male engineering lead in his early 40s. He is wearing a simple grey polo shirt and has a relaxed, confident expression. The lighting is natural and high-key, maintaining the clean aesthetic of the Emerald Trust design system. The setting is a minimalist studio with soft shadows and crisp white backgrounds." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeSqbsubt23jd4-p4TVsSW8-FkqbX1AJ-D07R7Y7g2AGapg8QmvAgcGHTrzEhI5pQl2YiC4YgoZp4xJw1uZvudFXfUaEU0fw8mKkSkkIhVG6F81ZCgCVYbqI83QrXz0ld20ckTUSV5J8ucpzy_WuEnaJoskEpt-lVHuzsa2r8QyR0wuCFdPDNyc_0oD7mVmxPVVll73STV2a5m9G_icbhbU_YU75d216opzxBhkP5vXvUKRp-_REf3owYHuPijAuzfKZGrvCgaxTY"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+<p class="text-white font-label-sm italic text-sm">"Building secure systems that feel invisible to the user."</p>
+</div>
+</div>
+<h4 class="font-headline-md text-headline-md">Marcus Thorne</h4>
+<p class="text-on-surface-variant">CTO</p>
+</div>
+<!-- Member 3 -->
+<div class="group">
+<div class="aspect-square rounded-xl overflow-hidden mb-4 relative">
+<img alt="Elena Rodriguez" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A bright and vibrant professional portrait of a woman in her 20s, looking directly at the camera with a creative and enthusiastic smile. She is in a creative workspace with colorful but subtle geometric art on the walls. The overall visual style is consistent with a modern fintech brand, using bright lighting and a focus on emerald green accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgqGLuwLjY0hefW79TNrVaIj4PK7vJcOccbhUZ9uXxfHt7739mM1lpXucbYX8q0GDTkJyiw4LGD6PW1VtmLVlwhcyW88av2b442PxqZpxjQ6OPsLNm5X2sUdZhAfwXWk8GtjyCWwgI5qdCvJv38J9hSAjXHL8ubUJIVT2Kv-fAQDB4fDREy0D9DLMLO8OgY4KhoLFFGVJR2hjQOFjoPNdDk3e6_BaDVwVALaFhqBLriAUBk7C2B3ApC-LSyWlPbrlFIaOOHjjVy1Q"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+<p class="text-white font-label-sm italic text-sm">"Simplifying the complex through thoughtful design."</p>
+</div>
+</div>
+<h4 class="font-headline-md text-headline-md">Elena Rodriguez</h4>
+<p class="text-on-surface-variant">Head of Product Design</p>
+</div>
+<!-- Member 4 -->
+<div class="group">
+<div class="aspect-square rounded-xl overflow-hidden mb-4 relative">
+<img alt="Jameson Wu" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A professional and friendly portrait of a male finance expert. He is wearing a light white button-down shirt with the sleeves rolled up, standing in a bright office lounge. The lighting is soft and airy, creating a high-end corporate feel that is approachable. The color palette emphasizes clean whites and deep primary greens." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBg_Yt7GVzm1CUtqW1XouzBeMODcJ4I47LVfTt32katKzuoUBzzcJO-QJhv5VytZLL1XIyGhqQ5og_yLvHxYqLOkRXBUK9iCv1cmVTeBjpFozfxehi_7tcdyb2kkC8mvsfe2fJIDKMSI3kp5SVH-AEZVjGLZ3Cwjfigbz8rbhnzBcDaY0IQEHPRQR6Sh1ulAy0VpsbNzUml0B8gI49PZH7JoLC_qVdhZEtIIE1M76-LRcu8iGk519NeOjYxfT0NnoydF1JNe_9t3wA"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+<p class="text-white font-label-sm italic text-sm">"Data is only powerful when it helps people make better choices."</p>
+</div>
+</div>
+<h4 class="font-headline-md text-headline-md">Jameson Wu</h4>
+<p class="text-on-surface-variant">Chief Economist</p>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-20 md:py-32 px-margin-mobile md:px-margin-desktop">
+<div class="max-w-container-max mx-auto bg-primary text-on-primary rounded-3xl p-12 md:p-24 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-12">
+<!-- Abstract Background Shape -->
+<div class="absolute top-0 right-0 w-1/2 h-full bg-white/5 skew-x-12 -mr-24 pointer-events-none"></div>
+<div class="max-w-xl space-y-6 relative z-10">
+<h2 class="font-headline-lg text-headline-lg !text-white">Ready to change your financial future?</h2>
+<p class="font-body-lg text-body-lg text-white/80">Join over 1 million people who are taking back control of their money with FinTrack.</p>
+</div>
+<div class="flex flex-col sm:flex-row gap-4 relative z-10 w-full md:w-auto">
+<button class="bg-white text-primary px-8 py-4 rounded-full font-button text-button hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2">
+                        Download the App <span class="material-symbols-outlined">download</span>
+</button>
+<button class="border-2 border-white text-white px-8 py-4 rounded-full font-button text-button hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
+                        View Careers <span class="material-symbols-outlined">work</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant/50 w-full py-20 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<div class="flex flex-col md:flex-row justify-between gap-gutter">
+<div class="space-y-6 max-w-sm">
+<div class="text-headline-md font-headline-md font-bold text-primary">FinTrack</div>
+<p class="text-on-surface-variant font-body-md text-body-md">Building the future of personal finance with empathy, technology, and absolute transparency.</p>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">public</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">alternate_email</span>
+</a>
+</div>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-12">
+<div class="space-y-4">
+<p class="font-bold text-on-surface">Company</p>
+<ul class="space-y-2 text-label-sm text-on-surface-variant">
+<li><a class="hover:text-primary" href="#">About Us</a></li>
+<li><a class="hover:text-primary" href="#">Careers</a></li>
+<li><a class="hover:text-primary" href="#">Press</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<p class="font-bold text-on-surface">Product</p>
+<ul class="space-y-2 text-label-sm text-on-surface-variant">
+<li><a class="hover:text-primary" href="#">Features</a></li>
+<li><a class="hover:text-primary" href="#">Pricing</a></li>
+<li><a class="hover:text-primary" href="#">Security</a></li>
+</ul>
+</div>
+<div class="space-y-4">
+<p class="font-bold text-on-surface">Legal</p>
+<ul class="space-y-2 text-label-sm text-on-surface-variant">
+<li><a class="hover:text-primary" href="#">Privacy Policy</a></li>
+<li><a class="hover:text-primary" href="#">Terms of Service</a></li>
+<li><a class="hover:text-primary" href="#">Cookie Policy</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="mt-16 pt-8 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-4 text-label-sm text-on-surface-variant">
+<p>© 2024 FinTrack Inc. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="hover:text-primary" href="#">Status</a>
+<a class="hover:text-primary" href="#">Contact</a>
+</div>
+</div>
+</footer>
+<script>
+        // Simple Intersection Observer for Fade-in effects
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-8');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            section.classList.add('transition-all', 'duration-1000', 'opacity-0', 'translate-y-8');
+            observer.observe(section);
+        });
+    </script>
+</body></html>

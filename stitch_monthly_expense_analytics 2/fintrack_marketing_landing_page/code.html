@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FinTrack | Financial clarity, for the rest of us.</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-background": "#121c2a",
+                    "surface-dim": "#d0dbed",
+                    "surface-container-highest": "#d9e3f6",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed": "#6ffbbe",
+                    "surface-container-lowest": "#ffffff",
+                    "outline": "#6f7a6d",
+                    "primary-container": "#007a33",
+                    "on-tertiary-fixed": "#002117",
+                    "surface-container": "#e6eeff",
+                    "inverse-primary": "#77dc88",
+                    "on-secondary-fixed-variant": "#005236",
+                    "secondary-fixed-dim": "#4edea3",
+                    "tertiary": "#1b5b47",
+                    "on-primary-fixed-variant": "#005320",
+                    "on-primary-fixed": "#002109",
+                    "primary-fixed": "#93f9a2",
+                    "secondary": "#006c49",
+                    "surface-container-low": "#eff4ff",
+                    "primary-fixed-dim": "#77dc88",
+                    "tertiary-container": "#37745f",
+                    "inverse-surface": "#27313f",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#95d3ba",
+                    "on-secondary-container": "#00714d",
+                    "surface-variant": "#d9e3f6",
+                    "background": "#f8f9ff",
+                    "surface-tint": "#006e2d",
+                    "surface-container-high": "#dee9fc",
+                    "secondary-container": "#6cf8bb",
+                    "error-container": "#ffdad6",
+                    "outline-variant": "#becabb",
+                    "surface-bright": "#f8f9ff",
+                    "on-surface": "#121c2a",
+                    "on-tertiary-container": "#b7f7dd",
+                    "on-secondary-fixed": "#002113",
+                    "on-surface-variant": "#3f4a3e",
+                    "error": "#ba1a1a",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "surface": "#f8f9ff",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#b0f0d6",
+                    "on-primary": "#ffffff",
+                    "on-primary-container": "#a1ffad",
+                    "primary": "#005e26",
+                    "on-tertiary-fixed-variant": "#0b513d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-mobile": "20px",
+                    "gutter": "24px",
+                    "margin-desktop": "80px",
+                    "container-max": "1280px",
+                    "base": "4px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "display-xl-mobile": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "body-md": ["Inter"],
+                    "button": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "display-xl": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "label-sm": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-xl-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "button": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-xl": ["60px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+        .ambient-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 122, 51, 0.05);
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at top right, #e6eeff 0%, #f8f9ff 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto bg-surface/80 backdrop-blur-md border-b border-outline-variant/30">
+<div class="text-headline-md font-headline-md font-bold text-primary">FinTrack</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="font-label-sm text-label-sm text-primary font-bold border-b-2 border-primary" href="#">Features</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Pricing</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">About</a>
+</nav>
+<button class="bg-primary-container text-on-primary-container px-6 py-3 rounded-full font-button text-button hover:opacity-80 transition-opacity active:scale-95 transition-transform">
+            Get Started
+        </button>
+</header>
+<main class="pt-24">
+<!-- Hero Section -->
+<section class="hero-gradient relative min-h-[870px] flex items-center pt-12 pb-20 px-margin-mobile md:px-margin-desktop overflow-hidden">
+<div class="max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="z-10 text-center lg:text-left">
+<h1 class="font-display-xl text-display-xl-mobile md:text-display-xl text-on-background mb-6 leading-tight">
+                        Financial clarity, <br class="hidden md:block"/>for the rest of us.
+                    </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-xl mx-auto lg:mx-0">
+                        Stop guessing your budget. FinTrack tells you exactly what you can safely spend today, so you can enjoy your life without the math.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+<button class="bg-primary text-white px-8 py-4 rounded-xl font-button text-button shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95">
+                            Get Started for Free
+                        </button>
+<button class="bg-white text-primary border-1.5 border-primary px-8 py-4 rounded-xl font-button text-button flex items-center justify-center gap-2 hover:bg-primary/5 transition-all">
+<span class="material-symbols-outlined">play_circle</span>
+                            Watch Demo
+                        </button>
+</div>
+</div>
+<div class="relative w-full aspect-square md:aspect-video lg:aspect-square flex items-center justify-center">
+<!-- Dashboard Mockup -->
+<div class="relative w-full max-w-[500px] bg-white rounded-[40px] shadow-2xl p-6 border-[8px] border-on-background overflow-hidden animate-float">
+<div class="flex justify-between items-center mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="User" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp3HtY5BuB5PSKaC5roLNXCnXdaCbHk6NE36U1Kpg3U69qQs1p8WMkNM-i_muXVXw_jYauqC-oiH2mme1rAaoI60RtmvTcd-ePclC48ZwIJLxHSdDvwapDlfpPDvUYVA2UcI51ff8hrRqA505aA5vQxOYjvKfIfECprfIKob11IiI_44WNZrI0--PT00kyBHuH5pOyfKdgpunvI_I5uyU2rYf7jXSuCXEFNe2EozdpLmukcABOpHYB3HgV7nYo9VKHBF88iTblowY"/>
+</div>
+<div>
+<p class="text-label-sm font-bold text-on-surface">Hello, Sarah</p>
+<p class="text-[10px] text-on-surface-variant">Ready for your coffee?</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</div>
+<!-- Safe to Spend Widget -->
+<div class="bg-primary text-white p-8 rounded-[32px] mb-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+<p class="font-label-sm uppercase tracking-wider opacity-80 mb-2">Safe to Spend Today</p>
+<h2 class="text-4xl font-bold mb-4">$42.50</h2>
+<div class="flex items-center gap-2 text-sm bg-white/20 w-fit px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+                                You're on track!
+                            </div>
+</div>
+<!-- Mini Feed -->
+<div class="space-y-4">
+<p class="font-label-sm font-bold text-on-surface mb-2">Activity Feed</p>
+<div class="flex items-center gap-4 p-4 bg-surface-container-low rounded-2xl">
+<div class="w-10 h-10 rounded-xl bg-secondary-container/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">shopping_bag</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold">Grocery Store</p>
+<p class="text-[10px] text-on-surface-variant">12:30 PM • Needs Review</p>
+</div>
+<p class="text-sm font-bold">-$14.20</p>
+</div>
+<div class="flex items-center gap-4 p-4 bg-surface-container-low rounded-2xl">
+<div class="w-10 h-10 rounded-xl bg-tertiary-fixed-dim/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">savings</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold">Vacation Fund</p>
+<p class="text-[10px] text-on-surface-variant">Auto-saved 5% today</p>
+</div>
+<p class="text-sm font-bold text-secondary">+$5.00</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Trust Section -->
+<section class="py-12 border-y border-outline-variant/30 bg-white overflow-hidden">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop text-center">
+<p class="font-label-sm text-on-surface-variant mb-10 tracking-widest uppercase">Trusted by forward-thinking individuals</p>
+<div class="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+<div class="flex items-center gap-2 font-bold text-xl"><span class="material-symbols-outlined text-primary">eco</span> GreenGrowth</div>
+<div class="flex items-center gap-2 font-bold text-xl"><span class="material-symbols-outlined text-primary">account_balance_wallet</span> WalletWise</div>
+<div class="flex items-center gap-2 font-bold text-xl"><span class="material-symbols-outlined text-primary">shield_moon</span> SecureCap</div>
+<div class="flex items-center gap-2 font-bold text-xl"><span class="material-symbols-outlined text-primary">bolt</span> VelocityPay</div>
+<div class="flex items-center gap-2 font-bold text-xl"><span class="material-symbols-outlined text-primary">diamond</span> EliteWealth</div>
+</div>
+<p class="mt-10 font-body-md text-on-surface-variant">Join <span class="text-primary font-bold">50,000+ users</span> tracking their way to wealth.</p>
+</div>
+</section>
+<!-- Value Prop Section -->
+<section class="py-24 px-margin-mobile md:px-margin-desktop bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto text-center mb-20">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-4">Finance that speaks your language.</h2>
+<p class="font-body-lg text-on-surface-variant max-w-2xl mx-auto">Finally, an app that doesn't feel like a chore. We focus on clarity, not complexity.</p>
+</div>
+<div class="max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="group bg-white p-8 rounded-[32px] ambient-shadow border border-outline-variant/30 hover:border-primary/50 transition-all duration-300 flex flex-col h-full">
+<div class="w-14 h-14 bg-secondary-container/20 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">calculate</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-4 text-on-surface">Safe to Spend Daily</h3>
+<p class="font-body-md text-on-surface-variant flex-grow">
+                        Real-time calculations of what's left after your bills and savings goals are automatically factored in.
+                    </p>
+</div>
+<!-- Card 2 -->
+<div class="group bg-white p-8 rounded-[32px] ambient-shadow border border-outline-variant/30 hover:border-primary/50 transition-all duration-300 flex flex-col h-full">
+<div class="w-14 h-14 bg-primary-fixed/20 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">forum</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-4 text-on-surface">Conversational Analytics</h3>
+<p class="font-body-md text-on-surface-variant flex-grow">
+                        Insightful feed that feels like a chat with a mentor, not a rigid spreadsheet of numbers and cells.
+                    </p>
+</div>
+<!-- Card 3 -->
+<div class="group bg-white p-8 rounded-[32px] ambient-shadow border border-outline-variant/30 hover:border-primary/50 transition-all duration-300 flex flex-col h-full">
+<div class="w-14 h-14 bg-tertiary-fixed/20 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-tertiary text-3xl" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-4 text-on-surface">Goal Tracking with Heart</h3>
+<p class="font-body-md text-on-surface-variant flex-grow">
+                        Visual progress bars and delightful animations that celebrate every single win on your journey.
+                    </p>
+</div>
+</div>
+</section>
+<!-- Features Bento Grid -->
+<section class="py-24 px-margin-mobile md:px-margin-desktop bg-white">
+<div class="max-w-container-max mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-gutter min-h-[600px]">
+<!-- Large Feature -->
+<div class="md:col-span-2 md:row-span-2 bg-surface-container rounded-[40px] p-10 flex flex-col justify-between overflow-hidden relative group">
+<div class="z-10">
+<span class="px-4 py-1.5 bg-primary/10 text-primary font-bold text-xs rounded-full uppercase tracking-widest">Efficiency</span>
+<h3 class="font-headline-lg text-headline-lg text-on-background mt-4 mb-4">Upload Statements <br/>&amp; Automate Everything.</h3>
+<p class="font-body-md text-on-surface-variant max-w-sm">No more manual entry. Simply drag and drop your bank statements and let our AI do the heavy lifting of categorizing your life.</p>
+</div>
+<div class="mt-8 z-10">
+<button class="bg-on-surface text-white px-6 py-3 rounded-xl font-button text-button hover:opacity-90 transition-opacity">Try Auto-Import</button>
+</div>
+<div class="absolute -bottom-10 -right-10 w-64 h-64 bg-primary/10 rounded-full group-hover:scale-125 transition-transform duration-700"></div>
+<span class="absolute top-1/2 right-12 material-symbols-outlined text-[180px] text-primary/5 select-none pointer-events-none">cloud_upload</span>
+</div>
+<!-- Medium Feature 1 -->
+<div class="md:col-span-2 bg-secondary-container/20 rounded-[40px] p-10 flex items-center gap-8 group">
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-on-background mb-2">Budget Alerts</h3>
+<p class="font-body-md text-on-surface-variant">Smart notifications that nudge you before you overspend, not after.</p>
+</div>
+<div class="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-xl group-hover:-rotate-12 transition-transform">
+<span class="material-symbols-outlined text-4xl text-secondary" style="font-variation-settings: 'FILL' 1;">notifications_active</span>
+</div>
+</div>
+<!-- Medium Feature 2 -->
+<div class="md:col-span-2 bg-tertiary-container/10 rounded-[40px] p-10 flex items-center gap-8 group">
+<div class="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-xl group-hover:rotate-12 transition-transform">
+<span class="material-symbols-outlined text-4xl text-tertiary" style="font-variation-settings: 'FILL' 1;">palette</span>
+</div>
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-on-background mb-2">B2C Friendly Design</h3>
+<p class="font-body-md text-on-surface-variant">Built for people, not accountants. A premium interface that makes wealth management feel like a luxury experience.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Closing CTA -->
+<section class="py-24 px-margin-mobile md:px-margin-desktop bg-on-background overflow-hidden relative">
+<div class="max-w-container-max mx-auto text-center relative z-10">
+<h2 class="font-display-xl text-display-xl-mobile md:text-display-xl text-white mb-8">Ready to take control?</h2>
+<p class="font-body-lg text-surface-variant mb-12 max-w-xl mx-auto">Join thousands of users who have found their financial peace of mind. Download FinTrack today.</p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+<!-- App Store Button -->
+<a class="bg-white text-on-background px-8 py-4 rounded-2xl flex items-center gap-4 hover:bg-surface-variant transition-colors min-w-[200px]" href="#">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">apps</span>
+<div class="text-left">
+<p class="text-[10px] uppercase font-bold opacity-60">Download on the</p>
+<p class="text-lg font-bold leading-none">App Store</p>
+</div>
+</a>
+<!-- Google Play Button -->
+<a class="bg-white text-on-background px-8 py-4 rounded-2xl flex items-center gap-4 hover:bg-surface-variant transition-colors min-w-[200px]" href="#">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<div class="text-left">
+<p class="text-[10px] uppercase font-bold opacity-60">Get it on</p>
+<p class="text-lg font-bold leading-none">Google Play</p>
+</div>
+</a>
+</div>
+</div>
+<!-- Decorative Elements -->
+<div class="absolute top-0 left-0 w-64 h-64 bg-primary/20 blur-[100px] rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+<div class="absolute bottom-0 right-0 w-96 h-96 bg-secondary/10 blur-[120px] rounded-full translate-x-1/3 translate-y-1/3"></div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-20 px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between gap-gutter max-w-container-max mx-auto border-t border-outline-variant/50 bg-surface-container-lowest">
+<div class="max-w-xs">
+<div class="text-headline-md font-headline-md font-bold text-primary mb-6">FinTrack</div>
+<p class="font-body-md text-body-md text-on-surface-variant">The modern standard for personal finance management. Clarity at your fingertips.</p>
+</div>
+<div class="flex flex-col md:flex-row gap-16">
+<div class="flex flex-col gap-4">
+<p class="font-label-sm text-label-sm font-bold text-on-surface mb-2">Product</p>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary focus:underline transition-colors" href="#">Features</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary focus:underline transition-colors" href="#">Pricing</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary focus:underline transition-colors" href="#">Security</a>
+</div>
+<div class="flex flex-col gap-4">
+<p class="font-label-sm text-label-sm font-bold text-on-surface mb-2">Legal</p>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary focus:underline transition-colors" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary focus:underline transition-colors" href="#">Terms of Service</a>
+</div>
+</div>
+<div class="md:text-right flex flex-col justify-between">
+<div class="flex md:justify-end gap-4 mb-8">
+<a class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-white transition-all" href="#"><span class="material-symbols-outlined text-lg">share</span></a>
+<a class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-white transition-all" href="#"><span class="material-symbols-outlined text-lg">public</span></a>
+<a class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:bg-primary hover:text-white transition-all" href="#"><span class="material-symbols-outlined text-lg">alternate_email</span></a>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">© 2024 FinTrack Inc. All rights reserved.</p>
+</div>
+</footer>
+<script>
+        // Micro-interaction for cards
+        document.querySelectorAll('.ambient-shadow').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-8px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Simple floating animation logic for mockup
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes float {
+                0% { transform: translateY(0px) rotate(0deg); }
+                50% { transform: translateY(-20px) rotate(1deg); }
+                100% { transform: translateY(0px) rotate(0deg); }
+            }
+            .animate-float {
+                animation: float 6s ease-in-out infinite;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body></html>

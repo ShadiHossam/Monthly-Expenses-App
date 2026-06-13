@@ -30,19 +30,21 @@ public class SavingsGoalService {
             LocalDate to = LocalDate.now();
             BigDecimal credits = transactionRepository.sumCreditsBetween(userId, from, to).orElse(BigDecimal.ZERO);
             BigDecimal debits  = transactionRepository.sumDebitsBetween(userId, from, to).orElse(BigDecimal.ZERO);
-            BigDecimal net = credits.subtract(debits).max(BigDecimal.ZERO);
+            BigDecimal netIncome = credits.subtract(debits);          // raw; can be negative
+            BigDecimal netSaved  = netIncome.max(BigDecimal.ZERO);    // clamped for progress bar
             double pct = goal.getTargetAmount().compareTo(BigDecimal.ZERO) > 0
-                ? Math.min(net.doubleValue() / goal.getTargetAmount().doubleValue() * 100, 100) : 0;
+                ? Math.min(netSaved.doubleValue() / goal.getTargetAmount().doubleValue() * 100, 100) : 0;
 
-            return Map.<String, Object>of(
-                "id", goal.getId(),
-                "name", goal.getName(),
-                "target_amount", goal.getTargetAmount(),
-                "target_date", goal.getTargetDate().toString(),
-                "color", goal.getColor(),
-                "net_saved", net,
-                "progress_pct", Math.round(pct * 10.0) / 10.0
-            );
+            Map<String, Object> m = new java.util.LinkedHashMap<>();
+            m.put("id", goal.getId());
+            m.put("name", goal.getName());
+            m.put("target_amount", goal.getTargetAmount());
+            m.put("target_date", goal.getTargetDate().toString());
+            m.put("color", goal.getColor());
+            m.put("net_income", netIncome);   // raw signed value — negative means overspending
+            m.put("net_saved", netSaved);     // clamped ≥ 0 for progress display
+            m.put("progress_pct", Math.round(pct * 10.0) / 10.0);
+            return m;
         }).toList();
     }
 
@@ -51,11 +53,23 @@ public class SavingsGoalService {
         if (body.get("name") == null || body.get("targetAmount") == null || body.get("targetDate") == null) {
             throw new BusinessException("name, targetAmount, and targetDate are required", HttpStatus.BAD_REQUEST);
         }
+        BigDecimal targetAmount;
+        LocalDate targetDate;
+        try {
+            targetAmount = new BigDecimal(body.get("targetAmount").toString());
+        } catch (NumberFormatException e) {
+            throw new BusinessException("targetAmount must be a valid number", HttpStatus.BAD_REQUEST);
+        }
+        try {
+            targetDate = LocalDate.parse(body.get("targetDate").toString());
+        } catch (java.time.format.DateTimeParseException e) {
+            throw new BusinessException("targetDate must be in YYYY-MM-DD format", HttpStatus.BAD_REQUEST);
+        }
         return repo.save(SavingsGoal.builder()
             .userId(userId)
             .name(body.get("name").toString())
-            .targetAmount(new BigDecimal(body.get("targetAmount").toString()))
-            .targetDate(LocalDate.parse(body.get("targetDate").toString()))
+            .targetAmount(targetAmount)
+            .targetDate(targetDate)
             .color(body.getOrDefault("color", "#10b981").toString())
             .build());
     }

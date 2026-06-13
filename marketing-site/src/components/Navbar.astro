@@ -1,0 +1,106 @@
+---
+import { SITE } from '../config/site';
+---
+
+<nav id="navbar" role="navigation" aria-label="Main navigation">
+  <div class="container flex items-center justify-between h-18 py-3">
+
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-2 cursor-pointer" aria-label="FinTrack home" style="text-decoration:none;">
+      <div class="logo-icon" style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg viewBox="0 0 24 24" fill="none" style="width:18px;height:18px;" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3v18h18"/>
+          <path d="M7 16l4-6 4 4 4-6"/>
+        </svg>
+      </div>
+      <span class="logo-name" style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.125rem;letter-spacing:-0.02em;">{SITE.name}</span>
+    </a>
+
+    <!-- Desktop nav -->
+    <div class="hidden md:flex items-center gap-8">
+      <a href="/#features" class="nav-link">Features</a>
+      <a href="/pricing"   class="nav-link">Pricing</a>
+      <a href="/about"     class="nav-link">About</a>
+      <a href="/faq"       class="nav-link">FAQ</a>
+    </div>
+
+    <!-- Desktop CTAs -->
+    <div class="hidden md:flex items-center gap-3">
+      <a href={SITE.appUrl + '/login'} class="btn-ghost text-sm py-2.5 px-4">Log in</a>
+      <a href={SITE.appUrl + '/register'} class="btn-primary text-sm py-2.5 px-5">
+        Get Started Free
+        <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <!-- Hamburger -->
+    <button id="hamburger" onclick="toggleMenu()" class="md:hidden p-2 rounded-lg cursor-pointer" style="background:rgba(0,122,51,0.08);" aria-label="Open menu" aria-expanded="false">
+      <svg id="ham-icon"   viewBox="0 0 24 24" fill="none" class="w-6 h-6" stroke="var(--green-800)" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <svg id="close-icon" viewBox="0 0 24 24" fill="none" class="w-6 h-6 hidden" stroke="var(--green-800)" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="md:hidden" style="border-top:1px solid rgba(0,122,51,0.10);background:var(--surface);">
+    <div class="container py-4 flex flex-col gap-4">
+      <a href="/#features" onclick="toggleMenu()" class="mobile-nav-link">Features</a>
+      <a href="/pricing"   onclick="toggleMenu()" class="mobile-nav-link">Pricing</a>
+      <a href="/about"     onclick="toggleMenu()" class="mobile-nav-link">About</a>
+      <a href="/faq"       onclick="toggleMenu()" class="mobile-nav-link">FAQ</a>
+      <div class="flex gap-3 pt-2">
+        <a href={SITE.appUrl + '/login'}    class="btn-ghost   text-sm py-2.5 px-4" style="flex:1;justify-content:center;">Log in</a>
+        <a href={SITE.appUrl + '/register'} class="btn-primary text-sm py-2.5 px-5" style="flex:1;justify-content:center;">Get Started</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<style>
+  /* ── Default: hero/dark state ── */
+  .logo-icon {
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.16);
+    transition: background 0.35s, border-color 0.35s;
+  }
+  .logo-name { color: #ffffff; transition: color 0.35s; }
+
+  .nav-link {
+    color: rgba(255,255,255,0.68); font-weight: 500; font-size: .9375rem;
+    text-decoration: none; transition: color .2s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .nav-link:hover { color: #ffffff; }
+
+  #navbar .btn-ghost {
+    color: rgba(255,255,255,0.75);
+    transition: color .2s, background .2s;
+  }
+  #navbar .btn-ghost:hover { color: #ffffff; background: rgba(255,255,255,0.08); }
+
+  /* High-contrast CTA on dark hero (7:1 ratio: emerald on near-black) */
+  #navbar:not(.scrolled) .btn-primary {
+    background: var(--green-400);
+    color: var(--green-950);
+    box-shadow: 0 0 24px rgba(52,211,153,0.22);
+  }
+  #navbar:not(.scrolled) .btn-primary:hover {
+    background: #ffffff;
+    color: var(--green-950);
+    box-shadow: 0 8px 28px rgba(255,255,255,0.18);
+  }
+
+  /* ── Scrolled: solid light navbar ── */
+  #navbar.scrolled .logo-icon { background: var(--green-700); border-color: transparent; }
+  #navbar.scrolled .logo-name { color: var(--green-900); }
+  #navbar.scrolled .nav-link { color: var(--text-muted); }
+  #navbar.scrolled .nav-link:hover { color: var(--green-800); }
+  #navbar.scrolled .btn-ghost { color: var(--text-muted); }
+  #navbar.scrolled .btn-ghost:hover { color: var(--text-primary); background: var(--surface-muted); }
+
+  .mobile-nav-link {
+    color: var(--text-primary); font-weight: 600; font-size: 1rem;
+    text-decoration: none; display: block;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .mobile-nav-link:hover { color: var(--green-700); }
+</style>

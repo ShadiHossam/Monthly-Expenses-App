@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import org.springframework.scheduling.annotation.Scheduled;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayDeque;
@@ -41,6 +43,17 @@ public class StatementController {
         }
     }
 
+    @Scheduled(fixedDelay = 120_000)
+    void evictExpiredUploadWindows() {
+        Instant cutoff = Instant.now().minusSeconds(60);
+        uploadTimestamps.entrySet().removeIf(e -> {
+            Deque<Instant> q = e.getValue();
+            synchronized (q) {
+                return q.isEmpty() || q.peekLast().isBefore(cutoff);
+            }
+        });
+    }
+
     @PostMapping("/upload")
     public ResponseEntity<Map<String, Object>> upload(
             @RequestParam("file") MultipartFile file,
@@ -51,7 +64,9 @@ public class StatementController {
     }
 
     @GetMapping(value = "/{id}/progress", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter progress(@PathVariable Long id) {
+    public SseEmitter progress(@PathVariable Long id,
+                               @org.springframework.security.core.annotation.AuthenticationPrincipal Long userId) {
+        statementService.getStatement(id, userId); // enforces ownership; throws 404 if not owner
         return statementService.getProgressEmitter(id);
     }
 

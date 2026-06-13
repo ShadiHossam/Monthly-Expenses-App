@@ -1,0 +1,158 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const faqs = [
+  {
+    category: "Getting Started",
+    items: [
+      {
+        q: "How do I import my UAE bank transactions?",
+        a: "Download your monthly PDF statement from your bank's mobile app or internet banking portal. In FinTrack, go to Statements → Upload, drag in your PDF, and our AI extracts everything in seconds. We support Emirates NBD, ADCB, FAB, Mashreq, RAKBank, DIB, HSBC UAE, CBD, and more."
+      },
+      {
+        q: "Do I need to share my bank login or password?",
+        a: "Never. FinTrack works entirely via statement upload — you download the PDF from your bank's app and upload it to us. We never ask for your online banking credentials, and we never connect directly to your bank."
+      },
+      {
+        q: "How long does setup take?",
+        a: "Most users are set up and seeing their first insights within 5 minutes. Create an account, upload one statement, and your Safe-to-Spend is calculated immediately."
+      },
+      {
+        q: "Can I use FinTrack if I have multiple bank accounts?",
+        a: "Yes. Free users can upload one statement per month. Premium users can upload unlimited statements from any number of banks and see a unified view of all their finances."
+      },
+    ]
+  },
+  {
+    category: "Safe-to-Spend",
+    items: [
+      {
+        q: "How is my Safe-to-Spend calculated?",
+        a: "We take your account balance(s), subtract upcoming committed expenses (rent, bills, loan payments), subtract the amount reserved for your active savings goals, and divide the remainder by the number of days left in the month. The result is what you can freely spend today without jeopardizing your financial health."
+      },
+      {
+        q: "What if I have multiple currencies (AED + USD + GBP)?",
+        a: "Premium users can set a primary currency for Safe-to-Spend display. FinTrack converts balances using daily exchange rates so you always see a unified number, regardless of how many currencies your accounts hold."
+      },
+      {
+        q: "Can I adjust what counts as 'committed'?",
+        a: "Yes. You can mark any recurring transaction as committed (always reserved) or ignore it (excluded from calculation). FinTrack learns your patterns and suggests which transactions to mark automatically."
+      },
+    ]
+  },
+  {
+    category: "Privacy & Security",
+    items: [
+      {
+        q: "Is my financial data secure?",
+        a: "Yes. We use AES-256 encryption at rest and TLS 1.3 for all data in transit. Statement PDFs are processed ephemerally — the raw file is not stored after transaction extraction. We are compliant with UAE data residency guidelines and do not sell your data to any third party."
+      },
+      {
+        q: "Who can see my data?",
+        a: "Only you (and any family members you explicitly invite to your Premium account). FinTrack employees cannot access your financial data. We have zero-knowledge architecture for statement content."
+      },
+      {
+        q: "Can I delete my data?",
+        a: "Yes, at any time. Go to Settings → Privacy → Delete All Data. This permanently removes all transactions, statements, and profile data within 72 hours. You'll receive a confirmation email when complete."
+      },
+    ]
+  },
+  {
+    category: "Billing & Plans",
+    items: [
+      {
+        q: "Can I switch between plans?",
+        a: "Yes. Upgrade instantly and your Premium features activate immediately. Downgrade at the end of your billing period — your data is preserved for 12 months after downgrade."
+      },
+      {
+        q: "Do you offer refunds?",
+        a: "If you're not satisfied within your first 30 days on Premium, contact us and we'll refund you in full, no questions asked."
+      },
+      {
+        q: "Is there a family plan?",
+        a: "Premium includes up to 3 users on one account. Each person has individual privacy controls but can optionally contribute to a shared household budget view. Need more than 3 users? Contact us about our Institutional plan."
+      },
+      {
+        q: "What payment methods do you accept?",
+        a: "We accept all major credit and debit cards (Visa, Mastercard, Amex), including UAE-issued cards. Annual plans can also be paid via bank transfer. All payments are processed securely via Stripe."
+      },
+    ]
+  },
+  {
+    category: "UAE-Specific",
+    items: [
+      {
+        q: "Which UAE banks are supported for statement import?",
+        a: "Emirates NBD, ADCB, First Abu Dhabi Bank (FAB), Mashreq, RAKBank, Dubai Islamic Bank (DIB), HSBC UAE, Commercial Bank of Dubai (CBD), Abu Dhabi Islamic Bank (ADIB), Emirates Islamic, Ajman Bank, and Bank of Sharjah. We're adding more regularly — contact us if yours isn't listed."
+      },
+      {
+        q: "Does FinTrack understand UAE-specific merchants?",
+        a: "Yes. Our AI knows local merchants: Carrefour UAE, Noon, Talabat, Uber UAE, Careem, DEWA, SEWA, DU, Etisalat/e&, Salik, Nol, Emaar malls, and hundreds more. UAE transactions are categorized correctly, not dumped into 'miscellaneous'."
+      },
+      {
+        q: "Can I track my salary in AED and savings in another currency?",
+        a: "Yes. Premium supports multi-currency tracking. You can receive an AED salary, hold USD or GBP savings, and see everything converted to a single currency in your Safe-to-Spend view."
+      },
+    ]
+  },
+];
+---
+
+<BaseLayout
+  title="FinTrack FAQ — Your Questions About UAE Finance Tracking Answered"
+  description="Find answers to common questions about FinTrack — bank support, Safe-to-Spend calculation, data security, billing, and UAE-specific features."
+  canonicalPath="/faq"
+>
+
+<!-- PAGE HERO -->
+<div class="page-hero" style="padding-top:9rem;padding-bottom:5rem;">
+  <div class="container" style="position:relative;z-index:1;">
+    <div style="display:inline-block;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);border-radius:6px;padding:4px 12px;margin-bottom:1.25rem;">
+      <span style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green-400);font-family:'Plus Jakarta Sans',sans-serif;">Help Centre</span>
+    </div>
+    <h1 style="color:#ffffff;margin-bottom:1rem;">Frequently Asked Questions</h1>
+    <p style="color:rgba(255,255,255,0.55);font-size:1.0625rem;max-width:520px;margin:0 auto;">
+      Everything you need to know about FinTrack. Can't find what you're looking for?
+      <a href="mailto:hello@fintrack.app" style="color:var(--green-400);text-decoration:none;font-weight:600;">Email us.</a>
+    </p>
+  </div>
+</div>
+
+<!-- FAQ SECTIONS -->
+<section class="section">
+  <div class="container" style="max-width:820px;">
+    {faqs.map(section => (
+      <div style="margin-bottom:3.5rem;">
+        <h2 style="font-size:1.375rem;color:var(--green-800);border-bottom:2px solid var(--green-50);padding-bottom:.875rem;margin-bottom:0;">{section.category}</h2>
+        <div style="border-top:none;">
+          {section.items.map(item => (
+            <div class="faq-item">
+              <button class="faq-btn">
+                {item.q}
+                <span class="faq-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="var(--green-700)" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </span>
+              </button>
+              <div class="faq-body">{item.a}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+
+    <!-- Still need help -->
+    <div style="background:var(--green-50);border:1px solid var(--border-green);border-radius:var(--radius-xl);padding:2.5rem;text-align:center;margin-top:2rem;">
+      <div style="width:56px;height:56px;border-radius:16px;background:var(--surface-card);border:1px solid var(--border-green);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
+        <svg viewBox="0 0 24 24" fill="none" style="width:24px;height:24px;" stroke="var(--green-700)" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </div>
+      <h3 style="margin-bottom:.625rem;">Still have questions?</h3>
+      <p style="color:var(--text-muted);font-size:.9375rem;margin-bottom:1.5rem;">Our team typically responds within a few hours during UAE business hours.</p>
+      <a href="mailto:hello@fintrack.app" class="btn-primary" style="display:inline-flex;">
+        Email Support
+        <svg viewBox="0 0 24 24" fill="none" style="width:16px;height:16px;" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>

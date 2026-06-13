@@ -19,4 +19,5 @@ public class UserOut {
     private boolean anthropicApiKeySet;
     private String aiProvider;
     private int concurrentProcessing;
+    private String role;
 }

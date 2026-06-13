@@ -27,12 +27,22 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("UPDATE Transaction t SET t.categoryId = :catId, t.isCategorized = true WHERE t.id IN :ids AND t.userId = :userId")
     int bulkCategorize(@Param("catId") Long catId, @Param("ids") List<Long> ids, @Param("userId") Long userId);
 
+    @Modifying
+    @Query("UPDATE Transaction t SET t.categoryId = null, t.isCategorized = false WHERE t.categoryId = :catId AND t.userId = :userId")
+    int nullifyCategoryTransactions(@Param("catId") Long catId, @Param("userId") Long userId);
+
+    @Modifying
+    @Query("UPDATE Transaction t SET t.isCategorized = true WHERE t.id IN :ids AND t.userId = :userId")
+    int markCategorized(@Param("ids") List<Long> ids, @Param("userId") Long userId);
+
     @Query(value = """
         SELECT * FROM transactions t
         WHERE t.user_id = :userId
         AND (CAST(:from AS date) IS NULL OR t.txn_date >= CAST(:from AS date))
         AND (CAST(:to AS date) IS NULL OR t.txn_date <= CAST(:to AS date))
-        AND (CAST(:categoryId AS bigint) IS NULL OR t.category_id = CAST(:categoryId AS bigint))
+        AND (CAST(:categoryId AS bigint) IS NULL
+             OR (CAST(:categoryId AS bigint) = -1 AND t.category_id IS NULL)
+             OR t.category_id = CAST(:categoryId AS bigint))
         AND (CAST(:txnType AS varchar) IS NULL OR t.txn_type = CAST(:txnType AS varchar))
         AND (:search = '' OR LOWER(t.description) LIKE '%' || LOWER(:search) || '%'
              OR LOWER(COALESCE(t.merchant_name,'')) LIKE '%' || LOWER(:search) || '%')
@@ -190,4 +200,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     Optional<BigDecimal> sumDebitsBetween(@Param("userId") Long userId, @Param("from") LocalDate from, @Param("to") LocalDate to);
 
     void deleteByUserId(Long userId);
+
+    long countByUserId(Long userId);
 }
