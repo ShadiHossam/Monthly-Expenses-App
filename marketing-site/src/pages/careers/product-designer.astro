@@ -1,0 +1,91 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { SITE } from "../../config/site";
+
+const role = {
+  title: "Product Designer",
+  team: "Design",
+  location: "Dubai, UAE · Remote-friendly",
+  type: "Full-time",
+  description: "Own the end-to-end design process from research to polished UI. You care deeply about making complex financial data feel simple, calm, and human.",
+};
+
+const responsibilities = [
+  "Lead end-to-end design for major FinTrack features, from early research through polished, shipped UI.",
+  "Translate complex financial data (transaction categorization, Safe-to-Spend, multi-currency views) into calm, understandable interfaces.",
+  "Run lightweight user research with UAE residents and expats to validate design decisions.",
+  "Maintain and evolve FinTrack's design system across web and mobile.",
+  "Partner closely with engineering to ensure designs ship as intended, not just as mockups.",
+];
+
+const requirements = [
+  "4+ years of product design experience, ideally in fintech, consumer, or another data-heavy product.",
+  "A portfolio that shows range: research, interaction design, and high-fidelity visual polish.",
+  "Comfortable simplifying genuinely complex information without dumbing it down.",
+  "Experience designing for both web and mobile platforms.",
+  "Based in or willing to work UAE/Gulf hours; remote-friendly within a compatible timezone.",
+];
+
+const ldJson = {
+  "@context": "https://schema.org",
+  "@type": "JobPosting",
+  "title": role.title,
+  "description": role.description,
+  "datePosted": "2026-07-03",
+  "employmentType": "FULL_TIME",
+  "hiringOrganization": { "@type": "Organization", "name": "FinTrack", "sameAs": `https://${SITE.domain}` },
+  "jobLocation": { "@type": "Place", "address": { "@type": "PostalAddress", "addressLocality": "Dubai", "addressCountry": "AE" } },
+  "jobLocationType": "TELECOMMUTE",
+  "url": `https://${SITE.domain}/careers/product-designer`,
+};
+
+const breadcrumbs = [
+  { name: "Home", url: "/" },
+  { name: "Careers", url: "/careers" },
+  { name: role.title, url: "/careers/product-designer" },
+];
+---
+
+<BaseLayout
+  title={`${role.title} — FinTrack Careers`}
+  description={`${role.description} Apply for the ${role.title} role at FinTrack, Dubai (remote-friendly).`}
+  canonicalPath="/careers/product-designer"
+  ldJson={ldJson}
+  breadcrumbs={breadcrumbs}
+>
+
+<div class="page-hero" style="padding-top:9rem;padding-bottom:4rem;">
+  <div class="container" style="position:relative;z-index:1;max-width:760px;">
+    <span class="badge badge-green" style="margin-bottom:1.25rem;background:rgba(16,185,129,0.15);color:var(--green-400);border-color:rgba(16,185,129,0.25);">{role.team}</span>
+    <h1 style="color:#ffffff;margin-bottom:.75rem;">{role.title}</h1>
+    <p style="color:rgba(255,255,255,0.55);font-size:1.0625rem;">{role.location} · {role.type}</p>
+  </div>
+</div>
+
+<section class="section" style="padding-top:4rem;">
+  <div class="container" style="max-width:720px;">
+    <p style="color:var(--text-secondary);font-size:1.0625rem;line-height:1.85;margin-bottom:2rem;">{role.description}</p>
+
+    <h2 style="margin-bottom:1rem;">What You'll Do</h2>
+    <ul style="color:var(--text-secondary);line-height:1.85;padding-left:1.5rem;margin-bottom:2rem;">
+      {responsibilities.map(r => <li style="margin-bottom:.625rem;">{r}</li>)}
+    </ul>
+
+    <h2 style="margin-bottom:1rem;">What We're Looking For</h2>
+    <ul style="color:var(--text-secondary);line-height:1.85;padding-left:1.5rem;margin-bottom:2.5rem;">
+      {requirements.map(r => <li style="margin-bottom:.625rem;">{r}</li>)}
+    </ul>
+
+    <div class="card" style="text-align:center;padding:2.5rem;">
+      <h3 style="margin-bottom:.75rem;">Ready to Apply?</h3>
+      <p style="color:var(--text-muted);font-size:.9375rem;margin-bottom:1.5rem;">Send your resume, portfolio link, and a short note about why this role interests you.</p>
+      <a href={`mailto:${SITE.email}?subject=Application: ${role.title}&body=Hi FinTrack team,%0A%0AI'm applying for the ${role.title} role.%0A%0APlease find my resume, portfolio, and a short intro below.%0A%0A`} class="btn-primary" style="display:inline-flex;">
+        Apply for This Role
+        <svg viewBox="0 0 24 24" fill="none" style="width:16px;height:16px;" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <p style="margin-top:1.25rem;"><a href="/careers" style="color:var(--green-700);font-weight:600;font-size:.9375rem;">← See all open roles</a></p>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>

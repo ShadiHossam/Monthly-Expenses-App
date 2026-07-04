@@ -2,21 +2,41 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { SITE } from "../config/site";
 
-const ldJson = {
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "FinTrack",
-  "offers": [
-    { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD" },
-    { "@type": "Offer", "name": "Premium", "price": "9.99", "priceCurrency": "USD", "billingIncrement": "P1M" },
-    { "@type": "Offer", "name": "Premium Annual", "price": "89", "priceCurrency": "USD", "billingIncrement": "P1Y" }
-  ]
-};
+const pricingFaqs = [
+  { q: "Can I cancel my subscription at any time?", a: "Yes — cancel any time, no questions asked. Your Premium features stay active until the end of your current billing period. We'll never charge you after that." },
+  { q: "Is my financial data safe?", a: "Absolutely. We use AES-256 encryption at rest and TLS 1.3 in transit. Your statement data is processed and then never shared with third parties. You can also delete your data at any time from Settings." },
+  { q: "Do you offer a student discount?", a: "Yes! Students get 40% off Premium with a valid .ac.ae or .edu email address. Use promo code STUDENT40 at checkout." },
+  { q: "What happens to my data if I downgrade?", a: "Your data is always yours. If you downgrade to Free, you'll lose access to Premium features but your historical data is preserved for 12 months. You can export everything to CSV at any time." },
+  { q: "Can I share my account with my spouse?", a: "Yes! Premium includes up to 3 users on the same account. Each person has their own view, but you can also see a shared household overview with combined budgets and goals." },
+  { q: "Does FinTrack connect directly to my bank?", a: "FinTrack works via statement upload — you download your PDF from your bank's app and upload it to FinTrack. This means no shared credentials, no third-party bank connections, and total privacy." },
+];
+
+const ldJson = [
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "FinTrack",
+    "offers": [
+      { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "AED" },
+      { "@type": "Offer", "name": "Premium", "price": "36", "priceCurrency": "AED", "billingIncrement": "P1M" },
+      { "@type": "Offer", "name": "Premium Annual", "price": "327", "priceCurrency": "AED", "billingIncrement": "P1Y" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": pricingFaqs.map(item => ({
+      "@type": "Question",
+      "name": item.q,
+      "acceptedAnswer": { "@type": "Answer", "text": item.a }
+    }))
+  }
+];
 ---
 
 <BaseLayout
-  title="FinTrack Pricing — Free, Premium & Institutional Plans"
-  description="FinTrack starts free forever. Upgrade to Premium for AED 36/mo (or $89/year) to unlock AI analytics, unlimited statements, budget alerts, and family accounts."
+  title="FinTrack Pricing — Free & Premium Plans from AED 36/mo"
+  description="Compare FinTrack plans: Free forever, Premium at AED 36/mo (AED 327/yr), and Institutional. AI analytics, unlimited bank statements, family accounts & more."
   canonicalPath="/pricing"
   ldJson={ldJson}
 >
@@ -53,7 +73,7 @@ const ldJson = {
         <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.10em;color:var(--text-muted);margin-bottom:1.5rem;font-family:'Plus Jakarta Sans',sans-serif;">Free</p>
         <p style="font-size:.875rem;color:var(--text-muted);margin-bottom:1rem;">The basics to get you started on your savings path.</p>
         <div style="margin-bottom:1.75rem;">
-          <span class="price-amount">$0</span>
+          <span class="price-amount">AED 0</span>
           <span class="price-period"> / forever</span>
         </div>
         <a href={SITE.appUrl + '/register'} class="btn-outline" style="width:100%;justify-content:center;margin-bottom:2rem;">Start Free</a>
@@ -75,9 +95,9 @@ const ldJson = {
         <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.10em;color:var(--green-700);margin-bottom:1.5rem;font-family:'Plus Jakarta Sans',sans-serif;">Premium</p>
         <p style="font-size:.875rem;color:var(--text-muted);margin-bottom:1rem;">Our most powerful tools for serious personal finance.</p>
         <div style="margin-bottom:1.75rem;">
-          <span class="price-amount" id="premium-price">$9.99</span>
+          <span class="price-amount" id="premium-price">AED 36</span>
           <span class="price-period" id="premium-period"> / month</span>
-          <p id="annual-note" style="display:none;font-size:.8125rem;color:var(--green-700);font-weight:600;margin:.375rem 0 0;">Billed $89/year — save $30.88</p>
+          <p id="annual-note" style="display:none;font-size:.8125rem;color:var(--green-700);font-weight:600;margin:.375rem 0 0;">Billed AED 327/year — save AED 105</p>
         </div>
         <a href={SITE.appUrl + '/register?plan=premium'} class="btn-primary" style="width:100%;justify-content:center;margin-bottom:2rem;">Upgrade to Premium</a>
         <div style="height:1px;background:var(--border-green);margin-bottom:1.5rem;"></div>
@@ -156,14 +176,7 @@ const ldJson = {
     </div>
 
     <div style="border-top:1px solid var(--border);">
-      {[
-        { q: "Can I cancel my subscription at any time?", a: "Yes — cancel any time, no questions asked. Your Premium features stay active until the end of your current billing period. We'll never charge you after that." },
-        { q: "Is my financial data safe?", a: "Absolutely. We use AES-256 encryption at rest and TLS 1.3 in transit. Your statement data is processed and then never shared with third parties. You can also delete your data at any time from Settings." },
-        { q: "Do you offer a student discount?", a: "Yes! Students get 40% off Premium with a valid .ac.ae or .edu email address. Use promo code STUDENT40 at checkout." },
-        { q: "What happens to my data if I downgrade?", a: "Your data is always yours. If you downgrade to Free, you'll lose access to Premium features but your historical data is preserved for 12 months. You can export everything to CSV at any time." },
-        { q: "Can I share my account with my spouse?", a: "Yes! Premium includes up to 3 users on the same account. Each person has their own view, but you can also see a shared household overview with combined budgets and goals." },
-        { q: "Does FinTrack connect directly to my bank?", a: "FinTrack works via statement upload — you download your PDF from your bank's app and upload it to FinTrack. This means no shared credentials, no third-party bank connections, and total privacy." },
-      ].map(item => (
+      {pricingFaqs.map(item => (
         <div class="faq-item">
           <button class="faq-btn">
             {item.q}
@@ -208,13 +221,13 @@ const ldJson = {
     if (annual) {
       thumb.style.transform  = 'translateX(24px)';
       label.textContent      = 'Annual';
-      price.textContent      = '$7.42';
+      price.textContent      = 'AED 27';
       period.textContent     = ' / month';
       note.style.display     = 'block';
     } else {
       thumb.style.transform  = 'translateX(0)';
       label.textContent      = 'Monthly';
-      price.textContent      = '$9.99';
+      price.textContent      = 'AED 36';
       period.textContent     = ' / month';
       note.style.display     = 'none';
     }

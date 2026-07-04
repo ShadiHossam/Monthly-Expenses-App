@@ -4,6 +4,7 @@ import { SITE } from "../config/site";
 
 const openRoles = [
   {
+    slug: "senior-full-stack-engineer",
     title: "Senior Full-Stack Engineer",
     team: "Engineering",
     location: "Dubai, UAE · Remote-friendly",
@@ -11,6 +12,7 @@ const openRoles = [
     description: "Build the core of FinTrack — from OCR pipelines to real-time dashboards. You'll own entire product surfaces and ship code that touches thousands of users every day.",
   },
   {
+    slug: "product-designer",
     title: "Product Designer",
     team: "Design",
     location: "Dubai, UAE · Remote-friendly",
@@ -18,6 +20,7 @@ const openRoles = [
     description: "Own the end-to-end design process from research to polished UI. You care deeply about making complex financial data feel simple, calm, and human.",
   },
   {
+    slug: "growth-marketing-manager",
     title: "Growth & Marketing Manager",
     team: "Marketing",
     location: "Dubai, UAE",
@@ -25,6 +28,7 @@ const openRoles = [
     description: "Drive FinTrack's growth across the UAE and GCC. You understand the local market deeply and know how to build community, content, and campaigns that convert.",
   },
   {
+    slug: "customer-success-specialist",
     title: "Customer Success Specialist",
     team: "Support",
     location: "Remote · Gulf timezone",
@@ -44,8 +48,8 @@ const perks = [
 ---
 
 <BaseLayout
-  title="Careers at FinTrack — Join the Team Building the Future of Personal Finance in the UAE"
-  description="Join FinTrack and help build financial clarity for millions of UAE residents and expats. See our open roles and learn what it's like to work here."
+  title="Careers at FinTrack — Fintech Jobs in Dubai, UAE"
+  description="We're hiring engineers, designers, marketers and support specialists to build the UAE's leading personal finance app. Remote-friendly. See open roles."
   canonicalPath="/careers"
 >
 
@@ -109,21 +113,28 @@ const perks = [
               <span style="font-size:.75rem;font-weight:700;color:var(--green-700);background:var(--green-50);border:1px solid var(--border-green);border-radius:4px;padding:2px 8px;font-family:'Plus Jakarta Sans',sans-serif;">{role.team}</span>
               <span style="font-size:.8125rem;color:var(--text-muted);">{role.type}</span>
             </div>
-            <h3 style="font-size:1.125rem;margin-bottom:.375rem;">{role.title}</h3>
+            <h3 style="font-size:1.125rem;margin-bottom:.375rem;">
+              <a href={`/careers/${role.slug}`} style="color:inherit;text-decoration:none;">{role.title}</a>
+            </h3>
             <p style="font-size:.875rem;color:var(--text-muted);margin-bottom:.625rem;display:flex;align-items:center;gap:4px;">
               <svg viewBox="0 0 24 24" fill="none" style="width:14px;height:14px;flex-shrink:0;" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
               {role.location}
             </p>
             <p style="font-size:.9rem;color:var(--text-muted);line-height:1.7;margin:0;">{role.description}</p>
           </div>
-          <a
-            href={`mailto:${SITE.email}?subject=Application: ${role.title}&body=Hi FinTrack team,%0A%0AI'm applying for the ${role.title} role.%0A%0APlease find my resume and a short intro below.%0A%0A`}
-            class="btn-outline"
-            style="white-space:nowrap;flex-shrink:0;"
-          >
-            Apply Now
-            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </a>
+          <div style="display:flex;gap:.75rem;flex-shrink:0;flex-wrap:wrap;">
+            <a href={`/careers/${role.slug}`} class="btn-ghost" style="white-space:nowrap;">
+              View Details
+            </a>
+            <a
+              href={`mailto:${SITE.email}?subject=Application: ${role.title}&body=Hi FinTrack team,%0A%0AI'm applying for the ${role.title} role.%0A%0APlease find my resume and a short intro below.%0A%0A`}
+              class="btn-outline"
+              style="white-space:nowrap;"
+            >
+              Apply Now
+              <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
         </div>
       ))}
     </div>

@@ -1,0 +1,133 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { SITE } from "../../config/site";
+
+const faqs = [
+  { q: "Is Monarch Money available in the UAE?", a: "Monarch's app works globally, but its bank-linking (via Plaid/MX) doesn't cover UAE institutions like Emirates NBD, ADCB, or FAB — UAE users are limited to manual transaction entry, same as with most US-built budgeting apps." },
+  { q: "Is FinTrack cheaper than Monarch Money?", a: "FinTrack's Free plan is AED 0 forever; Monarch has no free tier and starts at $8.99/month. FinTrack Premium is AED 36/month (~$9.80), roughly the same price but with native UAE bank statement import." },
+  { q: "Does Monarch support family budgets?", a: "Yes, Monarch's shared household view is one of its strongest features. FinTrack Premium matches this with family accounts for up to 3 users, each with individual privacy controls and a shared household overview." },
+];
+
+const ldJson = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map(item => ({
+    "@type": "Question",
+    "name": item.q,
+    "acceptedAnswer": { "@type": "Answer", "text": item.a }
+  }))
+};
+
+const breadcrumbs = [
+  { name: "Home", url: "/" },
+  { name: "Compare", url: "/compare" },
+  { name: "FinTrack vs Monarch Money", url: "/compare/monarch-money" },
+];
+---
+
+<BaseLayout
+  title="FinTrack vs Monarch Money — UAE Comparison"
+  description="Monarch Money has no UAE bank support. Compare FinTrack vs Monarch on pricing, family budgeting, and bank statement import for UAE residents."
+  canonicalPath="/compare/monarch-money"
+  ldJson={ldJson}
+  breadcrumbs={breadcrumbs}
+>
+
+<div class="page-hero" style="padding-top:9rem;padding-bottom:5rem;">
+  <div class="container" style="position:relative;z-index:1;">
+    <span class="badge badge-green" style="margin-bottom:1.25rem;background:rgba(16,185,129,0.15);color:var(--green-400);border-color:rgba(16,185,129,0.25);">Comparison</span>
+    <h1 style="color:#ffffff;margin-bottom:1rem;">FinTrack vs Monarch Money.</h1>
+    <p style="color:rgba(255,255,255,0.55);font-size:1.0625rem;max-width:600px;margin:0 auto;">
+      Monarch Money is a polished, collaborative budgeting app popular with US and Canadian couples. It has no UAE bank connectivity and no free plan. Here's the side-by-side for UAE residents and GCC families.
+    </p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="compare-wrap overflow-x-auto" style="max-width:900px;margin:0 auto;">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;min-width:220px;">Feature</th>
+            <th style="text-align:center;color:var(--green-700);">FinTrack</th>
+            <th style="text-align:center;color:var(--text-muted);">Monarch Money</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="font-weight:600;">UAE bank statement OCR</td><td class="check-yes">✓</td><td class="check-no">✗</td></tr>
+          <tr><td style="font-weight:600;">Works natively in AED</td><td class="check-yes">✓</td><td class="check-partial">Limited</td></tr>
+          <tr><td style="font-weight:600;">Safe-to-Spend daily number</td><td class="check-yes">✓</td><td class="check-no">✗</td></tr>
+          <tr><td style="font-weight:600;">Family / shared household budgets</td><td class="check-yes">✓</td><td class="check-yes">✓</td></tr>
+          <tr><td style="font-weight:600;">AI conversational analytics</td><td class="check-yes">✓</td><td class="check-no">✗</td></tr>
+          <tr><td style="font-weight:600;">Free plan available</td><td class="check-yes">✓</td><td class="check-no">✗</td></tr>
+          <tr><td style="font-weight:600;">Starting price</td><td style="text-align:center;color:var(--green-700);font-weight:700;">Free</td><td style="text-align:center;color:var(--text-muted);font-weight:600;">$8.99/mo</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--green-50);">
+  <div class="container" style="max-width:820px;">
+    <div class="section-header">
+      <span class="section-eyebrow">Why UAE Families Choose FinTrack</span>
+      <h2>Same Collaboration, Built for UAE Banks.</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <h3 style="margin-bottom:.5rem;">No bank-link gap</h3>
+        <p style="color:var(--text-muted);font-size:.9375rem;line-height:1.75;margin:0;">Monarch's automatic bank sync simply doesn't reach UAE institutions. FinTrack's statement upload gives you the same "it just works" feeling without needing a US or EU bank.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:.5rem;">A genuine free tier</h3>
+        <p style="color:var(--text-muted);font-size:.9375rem;line-height:1.75;margin:0;">Monarch requires payment from day one. FinTrack's Free plan covers basic tracking and the Safe-to-Spend dashboard indefinitely, so you can try it properly before upgrading.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:.5rem;">UAE merchant intelligence</h3>
+        <p style="color:var(--text-muted);font-size:.9375rem;line-height:1.75;margin:0;">FinTrack's AI recognizes Carrefour, Noon, Talabat, and DEWA out of the box — categories Monarch would file under "miscellaneous."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <span class="section-eyebrow">FAQ</span>
+      <h2>FinTrack vs Monarch — Common Questions</h2>
+    </div>
+    <div style="border-top:1px solid var(--border);">
+      {faqs.map(item => (
+        <div class="faq-item">
+          <button class="faq-btn">
+            {item.q}
+            <span class="faq-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--green-700)" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </span>
+          </button>
+          <div class="faq-body">{item.a}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section-sm" style="background:var(--green-50);padding-bottom:5rem;">
+  <div class="container">
+    <div class="cta-band" style="max-width:760px;margin:0 auto;">
+      <div style="position:relative;z-index:1;">
+        <h2 style="color:#ffffff;font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:1rem;">Budget Together, Built for the UAE.</h2>
+        <p style="color:rgba(255,255,255,0.55);margin-bottom:2rem;max-width:420px;margin-left:auto;margin-right:auto;">
+          Free to start, family accounts included on Premium.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+          <a href={SITE.appUrl + '/register'} class="btn-primary" style="background:var(--green-500);color:var(--green-950);">Start Free</a>
+          <a href="/compare" class="btn-outline" style="border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.75);background:transparent;">See All Comparisons</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>

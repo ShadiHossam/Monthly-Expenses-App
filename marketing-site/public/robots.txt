@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://fintrack.app/sitemap-index.xml

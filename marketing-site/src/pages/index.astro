@@ -2,6 +2,15 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { SITE } from "../config/site";
 
+// Reviews below mirror the testimonials actually rendered on this page (see TESTIMONIALS
+// section) — only marking up reviews that are visible on-page, per Google's structured
+// data guidelines for review snippets.
+const visibleReviews = [
+  { author: "Ahmed Al Mazroui", body: "I've tried YNAB, Mint, and a dozen others. None of them understood my Emirates NBD account or knew what Salik was. FinTrack nailed it in the first upload. It categorized 6 months of statements in under a minute." },
+  { author: "Sarah Mitchell", body: "The Safe-to-Spend feature changed everything for me. As an expat managing multiple currencies — AED salary, USD investments, GBP remittances — finally having one clear number to look at every morning is genuinely life-changing." },
+  { author: "Fatima Al Rashidi", body: "My husband and I share the premium account. We both see the family budget, each have our own spending visibility, and the AI chat answers questions I'd never think to look up in a spreadsheet. Best AED 36 we spend each month." },
+];
+
 const ldJson = [
   {
     "@context": "https://schema.org",
@@ -12,14 +21,15 @@ const ldJson = [
     "url": "https://fintrack.app",
     "description": "FinTrack is the UAE's leading personal finance app. It scans bank statements via OCR, auto-categorizes every transaction, and shows you a live Safe-to-Spend number — designed for UAE residents, expats, and the GCC.",
     "offers": [
-      { "@type": "Offer", "price": "0", "priceCurrency": "USD", "name": "Free Plan" },
-      { "@type": "Offer", "price": "9.99", "priceCurrency": "USD", "name": "Premium Plan" }
+      { "@type": "Offer", "price": "0", "priceCurrency": "AED", "name": "Free Plan" },
+      { "@type": "Offer", "price": "36", "priceCurrency": "AED", "name": "Premium Plan" }
     ],
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "2847"
-    }
+    "review": visibleReviews.map(r => ({
+      "@type": "Review",
+      "author": { "@type": "Person", "name": r.author },
+      "reviewRating": { "@type": "Rating", "ratingValue": "5", "bestRating": "5" },
+      "reviewBody": r.body,
+    })),
   },
   {
     "@context": "https://schema.org",
@@ -31,8 +41,8 @@ const ldJson = [
 ---
 
 <BaseLayout
-  title="FinTrack — Expense Tracker & Budget App for UAE | Know What You Can Spend Today"
-  description="FinTrack is the UAE's smartest personal finance app. Upload your bank statement, get instant AI categorization, and see your Safe-to-Spend number. Supports ADCB, Emirates NBD, FAB, Mashreq & more."
+  title="Expense Tracker & Budget App for UAE | FinTrack"
+  description="Track expenses the UAE way. Upload any bank statement (Emirates NBD, ADCB, FAB, Mashreq+), get instant AI categorization, and see your daily Safe-to-Spend balance. Free to start."
   canonicalPath="/"
   ldJson={ldJson}
 >
@@ -90,83 +100,170 @@ const ldJson = [
         </div>
       </div>
 
-      <!-- Right: App mockup -->
-      <div class="hero-mockup-wrap" style="position:relative;display:flex;justify-content:center;">
-        <div class="hero-phone-card" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:28px;padding:1.75rem;max-width:360px;width:100%;box-shadow:0 40px 80px rgba(6,32,16,0.50);">
-          <!-- Phone top bar -->
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
-            <span style="font-size:.75rem;font-weight:600;color:rgba(255,255,255,0.40);font-family:'Plus Jakarta Sans',sans-serif;">SAFE TO SPEND TODAY</span>
-            <span style="font-size:.7rem;color:rgba(16,185,129,0.80);background:rgba(16,185,129,0.12);padding:2px 10px;border-radius:100px;font-weight:600;">● Live</span>
-          </div>
-          <!-- Big number -->
-          <div style="text-align:center;margin-bottom:1.75rem;">
-            <p style="font-size:3.5rem;font-weight:800;color:#ffffff;letter-spacing:-0.04em;margin:0;font-family:'Plus Jakarta Sans',sans-serif;line-height:1;">AED 847</p>
-            <p style="font-size:.875rem;color:rgba(255,255,255,0.45);margin:.5rem 0 0;">Updated just now</p>
-            <div style="margin-top:.875rem;display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.20);border-radius:8px;padding:6px 14px;">
-              <svg viewBox="0 0 24 24" fill="none" style="width:14px;height:14px;" stroke="var(--green-400)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              <span style="font-size:.8125rem;color:var(--green-400);font-weight:600;">You're on track this month</span>
-            </div>
-          </div>
-          <!-- Transactions -->
-          <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:1rem;margin-bottom:1rem;">
-            <p style="font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,0.35);margin-bottom:.875rem;font-family:'Plus Jakarta Sans',sans-serif;">Recent Transactions</p>
-            <div style="display:flex;flex-direction:column;gap:.75rem;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <div style="display:flex;align-items:center;gap:.75rem;">
-                  <div style="width:32px;height:32px;border-radius:10px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;">
-                    <svg viewBox="0 0 24 24" fill="none" style="width:14px;height:14px;" stroke="var(--green-400)" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-                  </div>
-                  <div>
-                    <p style="font-size:.8125rem;font-weight:600;color:#ffffff;margin:0;">Carrefour</p>
-                    <p style="font-size:.7rem;color:rgba(255,255,255,0.35);margin:0;">Groceries</p>
-                  </div>
-                </div>
-                <span style="font-size:.875rem;font-weight:700;color:rgba(255,255,255,0.70);">−AED 143</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <div style="display:flex;align-items:center;gap:.75rem;">
-                  <div style="width:32px;height:32px;border-radius:10px;background:rgba(245,158,11,0.10);display:flex;align-items:center;justify-content:center;">
-                    <svg viewBox="0 0 24 24" fill="none" style="width:14px;height:14px;" stroke="#f59e0b" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                  </div>
-                  <div>
-                    <p style="font-size:.8125rem;font-weight:600;color:#ffffff;margin:0;">Salary — FAB</p>
-                    <p style="font-size:.7rem;color:rgba(255,255,255,0.35);margin:0;">Income</p>
-                  </div>
-                </div>
-                <span style="font-size:.875rem;font-weight:700;color:var(--green-400);">+AED 18,500</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <div style="display:flex;align-items:center;gap:.75rem;">
-                  <div style="width:32px;height:32px;border-radius:10px;background:rgba(99,102,241,0.10);display:flex;align-items:center;justify-content:center;">
-                    <svg viewBox="0 0 24 24" fill="none" style="width:14px;height:14px;" stroke="#818cf8" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                  </div>
-                  <div>
-                    <p style="font-size:.8125rem;font-weight:600;color:#ffffff;margin:0;">Dewa Bill</p>
-                    <p style="font-size:.7rem;color:rgba(255,255,255,0.35);margin:0;">Utilities</p>
-                  </div>
-                </div>
-                <span style="font-size:.875rem;font-weight:700;color:rgba(255,255,255,0.70);">−AED 380</span>
+      <!-- Right: Dual-device mockup (laptop + phone) -->
+      <div class="hero-mockup-wrap" style="position:relative;display:flex;justify-content:center;align-items:flex-end;min-height:500px;">
+
+        <!-- ── Laptop frame ── -->
+        <div class="hero-laptop" style="position:relative;z-index:1;filter:drop-shadow(0 40px 80px rgba(6,32,16,0.65));">
+          <!-- Screen bezel -->
+          <div style="border-radius:14px 14px 0 0;border:8px solid #0d0d0d;border-bottom:none;background:#071a0e;overflow:hidden;width:460px;">
+            <!-- Browser chrome -->
+            <div style="background:#111;padding:7px 12px;display:flex;align-items:center;gap:5px;border-bottom:1px solid rgba(255,255,255,0.06);">
+              <span style="width:9px;height:9px;border-radius:50%;background:#ff5f57;display:inline-block;flex-shrink:0;"></span>
+              <span style="width:9px;height:9px;border-radius:50%;background:#febc2e;display:inline-block;flex-shrink:0;"></span>
+              <span style="width:9px;height:9px;border-radius:50%;background:#28c840;display:inline-block;flex-shrink:0;"></span>
+              <div style="flex:1;background:rgba(255,255,255,0.07);border-radius:4px;height:18px;margin:0 10px;display:flex;align-items:center;padding:0 8px;gap:5px;">
+                <svg viewBox="0 0 24 24" fill="none" style="width:8px;height:8px;flex-shrink:0;" stroke="rgba(255,255,255,0.25)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                <span style="font-size:.5625rem;color:rgba(255,255,255,0.25);font-family:'Plus Jakarta Sans',sans-serif;">app.fintrack.ae/dashboard</span>
               </div>
             </div>
+            <!-- Dashboard content -->
+            <div style="padding:18px;background:#071a0e;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+                <div>
+                  <p style="font-size:.5625rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,0.35);margin:0;font-family:'Plus Jakarta Sans',sans-serif;">SAFE TO SPEND TODAY</p>
+                  <p style="font-size:2.25rem;font-weight:800;color:#fff;letter-spacing:-0.04em;margin:3px 0 0;font-family:'Plus Jakarta Sans',sans-serif;line-height:1;">AED 847</p>
+                  <p style="font-size:.625rem;color:rgba(255,255,255,0.40);margin:4px 0 0;">Updated just now</p>
+                </div>
+                <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.20);border-radius:8px;padding:7px 12px;margin-top:4px;">
+                  <svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-400)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  <span style="font-size:.6875rem;color:var(--green-400);font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;">You're on track this month</span>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+                <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);border-radius:10px;padding:9px 11px;">
+                  <p style="font-size:.5rem;color:rgba(255,255,255,0.35);margin:0;text-transform:uppercase;letter-spacing:.06em;font-family:'Plus Jakarta Sans',sans-serif;">Income</p>
+                  <p style="font-size:.9375rem;font-weight:800;color:#fff;margin:3px 0 0;font-family:'Plus Jakarta Sans',sans-serif;">AED 18,500</p>
+                </div>
+                <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.15);border-radius:10px;padding:9px 11px;">
+                  <p style="font-size:.5rem;color:rgba(255,255,255,0.35);margin:0;text-transform:uppercase;letter-spacing:.06em;font-family:'Plus Jakarta Sans',sans-serif;">Spent</p>
+                  <p style="font-size:.9375rem;font-weight:800;color:#fff;margin:3px 0 0;font-family:'Plus Jakarta Sans',sans-serif;">AED 6,220</p>
+                </div>
+                <div style="background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.15);border-radius:10px;padding:9px 11px;">
+                  <p style="font-size:.5rem;color:rgba(255,255,255,0.35);margin:0;text-transform:uppercase;letter-spacing:.06em;font-family:'Plus Jakarta Sans',sans-serif;">Reserved</p>
+                  <p style="font-size:.9375rem;font-weight:800;color:#fff;margin:3px 0 0;font-family:'Plus Jakarta Sans',sans-serif;">AED 5,000</p>
+                </div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:11px;margin-bottom:8px;">
+                <p style="font-size:.5rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,0.30);margin-bottom:9px;font-family:'Plus Jakarta Sans',sans-serif;">Recent Transactions</p>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <div style="width:26px;height:26px;border-radius:7px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-400)" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                      </div>
+                      <div><p style="font-size:.6875rem;font-weight:600;color:#fff;margin:0;">Carrefour</p><p style="font-size:.5625rem;color:rgba(255,255,255,0.30);margin:0;">Groceries</p></div>
+                    </div>
+                    <span style="font-size:.6875rem;font-weight:700;color:rgba(255,255,255,0.65);">−AED 143</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <div style="width:26px;height:26px;border-radius:7px;background:rgba(245,158,11,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="#f59e0b" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                      </div>
+                      <div><p style="font-size:.6875rem;font-weight:600;color:#fff;margin:0;">Salary — FAB</p><p style="font-size:.5625rem;color:rgba(255,255,255,0.30);margin:0;">Income</p></div>
+                    </div>
+                    <span style="font-size:.6875rem;font-weight:700;color:var(--green-400);">+AED 18,500</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <div style="width:26px;height:26px;border-radius:7px;background:rgba(99,102,241,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="#818cf8" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                      </div>
+                      <div><p style="font-size:.6875rem;font-weight:600;color:#fff;margin:0;">Dewa Bill</p><p style="font-size:.5625rem;color:rgba(255,255,255,0.30);margin:0;">Utilities</p></div>
+                    </div>
+                    <span style="font-size:.6875rem;font-weight:700;color:rgba(255,255,255,0.65);">−AED 380</span>
+                  </div>
+                </div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:11px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                  <span style="font-size:.6875rem;font-weight:600;color:rgba(255,255,255,0.55);">Monthly Budget</span>
+                  <span style="font-size:.6875rem;font-weight:700;color:var(--green-400);">67% remaining</span>
+                </div>
+                <div style="height:6px;background:rgba(255,255,255,0.08);border-radius:100px;overflow:hidden;">
+                  <div style="height:100%;width:33%;background:linear-gradient(90deg,var(--green-700),var(--green-400));border-radius:100px;"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:5px;">
+                  <span style="font-size:.5rem;color:rgba(255,255,255,0.25);">AED 6,220 spent</span>
+                  <span style="font-size:.5rem;color:rgba(255,255,255,0.25);">AED 18,500 budget</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <!-- Budget bar -->
-          <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:1rem;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.625rem;">
-              <span style="font-size:.8125rem;font-weight:600;color:rgba(255,255,255,0.60);">Monthly Budget</span>
-              <span style="font-size:.8125rem;font-weight:700;color:var(--green-400);">67% remaining</span>
+          <!-- Laptop hinge + base -->
+          <div style="background:linear-gradient(180deg,#1c1c1c,#111);height:11px;width:100%;border-radius:0 0 3px 3px;"></div>
+          <div style="background:#0d0d0d;height:5px;width:calc(100% + 48px);border-radius:0 0 8px 8px;margin-left:-24px;"></div>
+        </div>
+
+        <!-- ── Phone frame (overlapping bottom-right) ── -->
+        <div class="hero-phone-wrap" style="position:absolute;right:-24px;bottom:16px;z-index:3;filter:drop-shadow(0 32px 60px rgba(6,32,16,0.75));">
+          <div style="width:178px;background:#0a0a0a;border-radius:34px;padding:3px;border:2px solid rgba(255,255,255,0.10);">
+            <!-- Dynamic island -->
+            <div style="background:#071a0e;border-radius:32px 32px 0 0;padding:10px 10px 0;display:flex;justify-content:center;">
+              <div style="width:56px;height:6px;background:#0a0a0a;border-radius:100px;"></div>
             </div>
-            <div style="height:8px;background:rgba(255,255,255,0.08);border-radius:100px;overflow:hidden;">
-              <div style="height:100%;width:33%;background:linear-gradient(90deg,var(--green-700),var(--green-400));border-radius:100px;"></div>
-            </div>
-            <div style="display:flex;justify-content:space-between;margin-top:.5rem;">
-              <span style="font-size:.7rem;color:rgba(255,255,255,0.30);">AED 6,220 spent</span>
-              <span style="font-size:.7rem;color:rgba(255,255,255,0.30);">AED 18,500 budget</span>
+            <!-- Screen -->
+            <div style="background:#071a0e;border-radius:0 0 30px 30px;padding:10px 10px 14px;">
+              <p style="font-size:.4375rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,0.35);margin-bottom:5px;font-family:'Plus Jakarta Sans',sans-serif;">SAFE TO SPEND TODAY</p>
+              <div style="text-align:center;margin-bottom:9px;">
+                <p style="font-size:1.75rem;font-weight:800;color:#fff;letter-spacing:-0.04em;margin:0;font-family:'Plus Jakarta Sans',sans-serif;line-height:1;">AED 847</p>
+                <p style="font-size:.4375rem;color:rgba(255,255,255,0.40);margin:3px 0 0;">Updated just now</p>
+                <div style="margin-top:5px;display:inline-flex;align-items:center;gap:3px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.20);border-radius:6px;padding:3px 7px;">
+                  <svg viewBox="0 0 24 24" fill="none" style="width:8px;height:8px;" stroke="var(--green-400)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  <span style="font-size:.4375rem;color:var(--green-400);font-weight:600;">You're on track</span>
+                </div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:9px;padding:8px;margin-bottom:5px;">
+                <p style="font-size:.375rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,0.30);margin-bottom:6px;font-family:'Plus Jakarta Sans',sans-serif;">Recent Transactions</p>
+                <div style="display:flex;flex-direction:column;gap:5px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="display:flex;align-items:center;gap:5px;">
+                      <div style="width:17px;height:17px;border-radius:5px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg viewBox="0 0 24 24" fill="none" style="width:8px;height:8px;" stroke="var(--green-400)" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+                      </div>
+                      <div><p style="font-size:.4375rem;font-weight:600;color:#fff;margin:0;">Carrefour</p><p style="font-size:.375rem;color:rgba(255,255,255,0.30);margin:0;">Groceries</p></div>
+                    </div>
+                    <span style="font-size:.4375rem;font-weight:700;color:rgba(255,255,255,0.65);">−143</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="display:flex;align-items:center;gap:5px;">
+                      <div style="width:17px;height:17px;border-radius:5px;background:rgba(245,158,11,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg viewBox="0 0 24 24" fill="none" style="width:8px;height:8px;" stroke="#f59e0b" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                      </div>
+                      <div><p style="font-size:.4375rem;font-weight:600;color:#fff;margin:0;">Salary — FAB</p><p style="font-size:.375rem;color:rgba(255,255,255,0.30);margin:0;">Income</p></div>
+                    </div>
+                    <span style="font-size:.4375rem;font-weight:700;color:var(--green-400);">+18,500</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="display:flex;align-items:center;gap:5px;">
+                      <div style="width:17px;height:17px;border-radius:5px;background:rgba(99,102,241,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg viewBox="0 0 24 24" fill="none" style="width:8px;height:8px;" stroke="#818cf8" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                      </div>
+                      <div><p style="font-size:.4375rem;font-weight:600;color:#fff;margin:0;">Dewa Bill</p><p style="font-size:.375rem;color:rgba(255,255,255,0.30);margin:0;">Utilities</p></div>
+                    </div>
+                    <span style="font-size:.4375rem;font-weight:700;color:rgba(255,255,255,0.65);">−380</span>
+                  </div>
+                </div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:9px;padding:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                  <span style="font-size:.4375rem;font-weight:600;color:rgba(255,255,255,0.50);">Monthly Budget</span>
+                  <span style="font-size:.4375rem;font-weight:700;color:var(--green-400);">67% left</span>
+                </div>
+                <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:100px;overflow:hidden;">
+                  <div style="height:100%;width:33%;background:linear-gradient(90deg,var(--green-700),var(--green-400));border-radius:100px;"></div>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:center;margin-top:10px;">
+                <div style="width:38px;height:3px;background:rgba(255,255,255,0.18);border-radius:100px;"></div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Floating badges -->
-        <div style="position:absolute;top:-20px;right:-20px;background:var(--surface-card);border:1px solid var(--border);border-radius:14px;padding:.75rem 1rem;box-shadow:var(--shadow-xl);display:flex;align-items:center;gap:.625rem;z-index:2;" class="hero-float-1">
+        <div style="position:absolute;top:-18px;left:0;background:var(--surface-card);border:1px solid var(--border);border-radius:14px;padding:.75rem 1rem;box-shadow:var(--shadow-xl);display:flex;align-items:center;gap:.625rem;z-index:4;" class="hero-float-1">
           <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;">
             <svg viewBox="0 0 24 24" fill="none" style="width:14px;height:14px;" stroke="var(--green-700)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </div>
@@ -176,7 +273,7 @@ const ldJson = [
           </div>
         </div>
 
-        <div style="position:absolute;bottom:20px;left:-30px;background:var(--green-800);border-radius:14px;padding:.75rem 1rem;box-shadow:var(--shadow-xl);display:flex;align-items:center;gap:.625rem;z-index:2;" class="hero-float-2">
+        <div style="position:absolute;bottom:-16px;left:24px;background:var(--green-800);border-radius:14px;padding:.75rem 1rem;box-shadow:var(--shadow-xl);display:flex;align-items:center;gap:.625rem;z-index:4;" class="hero-float-2">
           <svg viewBox="0 0 24 24" fill="none" style="width:16px;height:16px;flex-shrink:0;" stroke="rgba(255,255,255,0.90)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
           <span style="font-size:.8125rem;font-weight:700;color:#ffffff;font-family:'Plus Jakarta Sans',sans-serif;">Saved AED 2,340 this month</span>
         </div>
@@ -587,66 +684,15 @@ const ldJson = [
 ══════════════════════════════════════ -->
 <section class="section" style="background:var(--green-50);">
   <div class="container">
-    <div class="section-header">
+    <div style="max-width:680px;margin:0 auto;text-align:center;">
       <span class="section-eyebrow">Simple Pricing</span>
-      <h2>Start Free. Upgrade When You're Ready.</h2>
-      <p>No credit card needed to get started. Cancel anytime.</p>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;max-width:900px;margin:0 auto;">
-      <div class="price-card">
-        <p style="font-size:.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:1rem;font-family:'Plus Jakarta Sans',sans-serif;">Free</p>
-        <div style="display:flex;align-items:baseline;gap:.375rem;margin-bottom:.5rem;">
-          <span class="price-amount">$0</span>
-        </div>
-        <p class="price-period" style="margin-bottom:1.5rem;">Forever free</p>
-        <a href={SITE.appUrl + '/register'} class="btn-outline" style="width:100%;justify-content:center;margin-bottom:1.75rem;">Start Free</a>
-        <div style="display:flex;flex-direction:column;gap:.125rem;">
-          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>1 bank / statement per month</div>
-          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Safe-to-Spend dashboard</div>
-          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>3 months transaction history</div>
-          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Monthly spending reports</div>
-        </div>
-      </div>
-
-      <div class="price-card featured">
-        <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--green-700);color:#fff;font-size:.75rem;font-weight:700;padding:4px 16px;border-radius:100px;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;">MOST POPULAR</div>
-        <p style="font-size:.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--green-700);margin-bottom:1rem;font-family:'Plus Jakarta Sans',sans-serif;">Premium</p>
-        <div style="display:flex;align-items:baseline;gap:.375rem;margin-bottom:.5rem;">
-          <span class="price-amount" style="color:var(--green-800);">$9.99</span>
-          <span class="price-period">/ month</span>
-        </div>
-        <p style="font-size:.8125rem;color:var(--text-muted);margin-bottom:1.5rem;">or $89/year — save 26%</p>
-        <a href={SITE.appUrl + '/register?plan=premium'} class="btn-primary" style="width:100%;justify-content:center;margin-bottom:1.75rem;">Start Premium</a>
-        <div style="display:flex;flex-direction:column;gap:.125rem;">
-          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Unlimited banks &amp; statements</div>
-          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>AI conversational analytics</div>
-          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Smart budget alerts</div>
-          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Goal tracking with visual progress</div>
-          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Family / multi-user (up to 3)</div>
-        </div>
-      </div>
-
-      <div class="price-card">
-        <p style="font-size:.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:1rem;font-family:'Plus Jakarta Sans',sans-serif;">Institutional</p>
-        <div style="display:flex;align-items:baseline;gap:.375rem;margin-bottom:.5rem;">
-          <span class="price-amount">Custom</span>
-        </div>
-        <p class="price-period" style="margin-bottom:1.5rem;">Volume pricing</p>
-        <a href={`mailto:${SITE.email}?subject=Institutional Plan`} class="btn-outline" style="width:100%;justify-content:center;margin-bottom:1.75rem;">Contact Sales</a>
-        <div style="display:flex;flex-direction:column;gap:.125rem;">
-          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Multi-client dashboards</div>
-          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>White-label options</div>
-          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Advanced portfolio tracking</div>
-          <div class="price-feature"><div class="price-check"><svg viewBox="0 0 24 24" fill="none" style="width:11px;height:11px;" stroke="var(--green-700)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>Dedicated account manager</div>
-        </div>
-      </div>
-    </div>
-
-    <div style="text-align:center;margin-top:2rem;">
-      <a href="/pricing" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:.9375rem;color:var(--green-700);text-decoration:none;">
-        Compare all features
-        <svg viewBox="0 0 24 24" fill="none" style="width:16px;height:16px;" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      <h2 style="margin-bottom:1rem;">Start Free. Upgrade When You're Ready.</h2>
+      <p style="color:var(--text-muted);font-size:1.0625rem;line-height:1.8;margin-bottom:2.25rem;">
+        Free forever for individuals. Premium plans from <strong style="color:var(--green-800);">AED 36/month</strong> — no credit card needed to get started, cancel anytime.
+      </p>
+      <a href="/pricing" class="btn-primary" style="display:inline-flex;align-items:center;gap:8px;font-size:1.0625rem;padding:1rem 2.25rem;">
+        See Pricing &amp; Plans
+        <svg viewBox="0 0 24 24" fill="none" style="width:18px;height:18px;" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
     </div>
   </div>
@@ -706,6 +752,15 @@ const ldJson = [
 
   .feature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
   .feature-row-reverse .feature-visual { order: -1; }
+
+  .hero-mockup-wrap { overflow: visible; }
+  .hero-laptop { overflow: visible; }
+
+  @media (max-width: 1100px) {
+    .hero-laptop > div:first-child { width: 380px !important; }
+    .hero-laptop > div:last-child { width: calc(380px + 48px) !important; }
+    .hero-phone-wrap { right: -10px !important; }
+  }
 
   @media (max-width: 900px) {
     .hero-section > .container > div { grid-template-columns: 1fr !important; }

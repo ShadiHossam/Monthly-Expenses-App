@@ -96,12 +96,23 @@ const faqs = [
     ]
   },
 ];
+
+const ldJson = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.flatMap(section => section.items).map(item => ({
+    "@type": "Question",
+    "name": item.q,
+    "acceptedAnswer": { "@type": "Answer", "text": item.a }
+  }))
+};
 ---
 
 <BaseLayout
-  title="FinTrack FAQ — Your Questions About UAE Finance Tracking Answered"
-  description="Find answers to common questions about FinTrack — bank support, Safe-to-Spend calculation, data security, billing, and UAE-specific features."
+  title="FinTrack FAQ — UAE Bank Import, Pricing & Security"
+  description="Answers on UAE bank statement import, Safe-to-Spend calculation, data security, billing, and multi-currency support. Everything you need before you start."
   canonicalPath="/faq"
+  ldJson={ldJson}
 >
 
 <!-- PAGE HERO -->

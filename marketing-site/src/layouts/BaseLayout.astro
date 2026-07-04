@@ -4,6 +4,8 @@ import Footer from '../components/Footer.astro';
 import { SITE } from '../config/site';
 import '../styles/global.css';
 
+interface Breadcrumb { name: string; url: string; }
+
 interface Props {
   title: string;
   description: string;
@@ -11,6 +13,7 @@ interface Props {
   ogImage?: string;
   ogType?: string;
   ldJson?: object | object[];
+  breadcrumbs?: Breadcrumb[];
   noindex?: boolean;
 }
 
@@ -21,11 +24,42 @@ const {
   ogImage = '/og-home.jpg',
   ogType = 'website',
   ldJson,
+  breadcrumbs,
   noindex = false,
 } = Astro.props;
 
 const canonicalURL = `https://${SITE.domain}${canonicalPath}`;
 const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${SITE.domain}${ogImage}`;
+
+const organizationJson = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": SITE.name,
+  "url": `https://${SITE.domain}`,
+  "logo": `https://${SITE.domain}/favicon.svg`,
+  "foundingDate": "2021",
+  "sameAs": [
+    "https://twitter.com/fintrackapp",
+    "https://instagram.com/fintrackapp",
+  ],
+};
+
+const breadcrumbJson = breadcrumbs && breadcrumbs.length > 0 ? {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": breadcrumbs.map((crumb, i) => ({
+    "@type": "ListItem",
+    "position": i + 1,
+    "name": crumb.name,
+    "item": `https://${SITE.domain}${crumb.url}`,
+  })),
+} : null;
+
+const allJson = [
+  organizationJson,
+  ...(breadcrumbJson ? [breadcrumbJson] : []),
+  ...(ldJson ? (Array.isArray(ldJson) ? ldJson : [ldJson]) : []),
+];
 ---
 
 <!doctype html>
@@ -55,7 +89,7 @@ const ogImageURL = ogImage.startsWith('http') ? ogImage : `https://${SITE.domain
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImageURL} />
 
-  {ldJson && <script type="application/ld+json" set:html={JSON.stringify(ldJson)} />}
+  <script type="application/ld+json" set:html={JSON.stringify(allJson)} />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

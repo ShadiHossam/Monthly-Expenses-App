@@ -1,0 +1,90 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { SITE } from "../../config/site";
+
+const role = {
+  title: "Growth & Marketing Manager",
+  team: "Marketing",
+  location: "Dubai, UAE",
+  type: "Full-time",
+  description: "Drive FinTrack's growth across the UAE and GCC. You understand the local market deeply and know how to build community, content, and campaigns that convert.",
+};
+
+const responsibilities = [
+  "Own FinTrack's growth strategy across the UAE and wider GCC market.",
+  "Plan and execute content, SEO, and campaign initiatives that speak directly to UAE residents and expats.",
+  "Build and manage partnerships with local communities, creators, and channels relevant to personal finance.",
+  "Analyze acquisition funnels and iterate quickly based on real conversion data.",
+  "Work closely with Product to ensure marketing messaging reflects what FinTrack actually does best.",
+];
+
+const requirements = [
+  "3+ years in growth or performance marketing, ideally for a consumer app or fintech product.",
+  "Deep understanding of the UAE/GCC market and how to reach residents and expats authentically.",
+  "Comfortable owning both strategy and hands-on execution — this is a builder role, not a strategy-only seat.",
+  "Strong analytical instincts — comfortable with funnels, cohorts, and attribution.",
+  "Based in Dubai, UAE.",
+];
+
+const ldJson = {
+  "@context": "https://schema.org",
+  "@type": "JobPosting",
+  "title": role.title,
+  "description": role.description,
+  "datePosted": "2026-07-03",
+  "employmentType": "FULL_TIME",
+  "hiringOrganization": { "@type": "Organization", "name": "FinTrack", "sameAs": `https://${SITE.domain}` },
+  "jobLocation": { "@type": "Place", "address": { "@type": "PostalAddress", "addressLocality": "Dubai", "addressCountry": "AE" } },
+  "url": `https://${SITE.domain}/careers/growth-marketing-manager`,
+};
+
+const breadcrumbs = [
+  { name: "Home", url: "/" },
+  { name: "Careers", url: "/careers" },
+  { name: role.title, url: "/careers/growth-marketing-manager" },
+];
+---
+
+<BaseLayout
+  title={`${role.title} — FinTrack Careers`}
+  description={`${role.description} Apply for the ${role.title} role at FinTrack, Dubai.`}
+  canonicalPath="/careers/growth-marketing-manager"
+  ldJson={ldJson}
+  breadcrumbs={breadcrumbs}
+>
+
+<div class="page-hero" style="padding-top:9rem;padding-bottom:4rem;">
+  <div class="container" style="position:relative;z-index:1;max-width:760px;">
+    <span class="badge badge-green" style="margin-bottom:1.25rem;background:rgba(16,185,129,0.15);color:var(--green-400);border-color:rgba(16,185,129,0.25);">{role.team}</span>
+    <h1 style="color:#ffffff;margin-bottom:.75rem;">{role.title}</h1>
+    <p style="color:rgba(255,255,255,0.55);font-size:1.0625rem;">{role.location} · {role.type}</p>
+  </div>
+</div>
+
+<section class="section" style="padding-top:4rem;">
+  <div class="container" style="max-width:720px;">
+    <p style="color:var(--text-secondary);font-size:1.0625rem;line-height:1.85;margin-bottom:2rem;">{role.description}</p>
+
+    <h2 style="margin-bottom:1rem;">What You'll Do</h2>
+    <ul style="color:var(--text-secondary);line-height:1.85;padding-left:1.5rem;margin-bottom:2rem;">
+      {responsibilities.map(r => <li style="margin-bottom:.625rem;">{r}</li>)}
+    </ul>
+
+    <h2 style="margin-bottom:1rem;">What We're Looking For</h2>
+    <ul style="color:var(--text-secondary);line-height:1.85;padding-left:1.5rem;margin-bottom:2.5rem;">
+      {requirements.map(r => <li style="margin-bottom:.625rem;">{r}</li>)}
+    </ul>
+
+    <div class="card" style="text-align:center;padding:2.5rem;">
+      <h3 style="margin-bottom:.75rem;">Ready to Apply?</h3>
+      <p style="color:var(--text-muted);font-size:.9375rem;margin-bottom:1.5rem;">Send your resume and a short note about why this role interests you.</p>
+      <a href={`mailto:${SITE.email}?subject=Application: ${role.title}&body=Hi FinTrack team,%0A%0AI'm applying for the ${role.title} role.%0A%0APlease find my resume and a short intro below.%0A%0A`} class="btn-primary" style="display:inline-flex;">
+        Apply for This Role
+        <svg viewBox="0 0 24 24" fill="none" style="width:16px;height:16px;" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <p style="margin-top:1.25rem;"><a href="/careers" style="color:var(--green-700);font-weight:600;font-size:.9375rem;">← See all open roles</a></p>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>

@@ -1,0 +1,96 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import { SITE } from "../config/site";
+
+interface Props {
+  title: string;
+  description: string;
+  slug: string;
+  category: string;
+  publishDate: string;
+  readTime: string;
+}
+
+const { title, description, slug, category, publishDate, readTime } = Astro.props;
+
+const canonicalPath = `/blog/${slug}`;
+
+const ldJson = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": title,
+  "description": description,
+  "datePublished": publishDate,
+  "author": { "@type": "Organization", "name": "FinTrack" },
+  "publisher": {
+    "@type": "Organization",
+    "name": "FinTrack",
+    "logo": { "@type": "ImageObject", "url": `https://${SITE.domain}/favicon.svg` },
+  },
+  "mainEntityOfPage": { "@type": "WebPage", "@id": `https://${SITE.domain}${canonicalPath}` },
+};
+
+const breadcrumbs = [
+  { name: "Home", url: "/" },
+  { name: "Blog", url: "/blog" },
+  { name: title, url: canonicalPath },
+];
+
+const dateLabel = new Date(publishDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+---
+
+<BaseLayout
+  title={`${title} | FinTrack Blog`}
+  description={description}
+  canonicalPath={canonicalPath}
+  ldJson={ldJson}
+  breadcrumbs={breadcrumbs}
+>
+
+<div class="page-hero" style="padding-top:9rem;padding-bottom:4rem;">
+  <div class="container" style="position:relative;z-index:1;max-width:760px;">
+    <span class="badge badge-green" style="margin-bottom:1.25rem;background:rgba(16,185,129,0.15);color:var(--green-400);border-color:rgba(16,185,129,0.25);">{category}</span>
+    <h1 style="color:#ffffff;margin-bottom:1rem;">{title}</h1>
+    <p style="color:rgba(255,255,255,0.45);font-size:.9375rem;">{dateLabel} · {readTime} read</p>
+  </div>
+</div>
+
+<section class="section" style="padding-top:4rem;">
+  <div class="container prose" style="max-width:720px;">
+    <slot />
+  </div>
+</section>
+
+<section class="section-sm" style="background:var(--green-50);padding-bottom:5rem;">
+  <div class="container">
+    <div class="cta-band" style="max-width:760px;margin:0 auto;">
+      <div style="position:relative;z-index:1;">
+        <h2 style="color:#ffffff;font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:1rem;">See Your Own Safe-to-Spend Number.</h2>
+        <p style="color:rgba(255,255,255,0.55);margin-bottom:2rem;max-width:420px;margin-left:auto;margin-right:auto;">
+          Upload one UAE bank statement and FinTrack does the rest — free to start.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+          <a href={SITE.appUrl + '/register'} class="btn-primary" style="background:var(--green-500);color:var(--green-950);">Start Free</a>
+          <a href="/blog" class="btn-outline" style="border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.75);background:transparent;">More Guides</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+  .prose h2 { font-size: 1.5rem; margin: 2.5rem 0 1rem; color: var(--text-primary); }
+  .prose h3 { font-size: 1.125rem; margin: 1.75rem 0 .625rem; color: var(--text-primary); }
+  .prose p  { color: var(--text-secondary); line-height: 1.9; margin-bottom: 1.25rem; font-size: 1.0625rem; }
+  .prose ul, .prose ol { color: var(--text-secondary); line-height: 1.85; margin-bottom: 1.25rem; padding-left: 1.5rem; }
+  .prose li { margin-bottom: .5rem; }
+  .prose a  { color: var(--green-700); font-weight: 600; }
+  .prose strong { color: var(--text-primary); }
+  .prose blockquote {
+    border-left: 3px solid var(--green-700); background: var(--green-50);
+    padding: 1rem 1.5rem; margin: 1.75rem 0; border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    color: var(--text-secondary); font-style: italic;
+  }
+</style>

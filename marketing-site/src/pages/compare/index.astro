@@ -1,0 +1,58 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const competitors = [
+  { slug: "ynab", name: "YNAB", blurb: "Zero-based budgeting, $14.99/mo, no UAE bank support." },
+  { slug: "mint-alternative", name: "Mint", blurb: "Shut down in 2024 — see where former Mint users are going." },
+  { slug: "monarch-money", name: "Monarch Money", blurb: "$8.99/mo shared budgeting, no UAE bank statement OCR." },
+  { slug: "copilot-money", name: "Copilot Money", blurb: "$12.99/mo, iOS-only, no UAE bank support." },
+  { slug: "empower", name: "Empower", blurb: "Free net-worth dashboard that upsells into paid wealth management." },
+  { slug: "pocketguard", name: "PocketGuard", blurb: "Simple US spend-tracking app, no UAE bank connectivity." },
+  { slug: "goodbudget", name: "Goodbudget", blurb: "Digital envelope budgeting, manually maintained, no statement import." },
+  { slug: "simplifi", name: "Simplifi by Quicken", blurb: "Quicken's budgeting app, built around US bank connections." },
+];
+
+const breadcrumbs = [
+  { name: "Home", url: "/" },
+  { name: "Compare", url: "/compare" },
+];
+---
+
+<BaseLayout
+  title="Compare FinTrack vs YNAB, Mint, Monarch & Copilot"
+  description="See how FinTrack compares to YNAB, Mint, Monarch Money, and Copilot for UAE residents — bank support, pricing, and AI features side by side."
+  canonicalPath="/compare"
+  breadcrumbs={breadcrumbs}
+>
+
+<div class="page-hero" style="padding-top:9rem;padding-bottom:5rem;">
+  <div class="container" style="position:relative;z-index:1;">
+    <div style="display:inline-block;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);border-radius:6px;padding:4px 12px;margin-bottom:1.25rem;">
+      <span style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green-400);font-family:'Plus Jakarta Sans',sans-serif;">Comparisons</span>
+    </div>
+    <h1 style="color:#ffffff;margin-bottom:1rem;">How FinTrack Compares.</h1>
+    <p style="color:rgba(255,255,255,0.55);font-size:1.0625rem;max-width:560px;margin:0 auto;">
+      Global budgeting apps weren't built for UAE bank statements, AED, or Salik. Here's exactly how FinTrack stacks up against the apps you've probably already tried.
+    </p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="bento-grid bento-grid-2">
+      {competitors.map(c => (
+        <a href={`/compare/${c.slug}`} class="card card-interactive" style="text-decoration:none;display:block;">
+          <span class="badge badge-green" style="margin-bottom:1rem;">FinTrack vs {c.name}</span>
+          <h3 style="margin-bottom:.5rem;">FinTrack vs {c.name}</h3>
+          <p style="color:var(--text-muted);font-size:.9375rem;line-height:1.75;margin:0 0 1rem;">{c.blurb}</p>
+          <span style="color:var(--green-700);font-weight:700;font-size:.9375rem;display:inline-flex;align-items:center;gap:6px;">
+            Read comparison
+            <svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+</BaseLayout>

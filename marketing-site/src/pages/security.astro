@@ -1,0 +1,89 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const pillars = [
+  {
+    title: "Encryption Everywhere",
+    body: "All data is encrypted with AES-256 at rest and TLS 1.3 in transit. Your financial data is unreadable to anyone without your account access — including our own infrastructure providers.",
+    icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
+  },
+  {
+    title: "No Bank Credential Sharing",
+    body: "FinTrack never asks for your online banking username or password. You download your own PDF statement and upload it — there's no direct bank connection to compromise.",
+    icon: "M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z",
+  },
+  {
+    title: "Ephemeral Statement Processing",
+    body: "When you upload a PDF statement, our OCR engine extracts transaction data and the raw file is deleted after processing. We store only the structured transaction records, never the original document.",
+    icon: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z",
+  },
+  {
+    title: "Zero-Knowledge Access Control",
+    body: "Only you — and any family members you explicitly invite to a Premium account — can see your financial data. FinTrack employees cannot access your transaction content.",
+    icon: "M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z",
+  },
+  {
+    title: "UAE Data Residency Awareness",
+    body: "We operate with UAE data residency guidelines in mind and do not sell or rent your personal or financial data to any third party, ever.",
+    icon: "M3 3v18h18M7 16l4-6 4 4 4-6",
+  },
+  {
+    title: "You Control Deletion",
+    body: "Delete all your data at any time from Settings → Privacy → Delete All Data. Removal completes within 72 hours, with an email confirmation when it's done.",
+    icon: "M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z",
+  },
+];
+
+const breadcrumbs = [
+  { name: "Home", url: "/" },
+  { name: "Security", url: "/security" },
+];
+---
+
+<BaseLayout
+  title="Security & Data Protection — FinTrack"
+  description="How FinTrack protects your financial data: AES-256 encryption, no bank credential sharing, ephemeral statement processing, and zero-knowledge access control."
+  canonicalPath="/security"
+  breadcrumbs={breadcrumbs}
+>
+
+<div class="page-hero" style="padding-top:9rem;padding-bottom:5rem;">
+  <div class="container" style="position:relative;z-index:1;">
+    <span class="badge badge-green" style="margin-bottom:1.25rem;background:rgba(16,185,129,0.15);color:var(--green-400);border-color:rgba(16,185,129,0.25);">Trust & Security</span>
+    <h1 style="color:#ffffff;margin-bottom:1rem;">Your Financial Data, Protected.</h1>
+    <p style="color:rgba(255,255,255,0.55);font-size:1.0625rem;max-width:560px;margin:0 auto;">
+      Handling bank statements means handling some of the most sensitive data you have. Here's exactly how FinTrack protects it.
+    </p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="bento-grid bento-grid-3">
+      {pillars.map(p => (
+        <div class="card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--green-700)" stroke-width="2"><path d={p.icon}/></svg>
+          </div>
+          <h3 style="margin-bottom:.625rem;">{p.title}</h3>
+          <p style="color:var(--text-muted);font-size:.9375rem;line-height:1.75;margin:0;">{p.body}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--green-50);">
+  <div class="container" style="max-width:720px;text-align:center;">
+    <h2 style="margin-bottom:1rem;">Have a Security Question?</h2>
+    <p style="color:var(--text-muted);font-size:1.0625rem;margin-bottom:2rem;">
+      Read our full <a href="/privacy" style="color:var(--green-700);font-weight:600;">Privacy Policy</a>, browse the <a href="/faq" style="color:var(--green-700);font-weight:600;">FAQ</a>, or reach out directly.
+    </p>
+    <a href="/contact" class="btn-primary" style="display:inline-flex;">
+      Contact Us
+      <svg viewBox="0 0 24 24" fill="none" style="width:16px;height:16px;" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</section>
+
+</BaseLayout>

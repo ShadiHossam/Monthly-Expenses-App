@@ -1,0 +1,75 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const banks = [
+  { slug: "emirates-nbd", name: "Emirates NBD" },
+  { slug: "adcb", name: "ADCB" },
+  { slug: "fab", name: "First Abu Dhabi Bank (FAB)" },
+  { slug: "mashreq", name: "Mashreq" },
+];
+
+const otherBanks = [
+  { slug: "rakbank", name: "RAKBank" },
+  { slug: "dib", name: "Dubai Islamic Bank (DIB)" },
+  { slug: "hsbc-uae", name: "HSBC UAE" },
+  { slug: "cbd", name: "Commercial Bank of Dubai (CBD)" },
+  { slug: "adib", name: "Abu Dhabi Islamic Bank (ADIB)" },
+  { slug: "emirates-islamic", name: "Emirates Islamic" },
+  { slug: "ajman-bank", name: "Ajman Bank" },
+  { slug: "bank-of-sharjah", name: "Bank of Sharjah" },
+];
+
+const breadcrumbs = [
+  { name: "Home", url: "/" },
+  { name: "Supported Banks", url: "/banks" },
+];
+---
+
+<BaseLayout
+  title="UAE Bank Statement Import — Supported Banks | FinTrack"
+  description="FinTrack imports PDF bank statements from Emirates NBD, ADCB, FAB, Mashreq, RAKBank, DIB, HSBC UAE, CBD and more. See how statement import works for your bank."
+  canonicalPath="/banks"
+  breadcrumbs={breadcrumbs}
+>
+
+<div class="page-hero" style="padding-top:9rem;padding-bottom:5rem;">
+  <div class="container" style="position:relative;z-index:1;">
+    <div style="display:inline-block;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);border-radius:6px;padding:4px 12px;margin-bottom:1.25rem;">
+      <span style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green-400);font-family:'Plus Jakarta Sans',sans-serif;">Supported Banks</span>
+    </div>
+    <h1 style="color:#ffffff;margin-bottom:1rem;">Your UAE Bank, Fully Supported.</h1>
+    <p style="color:rgba(255,255,255,0.55);font-size:1.0625rem;max-width:560px;margin:0 auto;">
+      Download your PDF statement from any of these banks and FinTrack's AI extracts and categorizes every transaction in seconds.
+    </p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="bento-grid bento-grid-2">
+      {banks.map(b => (
+        <a href={`/banks/${b.slug}`} class="card card-interactive" style="text-decoration:none;display:block;">
+          <span class="badge badge-forest" style="margin-bottom:1rem;">Statement Import Guide</span>
+          <h3 style="margin-bottom:.5rem;">{b.name}</h3>
+          <p style="color:var(--text-muted);font-size:.9375rem;line-height:1.75;margin:0 0 1rem;">How to import your {b.name} PDF statement and what FinTrack detects automatically.</p>
+          <span style="color:var(--green-700);font-weight:700;font-size:.9375rem;display:inline-flex;align-items:center;gap:6px;">
+            View guide
+            <svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </a>
+      ))}
+    </div>
+
+    <div class="card" style="margin-top:2rem;">
+      <h3 style="margin-bottom:.875rem;">Also Supported</h3>
+      <div style="display:flex;flex-wrap:wrap;gap:.75rem;">
+        {otherBanks.map(b => (
+          <a href={`/banks/${b.slug}`} class="badge badge-forest" style="text-decoration:none;">{b.name} ✓</a>
+        ))}
+      </div>
+      <p style="color:var(--text-muted);font-size:.875rem;margin:1.25rem 0 0;">Don't see your bank? <a href="/contact" style="color:var(--green-700);font-weight:600;">Contact us</a> — we're adding new banks regularly.</p>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>

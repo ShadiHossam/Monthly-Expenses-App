@@ -1,0 +1,63 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const posts = [
+  { slug: "how-to-budget-in-dubai", title: "How to Budget in Dubai: A Practical Guide for 2026", category: "Budgeting", excerpt: "A realistic, step-by-step approach to budgeting in Dubai — from rent and DEWA to Salik and weekend spending.", date: "2026-06-01", readTime: "7 min" },
+  { slug: "cost-of-living-dubai-2026", title: "Cost of Living in Dubai (2026): What You'll Really Spend", category: "Cost of Living", excerpt: "Real monthly numbers for rent, utilities, groceries, transport, and school fees across Dubai's neighborhoods.", date: "2026-06-05", readTime: "9 min" },
+  { slug: "cost-of-living-abu-dhabi", title: "Cost of Living in Abu Dhabi: A 2026 Breakdown", category: "Cost of Living", excerpt: "How Abu Dhabi's living costs compare to Dubai, and what to budget for as a resident or new expat.", date: "2026-06-08", readTime: "8 min" },
+  { slug: "emergency-fund-calculator-uae", title: "How Much Should Your Emergency Fund Be in the UAE?", category: "Savings", excerpt: "A simple formula for calculating your emergency fund as a UAE resident, plus how end-of-service gratuity changes the math.", date: "2026-06-12", readTime: "6 min" },
+  { slug: "50-30-20-budget-rule-uae", title: "Does the 50/30/20 Budget Rule Work in the UAE?", category: "Budgeting", excerpt: "We stress-test the popular 50/30/20 rule against real UAE rent and school-fee numbers — and suggest a better split.", date: "2026-06-16", readTime: "6 min" },
+  { slug: "salary-negotiation-guide-dubai", title: "Salary Negotiation in Dubai: A First-Job Budgeting Guide", category: "Career & Salary", excerpt: "What to ask for, what benefits matter more than base salary, and how to budget your first UAE paycheck.", date: "2026-06-20", readTime: "8 min" },
+  { slug: "safe-to-spend-vs-zero-based-budgeting", title: "Safe-to-Spend vs. Zero-Based Budgeting: Which Is Right for You?", category: "Budgeting", excerpt: "Two very different philosophies for the same goal — knowing what you can spend without wrecking your month.", date: "2026-06-24", readTime: "7 min" },
+  { slug: "saving-money-on-salik-dewa-delivery-apps", title: "How to Cut Your Salik, DEWA, and Food Delivery Spending", category: "Money-Saving Tips", excerpt: "Practical, UAE-specific ways to reduce three of the sneakiest recurring costs in any Dubai or Abu Dhabi budget.", date: "2026-06-28", readTime: "7 min" },
+  { slug: "end-of-service-gratuity-calculator-uae", title: "End-of-Service Gratuity in the UAE: How It's Calculated", category: "Career & Salary", excerpt: "How UAE end-of-service gratuity is calculated based on tenure and basic salary, and how to factor it into your long-term planning.", date: "2026-07-02", readTime: "6 min" },
+  { slug: "how-to-send-money-from-uae", title: "How to Send Money From the UAE Without Losing It to Fees", category: "Money-Saving Tips", excerpt: "A practical comparison of ways to send remittances from the UAE and how to minimize fees.", date: "2026-07-04", readTime: "7 min" },
+  { slug: "paying-off-credit-card-debt-uae", title: "How to Pay Off Credit Card Debt in the UAE", category: "Savings", excerpt: "A step-by-step plan for paying off UAE credit card debt faster and avoiding common traps.", date: "2026-07-06", readTime: "7 min" },
+  { slug: "building-credit-history-uae", title: "How to Build Credit History in the UAE as a New Resident", category: "Career & Salary", excerpt: "A practical guide for new residents and expats on building UAE credit history from scratch.", date: "2026-07-08", readTime: "6 min" },
+  { slug: "shared-expenses-roommates-dubai", title: "How to Split Rent and Bills With Roommates in Dubai", category: "Budgeting", excerpt: "A practical system for tracking shared expenses with roommates without awkward conversations.", date: "2026-07-10", readTime: "6 min" },
+  { slug: "no-spend-month-challenge-uae", title: "The No-Spend Month Challenge: A UAE Resident's Guide", category: "Money-Saving Tips", excerpt: "How to actually complete a no-spend month in the UAE without giving up in week one.", date: "2026-07-12", readTime: "6 min" },
+  { slug: "multi-currency-banking-tips-uae", title: "Multi-Currency Banking in the UAE: A Practical Guide", category: "Savings", excerpt: "Practical tips for managing an AED salary alongside USD, GBP, or other currency savings.", date: "2026-07-14", readTime: "6 min" },
+  { slug: "family-budget-planner-uae", title: "Family Budget Planning in the UAE: A Practical Framework", category: "Budgeting", excerpt: "How UAE families can build a realistic household budget across two incomes and school fees.", date: "2026-07-16", readTime: "7 min" },
+];
+
+const breadcrumbs = [
+  { name: "Home", url: "/" },
+  { name: "Blog", url: "/blog" },
+];
+---
+
+<BaseLayout
+  title="FinTrack Blog — UAE Budgeting, Saving & Cost of Living Guides"
+  description="Practical guides on budgeting in Dubai and Abu Dhabi, UAE cost of living, salary negotiation, and money-saving tips — from the team behind FinTrack."
+  canonicalPath="/blog"
+  breadcrumbs={breadcrumbs}
+>
+
+<div class="page-hero" style="padding-top:9rem;padding-bottom:5rem;">
+  <div class="container" style="position:relative;z-index:1;">
+    <div style="display:inline-block;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.25);border-radius:6px;padding:4px 12px;margin-bottom:1.25rem;">
+      <span style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green-400);font-family:'Plus Jakarta Sans',sans-serif;">FinTrack Blog</span>
+    </div>
+    <h1 style="color:#ffffff;margin-bottom:1rem;">Money Guides for UAE Life.</h1>
+    <p style="color:rgba(255,255,255,0.55);font-size:1.0625rem;max-width:560px;margin:0 auto;">
+      Budgeting, saving, and cost-of-living guides written specifically for Dubai, Abu Dhabi, and GCC residents.
+    </p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="bento-grid bento-grid-2">
+      {posts.map(p => (
+        <a href={`/blog/${p.slug}`} class="card card-interactive" style="text-decoration:none;display:block;">
+          <span class="badge badge-forest" style="margin-bottom:1rem;">{p.category}</span>
+          <h3 style="margin-bottom:.625rem;">{p.title}</h3>
+          <p style="color:var(--text-muted);font-size:.9375rem;line-height:1.75;margin:0 0 1rem;">{p.excerpt}</p>
+          <p style="color:var(--text-light);font-size:.8125rem;margin:0;">{p.readTime} read</p>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
