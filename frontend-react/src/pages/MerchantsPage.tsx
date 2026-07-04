@@ -5,8 +5,8 @@ import { MerchantAlias } from "../types";
 import { cn, formatAED, formatDate } from "../lib/utils";
 import { exportToExcel, exportToPDF } from "../lib/exportUtils";
 
-function MSIcon({ name, className }: { name: string; className?: string }) {
-  return <span className={cn("material-symbols-outlined select-none", className)}>{name}</span>;
+function MSIcon({ name, className, style }: { name: string; className?: string; style?: { color?: string } }) {
+  return <span className={cn("material-symbols-outlined select-none", className)} style={style}>{name}</span>;
 }
 
 export default function MerchantsPage() {

@@ -17,8 +17,24 @@ export default function AdminLoginPage() {
     try {
       const res = await api.login(username, password);
       if ((res.user as any).role !== "admin") {
-        await api.logout().catch(() => {});
-        setError("Access denied. Admin accounts only.");
+        // Login already set the session cookie server-side — it must be torn down
+        // before we tell the user "Access denied", or a non-admin ends up silently
+        // signed into the regular app behind an error message. Retry logout since
+        // a transient failure here would otherwise leave that stale session.
+        let loggedOut = false;
+        for (let attempt = 0; attempt < 3 && !loggedOut; attempt++) {
+          try {
+            await api.logout();
+            loggedOut = true;
+          } catch {
+            // retry
+          }
+        }
+        setError(
+          loggedOut
+            ? "Access denied. Admin accounts only."
+            : "Access denied. Admin accounts only. (Could not confirm sign-out — please clear cookies for this site before trying again.)"
+        );
         return;
       }
       navigate("/admin", { replace: true });

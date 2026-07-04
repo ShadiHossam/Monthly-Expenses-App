@@ -560,7 +560,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">Biggest expense</p>
-                  <p className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface truncate">{summary.biggest_expense.description}</p>
+                  <p className="text-sm font-semibold text-ft-on-surface dark:text-ve-on-surface truncate">{summary.biggest_expense.merchant_name}</p>
                 </div>
                 <p className="text-red-600 dark:text-ve-error font-bold tabular-nums shrink-0">{formatAED(summary.biggest_expense.amount)}</p>
               </div>

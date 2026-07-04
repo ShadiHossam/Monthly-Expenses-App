@@ -34,7 +34,6 @@ public class GmailController {
     private final GmailFilterSenderRepository senderRepo;
     private final AppProperties appProperties;
 
-    // NOT final — initialized inline, not via @RequiredArgsConstructor
     private final ConcurrentHashMap<Long, Instant> lastSyncTime = new ConcurrentHashMap<>();
 
     @GetMapping("/connect-url")
@@ -46,16 +45,22 @@ public class GmailController {
     @GetMapping("/callback")
     public ResponseEntity<Void> callback(@RequestParam String code,
                                           @RequestParam String state) {
-        Long userId = gmailService.validateAndConsumeState(state);
-        Map<String, String> tokens = gmailService.exchangeCode(code);
-        String email = gmailService.fetchGmailEmail(tokens.get("access_token"));
-        userRepository.findById(userId).ifPresent(user -> {
-            user.setGmailRefreshToken(tokens.get("refresh_token"));
-            user.setGmailEmail(email);
-            userRepository.save(user);
-        });
-        String frontendUrl = appProperties.getAppUrl() + "/settings?gmail=connected";
-        return ResponseEntity.status(302).location(URI.create(frontendUrl)).build();
+        String redirectUrl;
+        try {
+            Long userId = gmailService.validateAndConsumeState(state);
+            Map<String, String> tokens = gmailService.exchangeCode(code);
+            String email = gmailService.fetchGmailEmail(tokens.get("access_token"));
+            userRepository.findById(userId).ifPresent(user -> {
+                user.setGmailRefreshToken(tokens.get("refresh_token"));
+                user.setGmailEmail(email);
+                userRepository.save(user);
+            });
+            redirectUrl = appProperties.getAppUrl() + "/settings?gmail=connected";
+        } catch (Exception e) {
+            log.error("Gmail OAuth callback failed", e);
+            redirectUrl = appProperties.getAppUrl() + "/settings?gmail=error";
+        }
+        return ResponseEntity.status(302).location(URI.create(redirectUrl)).build();
     }
 
     @DeleteMapping("/disconnect")

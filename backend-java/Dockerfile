@@ -14,6 +14,7 @@ WORKDIR /app
 RUN apk add --no-cache tesseract-ocr tesseract-ocr-data-eng
 
 RUN addgroup -S spring && adduser -S spring -G spring
+RUN mkdir -p /app/data/uploads && chown -R spring:spring /app/data
 USER spring:spring
 
 COPY --from=builder /app/build/libs/*.jar app.jar

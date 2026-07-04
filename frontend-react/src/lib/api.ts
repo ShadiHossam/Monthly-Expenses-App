@@ -143,13 +143,13 @@ export const api = {
     request<Transaction>("/transactions", {
       method: "POST",
       body: JSON.stringify({
-        txnDate: data.txnDate,
+        txn_date: data.txnDate,
         description: data.description,
         amount: data.amount,
-        txnType: data.txnType,
-        merchantName: data.merchantName || undefined,
-        refNumber: data.refNumber || undefined,
-        categoryId: data.categoryId || undefined,
+        txn_type: data.txnType,
+        merchant_name: data.merchantName || undefined,
+        ref_number: data.refNumber || undefined,
+        category_id: data.categoryId || undefined,
       }),
     }),
 

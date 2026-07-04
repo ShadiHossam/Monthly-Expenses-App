@@ -21,7 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     long countByCreatedAtAfter(OffsetDateTime date);
 
     @Query(value = """
-        SELECT to_char(created_at::date, 'YYYY-MM-DD') AS day, COUNT(*) AS cnt
+        SELECT to_char(CAST(created_at AS date), 'YYYY-MM-DD') AS day, COUNT(*) AS cnt
         FROM users
         WHERE created_at >= :since
         GROUP BY 1

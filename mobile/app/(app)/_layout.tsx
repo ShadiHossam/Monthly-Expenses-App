@@ -1,6 +1,5 @@
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Drawer } from 'expo-router/drawer';
-import { DrawerContentScrollView } from '@react-navigation/drawer';
 import { useRouter, usePathname } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -28,8 +27,8 @@ function CustomDrawerContent(props: any) {
   const activeIconColor = isDark ? '#95d4b3' : '#005e26';
 
   return (
-    <DrawerContentScrollView
-      {...props}
+    <ScrollView
+      contentContainerStyle={{ paddingTop: 12, paddingBottom: 12 }}
       style={{ backgroundColor: isDark ? '#1d201e' : '#ffffff' }}
     >
       {/* User header */}
@@ -94,7 +93,7 @@ function CustomDrawerContent(props: any) {
           <Text className="text-sm font-medium text-red-600 dark:text-ve-error">Log out</Text>
         </Pressable>
       </View>
-    </DrawerContentScrollView>
+    </ScrollView>
   );
 }
 

@@ -175,7 +175,7 @@ export default function AnalyticsPage() {
       sections.push({
         title: "Frequent Places",
         columns: ["Merchant", "Visits", "Avg Spend (AED)", "Total (AED)"],
-        rows: frequent.map((p: any) => [p.merchant_name, p.visit_count, Number(p.avg_spend).toFixed(2), Number(p.total_spend).toFixed(2)]) as (string | number)[][],
+        rows: frequent.map((p: any) => [p.merchant_name, p.visit_count, Number(p.avg_spend).toFixed(2), Number(p.total_spent).toFixed(2)]) as (string | number)[][],
       });
     }
     exportToPDF(sections, `analytics_${label.replace(/\s/g, "_")}`, "Analytics Report", label);

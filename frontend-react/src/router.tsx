@@ -22,6 +22,7 @@ import SavingsPage from "./pages/SavingsPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 export const router = createBrowserRouter([
   {
@@ -66,4 +67,5 @@ export const router = createBrowserRouter([
       { path: "savings", element: <SavingsPage /> },
     ],
   },
+  { path: "*", element: <NotFoundPage /> },
 ]);

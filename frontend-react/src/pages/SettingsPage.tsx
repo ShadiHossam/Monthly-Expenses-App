@@ -44,6 +44,9 @@ export default function SettingsPage() {
     if (params.get("gmail") === "connected") {
       setGmailSyncResult("Gmail connected successfully!");
       window.history.replaceState({}, "", "/settings");
+    } else if (params.get("gmail") === "error") {
+      setGmailSyncResult("Gmail connection failed. Please try again.");
+      window.history.replaceState({}, "", "/settings");
     }
   }, []);
 

@@ -11,8 +11,8 @@ type SortDir = "asc" | "desc";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-function MSIcon({ name, className }: { name: string; className?: string }) {
-  return <span className={cn("material-symbols-outlined select-none", className)}>{name}</span>;
+function MSIcon({ name, className, style }: { name: string; className?: string; style?: { color?: string } }) {
+  return <span className={cn("material-symbols-outlined select-none", className)} style={style}>{name}</span>;
 }
 
 function detectPeriodFromRange(from: string, to: string, today: Date) {

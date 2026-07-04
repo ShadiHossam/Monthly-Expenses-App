@@ -2,6 +2,12 @@ export interface User {
   id: number;
   username: string;
   email?: string;
+  role?: string;
+  groqApiKeySet?: boolean;
+  openrouterApiKeySet?: boolean;
+  anthropicApiKeySet?: boolean;
+  aiProvider?: string;
+  concurrentProcessing?: number;
 }
 
 export interface Statement {
@@ -93,11 +99,11 @@ export interface Summary {
 }
 
 export interface MonthData {
-  month: number;
-  month_name: string;
+  month_label: string;
   year: number;
-  debits: number;
-  credits: number;
+  total_debits: number;
+  total_credits: number;
+  net: number;
 }
 
 export interface CategoryBreakdown {
@@ -112,7 +118,9 @@ export interface CategoryBreakdown {
 export interface FrequentPlace {
   merchant_name: string;
   visit_count: number;
-  total_spend: number;
+  total_spent: number;
+  avg_spend?: number;
+  frequency_reason?: string;
 }
 
 export interface RecurringItem {
@@ -124,8 +132,8 @@ export interface RecurringItem {
 }
 
 export interface BalanceTrendPoint {
-  date: string;
-  balance: number;
+  period_label: string;
+  closing_balance: number;
 }
 
 export interface MonthComparison {

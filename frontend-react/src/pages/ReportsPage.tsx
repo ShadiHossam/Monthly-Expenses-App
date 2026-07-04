@@ -44,7 +44,7 @@ export default function ReportsPage() {
   const [saving, setSaving] = useState(false);
   const [showSaveInput, setShowSaveInput] = useState(false);
 
-  useEffect(() => { api.listSavedReports().then((res: any) => setSavedReports(res.data || [])); }, []);
+  useEffect(() => { api.listSavedReports().then((res: any) => setSavedReports(Array.isArray(res) ? res : [])); }, []);
 
   function applyPreset(p: Preset) {
     setPreset(p);
@@ -61,7 +61,7 @@ export default function ReportsPage() {
   async function handleSave() {
     if (!saveName.trim() || !report) return;
     setSaving(true);
-    try { const res = await api.saveReport(saveName.trim(), report.from_date, report.to_date) as any; setSavedReports(prev => [res.data, ...prev]); setSaveName(""); setShowSaveInput(false); }
+    try { const res = await api.saveReport(saveName.trim(), report.from_date, report.to_date) as any; setSavedReports(prev => [res, ...prev]); setSaveName(""); setShowSaveInput(false); }
     finally { setSaving(false); }
   }
 

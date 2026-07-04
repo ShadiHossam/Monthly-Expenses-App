@@ -142,6 +142,11 @@ public class BillingService {
         Subscription sub = subscriptionRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Subscription not found"));
 
+        if (!StringUtils.hasText(sub.getStripeCustomerId())) {
+            throw new com.expensetracker.exception.BusinessException(
+                "No billing account found. Subscribe to a plan first.", org.springframework.http.HttpStatus.BAD_REQUEST);
+        }
+
         com.stripe.model.billingportal.Session portal = com.stripe.model.billingportal.Session.create(
             com.stripe.param.billingportal.SessionCreateParams.builder()
                 .setCustomer(sub.getStripeCustomerId())
@@ -157,7 +162,8 @@ public class BillingService {
         try {
             event = Webhook.constructEvent(payload, sigHeader, appProperties.getStripe().getWebhookSecret());
         } catch (SignatureVerificationException e) {
-            throw new RuntimeException("Invalid Stripe signature");
+            throw new com.expensetracker.exception.BusinessException(
+                "Invalid Stripe signature", org.springframework.http.HttpStatus.BAD_REQUEST);
         }
 
         switch (event.getType()) {

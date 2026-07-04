@@ -3,8 +3,8 @@ import { api } from "../lib/api";
 import { cn } from "../lib/utils";
 import { exportToExcel, exportToPDF } from "../lib/exportUtils";
 
-function MSIcon({ name, className }: { name: string; className?: string }) {
-  return <span className={cn("material-symbols-outlined select-none", className)}>{name}</span>;
+function MSIcon({ name, className, style }: { name: string; className?: string; style?: { color?: string } }) {
+  return <span className={cn("material-symbols-outlined select-none", className)} style={style}>{name}</span>;
 }
 
 const COLORS = ["#10b981", "#ef4444", "#f59e0b", "#3b82f6", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316", "#6b7280"];
