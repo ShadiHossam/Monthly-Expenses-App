@@ -67,6 +67,7 @@ function TransactionsInner() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const hasAutoSwitched = useRef(false);
   const [isAutoAllTime, setIsAutoAllTime] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -140,12 +141,16 @@ function TransactionsInner() {
 
   async function handleCategoryChange(txnId: number, categoryId: number) {
     const txn = txns.find(t => t.id === txnId);
-    await api.setCategory(txnId, categoryId);
-    setTxns(prev => prev.map(t => t.id === txnId ? { ...t, category_id: categoryId } : t));
     setEditingCatTxnId(null);
-    if (txn?.merchant_name) {
-      const cat = categories.find(c => c.id === categoryId);
-      setMerchantRulePrompt({ merchantName: txn.merchant_name, categoryId, categoryName: cat?.name ?? "" });
+    try {
+      await api.setCategory(txnId, categoryId);
+      setTxns(prev => prev.map(t => t.id === txnId ? { ...t, category_id: categoryId } : t));
+      if (txn?.merchant_name) {
+        const cat = categories.find(c => c.id === categoryId);
+        setMerchantRulePrompt({ merchantName: txn.merchant_name, categoryId, categoryName: cat?.name ?? "" });
+      }
+    } catch (err: any) {
+      setActionError(err.message || "Couldn't update the category. Please try again.");
     }
   }
 
@@ -179,7 +184,7 @@ function TransactionsInner() {
       setTxns(prev => prev.filter(t => t.id !== id));
       setConfirmDeleteId(null);
     } catch (err: any) {
-      alert(err.message || "Failed to delete transaction");
+      setActionError(err.message || "Failed to delete transaction");
     } finally {
       setDeletingId(null);
     }
@@ -539,6 +544,16 @@ function TransactionsInner() {
           <p className="text-center text-xs text-ft-outline dark:text-ve-on-surface-variant py-2">
             {txns.length} transactions
           </p>
+        </div>
+      )}
+
+      {actionError && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-50 dark:bg-ve-surface-high border border-red-100 dark:border-ve-error/30 rounded-2xl shadow-2xl px-5 py-3.5 flex items-center gap-3 w-[calc(100%-2rem)] max-w-sm">
+          <MSIcon name="error" className="text-lg text-red-500 dark:text-ve-error shrink-0" />
+          <p className="text-sm text-red-600 dark:text-ve-error flex-1">{actionError}</p>
+          <button onClick={() => setActionError(null)} className="text-red-400 dark:text-ve-error hover:text-red-600 dark:hover:text-ve-on-surface shrink-0">
+            <MSIcon name="close" className="text-base" />
+          </button>
         </div>
       )}
 

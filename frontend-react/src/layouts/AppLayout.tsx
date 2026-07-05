@@ -78,12 +78,25 @@ export default function AppLayout() {
   const location = useLocation();
   const pathname = location.pathname;
   const [ready, setReady] = useState(false);
+  const [connError, setConnError] = useState(false);
   const [isDark, setIsDark] = useState(false);
 
-  useEffect(() => {
+  function checkAuth() {
+    setConnError(false);
     api.me()
       .then(() => setReady(true))
-      .catch(() => navigate("/login", { replace: true }));
+      .catch((err: { status?: number }) => {
+        if (err?.status === 401) {
+          navigate("/login", { replace: true });
+        } else {
+          setConnError(true);
+        }
+      });
+  }
+
+  useEffect(() => {
+    checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
 
   useEffect(() => {
@@ -116,6 +129,21 @@ export default function AppLayout() {
   async function handleSignOut() {
     await api.logout().catch(() => {});
     navigate("/login", { replace: true });
+  }
+
+  if (connError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 text-center bg-ft-background dark:bg-ve-background">
+        <span className="material-symbols-outlined text-5xl text-ft-on-surface-variant dark:text-ve-on-surface-variant">wifi_off</span>
+        <div>
+          <p className="font-semibold text-ft-on-surface dark:text-ve-on-surface">Can't reach the server</p>
+          <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-1">Check your internet connection and try again.</p>
+        </div>
+        <button onClick={checkAuth} className="px-5 py-2.5 bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity">
+          Retry
+        </button>
+      </div>
+    );
   }
 
   if (!ready) return null;

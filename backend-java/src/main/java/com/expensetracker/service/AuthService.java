@@ -264,8 +264,9 @@ public class AuthService {
         if (email == null || email.isBlank()) return;
         userRepository.findByEmail(email).ifPresent(user -> {
             passwordResetTokenRepository.deleteByUserId(user.getId());
-            String token = HexFormat.of().formatHex(
-                java.security.SecureRandom.getSeed(32));
+            byte[] tokenBytes = new byte[32];
+            new java.security.SecureRandom().nextBytes(tokenBytes);
+            String token = HexFormat.of().formatHex(tokenBytes);
             passwordResetTokenRepository.save(PasswordResetToken.builder()
                 .userId(user.getId())
                 .token(token)

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { cn } from "../lib/utils";
+import type { AISettings } from "../types";
 
 function MSIcon({ name, className }: { name: string; className?: string }) {
   return <span className={cn("material-symbols-outlined select-none", className)}>{name}</span>;
@@ -19,6 +20,14 @@ export default function SettingsPage() {
   const [profileError, setProfileError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [exporting, setExporting] = useState(false);
+  const [aiSettings, setAiSettings] = useState<AISettings | null>(null);
+  const [aiProvider, setAiProvider] = useState("groq");
+  const [aiApiKey, setAiApiKey] = useState("");
+  const [aiSaving, setAiSaving] = useState(false);
+  const [aiSaved, setAiSaved] = useState(false);
+  const [aiError, setAiError] = useState("");
   const [gmailStatus, setGmailStatus] = useState<{
     connected: boolean;
     gmail_email: string | null;
@@ -39,6 +48,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     api.me().then(u => { setUser(u); setProfileEmail(u.email ?? ""); }).catch(() => {});
+    api.getAISettings().then(s => { setAiSettings(s); setAiProvider(s.ai_provider ?? "groq"); }).catch(() => {});
     loadGmailStatus();
     const params = new URLSearchParams(window.location.search);
     if (params.get("gmail") === "connected") {
@@ -69,17 +79,50 @@ export default function SettingsPage() {
 
   async function handleDeleteAccount() {
     if (deleteConfirm !== "DELETE") return;
+    setDeleteError("");
     try {
       await api.deleteAccount("DELETE");
       navigate("/login");
     } catch (err: any) {
-      setProfileError(err.message);
+      setDeleteError(err.message || "Couldn't delete your account. Please try again.");
     }
   }
 
   async function logout() {
     await api.logout().catch(() => {});
     navigate("/login");
+  }
+
+  async function handleExportCsv() {
+    setExporting(true);
+    try {
+      await api.exportCSV();
+    } catch (err: any) {
+      setProfileError(err.message || "Export failed. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function handleSaveAiSettings() {
+    setAiSaving(true); setAiError(""); setAiSaved(false);
+    try {
+      const payload: Partial<AISettings> & { groq_api_key?: string; openrouter_api_key?: string; anthropic_api_key?: string } = { ai_provider: aiProvider };
+      if (aiApiKey.trim()) {
+        if (aiProvider === "groq") payload.groq_api_key = aiApiKey.trim();
+        else if (aiProvider === "openrouter") payload.openrouter_api_key = aiApiKey.trim();
+        else if (aiProvider === "anthropic") payload.anthropic_api_key = aiApiKey.trim();
+      }
+      const updated = await api.saveAISettings(payload);
+      setAiSettings(updated);
+      setAiApiKey("");
+      setAiSaved(true);
+      setTimeout(() => setAiSaved(false), 3000);
+    } catch (err: any) {
+      setAiError(err.message || "Couldn't save AI settings.");
+    } finally {
+      setAiSaving(false);
+    }
   }
 
   const handleGmailConnect = async () => {
@@ -194,11 +237,12 @@ export default function SettingsPage() {
             <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mb-4">
               This permanently deletes all your data. Type <strong>DELETE</strong> to confirm.
             </p>
+            {deleteError && <p className="text-red-500 text-sm bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-2 mb-4">{deleteError}</p>}
             <input value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
               placeholder="DELETE"
               className="w-full border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2 text-sm mb-4 bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface" />
             <div className="flex gap-2">
-              <button onClick={() => { setShowDeleteModal(false); setDeleteConfirm(""); }}
+              <button onClick={() => { setShowDeleteModal(false); setDeleteConfirm(""); setDeleteError(""); }}
                 className="flex-1 border border-ft-outline-variant dark:border-ve-outline rounded-xl py-2 text-sm text-ft-on-surface dark:text-ve-on-surface">Cancel</button>
               <button onClick={handleDeleteAccount} disabled={deleteConfirm !== "DELETE"}
                 className="flex-1 bg-red-500 text-white rounded-xl py-2 text-sm font-medium disabled:opacity-40">Delete</button>
@@ -220,18 +264,46 @@ export default function SettingsPage() {
 
       {/* ── Quick links ── */}
       <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl overflow-hidden mb-4">
-        <a href="/analytics"
-          className="flex items-center gap-3 px-5 py-4 border-b border-ft-outline-variant dark:border-ve-outline hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors">
+        <button type="button" onClick={handleExportCsv} disabled={exporting}
+          className="w-full flex items-center gap-3 px-5 py-4 border-b border-ft-outline-variant dark:border-ve-outline hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors disabled:opacity-60">
           <MSIcon name="download" className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
-          <span className="text-sm text-ft-on-surface dark:text-ve-on-surface">Export all data (CSV)</span>
+          <span className="text-sm text-ft-on-surface dark:text-ve-on-surface">{exporting ? "Preparing your file…" : "Export all data (CSV)"}</span>
           <MSIcon name="chevron_right" className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant ml-auto" />
-        </a>
+        </button>
         <a href="/upload"
           className="flex items-center gap-3 px-5 py-4 hover:bg-ft-surface-low dark:hover:bg-ve-surface-high transition-colors">
           <MSIcon name="upload" className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
           <span className="text-sm text-ft-on-surface dark:text-ve-on-surface">Upload statement</span>
           <MSIcon name="chevron_right" className="text-xl text-ft-on-surface-variant dark:text-ve-on-surface-variant ml-auto" />
         </a>
+      </div>
+
+      {/* ── AI Categorization ── */}
+      <div className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-5 mb-4 space-y-4">
+        <div>
+          <p className="text-xs font-semibold text-ft-on-surface-variant dark:text-ve-on-surface-variant uppercase tracking-wider">AI Categorization</p>
+          <p className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-1">Choose which AI service auto-sorts your transactions into categories.</p>
+        </div>
+        {aiError && <p className="text-red-500 text-sm bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-2">{aiError}</p>}
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-ft-on-surface-variant dark:text-ve-on-surface-variant block">Provider</label>
+          <select value={aiProvider} onChange={e => setAiProvider(e.target.value)}
+            className="w-full text-sm bg-ft-surface-low dark:bg-ve-surface-high border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2.5 text-ft-on-surface dark:text-ve-on-surface focus:outline-none focus:ring-2 focus:ring-ft-primary dark:focus:ring-ve-primary">
+            <option value="groq">Groq {aiSettings?.groq_api_key_set ? "(key set)" : "(no key)"}</option>
+            <option value="openrouter">OpenRouter {aiSettings?.openrouter_api_key_set ? "(key set)" : "(no key)"}</option>
+            <option value="anthropic">Anthropic {aiSettings?.anthropic_api_key_set ? "(key set)" : "(no key)"}</option>
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-ft-on-surface-variant dark:text-ve-on-surface-variant block">API key</label>
+          <input type="password" value={aiApiKey} onChange={e => setAiApiKey(e.target.value)}
+            placeholder="Leave blank to keep the current key"
+            className="w-full text-sm bg-ft-surface-low dark:bg-ve-surface-high border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2.5 text-ft-on-surface dark:text-ve-on-surface focus:outline-none focus:ring-2 focus:ring-ft-primary dark:focus:ring-ve-primary" />
+        </div>
+        <button onClick={handleSaveAiSettings} disabled={aiSaving}
+          className="px-4 py-2 bg-ft-primary dark:bg-ve-primary text-white rounded-xl text-sm font-medium disabled:opacity-50">
+          {aiSaving ? "Saving…" : aiSaved ? "Saved!" : "Save changes"}
+        </button>
       </div>
 
       {/* ── Gmail Auto-Import ── */}

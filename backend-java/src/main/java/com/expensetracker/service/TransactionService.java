@@ -81,6 +81,10 @@ public class TransactionService {
     public TransactionOut updateCategory(Long id, Long userId, Long categoryId) {
         Transaction t = transactionRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+        if (categoryId != null) {
+            categoryRepository.findByIdAndUserId(categoryId, userId)
+                    .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+        }
         t.setCategoryId(categoryId);
         t.setCategorized(true);
         t = transactionRepository.save(t);
@@ -89,6 +93,10 @@ public class TransactionService {
 
     @Transactional
     public int bulkCategorize(Long userId, BulkCategorizeRequest req) {
+        if (req.getCategoryId() != null) {
+            categoryRepository.findByIdAndUserId(req.getCategoryId(), userId)
+                    .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+        }
         return transactionRepository.bulkCategorize(req.getCategoryId(), req.getTransactionIds(), userId);
     }
 

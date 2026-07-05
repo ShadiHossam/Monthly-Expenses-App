@@ -46,6 +46,9 @@ export default function StatementsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [errorStatement, setErrorStatement] = useState<any | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: number; filename: string } | null>(null);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     api.listStatements()
@@ -54,19 +57,21 @@ export default function StatementsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function handleDelete(id: number, filename: string) {
-    if (!window.confirm(`Delete statement "${filename}"? This will also remove all associated transactions.`)) return;
+  async function handleDelete(id: number) {
+    setConfirmDelete(null);
     setDeletingId(id);
     try {
       await api.deleteStatement(id);
       setStatements(prev => prev.filter(s => s.id !== id));
       setSelectedIds(prev => { const next = new Set(prev); next.delete(id); return next; });
-    } catch {} finally { setDeletingId(null); }
+    } catch (err: any) {
+      setActionError(err.message || "Couldn't delete the statement. Please try again.");
+    } finally { setDeletingId(null); }
   }
 
   async function handleBulkDelete() {
+    setConfirmBulkDelete(false);
     const ids = Array.from(selectedIds);
-    if (!window.confirm(`Delete ${ids.length} statement${ids.length !== 1 ? "s" : ""}? This will also remove all associated transactions.`)) return;
     setBulkDeleting(true);
     try {
       const results = await Promise.allSettled(ids.map(id => api.deleteStatement(id)));
@@ -77,7 +82,7 @@ export default function StatementsPage() {
       }
       const failedCount = results.filter(r => r.status === "rejected").length;
       if (failedCount > 0) {
-        alert(`${failedCount} statement${failedCount !== 1 ? "s" : ""} could not be deleted — please try again.`);
+        setActionError(`${failedCount} statement${failedCount !== 1 ? "s" : ""} could not be deleted — please try again.`);
       }
     } finally { setBulkDeleting(false); }
   }
@@ -103,7 +108,9 @@ export default function StatementsPage() {
     try {
       const updated = await api.reverifyStatement(id);
       setStatements(prev => prev.map(s => s.id === id ? { ...s, verify_status: updated.verify_status } : s));
-    } catch {} finally { setRetryingId(null); }
+    } catch (err: any) {
+      setActionError(err.message || "Couldn't retry this statement. Please try again.");
+    } finally { setRetryingId(null); }
   }
 
   async function handleRetryAll() {
@@ -176,7 +183,7 @@ export default function StatementsPage() {
               Cancel
             </button>
             <button
-              onClick={handleBulkDelete}
+              onClick={() => setConfirmBulkDelete(true)}
               disabled={bulkDeleting}
               className="flex items-center gap-2 px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60"
             >
@@ -274,7 +281,7 @@ export default function StatementsPage() {
                           : <MSIcon name="replay" className="text-xl" />}
                       </button>
                     )}
-                    <button onClick={() => handleDelete(stmt.id, stmt.filename)} disabled={deletingId === stmt.id}
+                    <button onClick={() => setConfirmDelete({ id: stmt.id, filename: stmt.filename })} disabled={deletingId === stmt.id}
                       className="text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:text-red-500 dark:hover:text-ve-error transition-colors disabled:opacity-40">
                       {deletingId === stmt.id
                         ? <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
@@ -317,6 +324,53 @@ export default function StatementsPage() {
         </div>
       )}
     </div>
+
+    {/* Delete confirmation modal (single) */}
+    {confirmDelete && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-ft-surface dark:bg-ve-surface rounded-2xl p-6 max-w-sm w-full mx-4 border border-ft-outline-variant dark:border-ve-outline">
+          <h3 className="font-bold text-lg text-ft-on-surface dark:text-ve-on-surface mb-2">Delete statement?</h3>
+          <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mb-4">
+            "{confirmDelete.filename}" and all its transactions will be permanently removed.
+          </p>
+          <div className="flex gap-2">
+            <button onClick={() => setConfirmDelete(null)}
+              className="flex-1 border border-ft-outline-variant dark:border-ve-outline rounded-xl py-2 text-sm text-ft-on-surface dark:text-ve-on-surface hover:bg-ft-surface-low dark:hover:bg-ve-surface-high">Cancel</button>
+            <button onClick={() => handleDelete(confirmDelete.id)}
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-xl py-2 text-sm font-medium">Delete</button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Delete confirmation modal (bulk) */}
+    {confirmBulkDelete && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-ft-surface dark:bg-ve-surface rounded-2xl p-6 max-w-sm w-full mx-4 border border-ft-outline-variant dark:border-ve-outline">
+          <h3 className="font-bold text-lg text-ft-on-surface dark:text-ve-on-surface mb-2">Delete {selectedIds.size} statement{selectedIds.size !== 1 ? "s" : ""}?</h3>
+          <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mb-4">
+            This will also remove all associated transactions. This can't be undone.
+          </p>
+          <div className="flex gap-2">
+            <button onClick={() => setConfirmBulkDelete(false)}
+              className="flex-1 border border-ft-outline-variant dark:border-ve-outline rounded-xl py-2 text-sm text-ft-on-surface dark:text-ve-on-surface hover:bg-ft-surface-low dark:hover:bg-ve-surface-high">Cancel</button>
+            <button onClick={handleBulkDelete}
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-xl py-2 text-sm font-medium">Delete</button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Action error toast */}
+    {actionError && (
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-50 dark:bg-ve-surface-high border border-red-100 dark:border-ve-error/30 rounded-2xl shadow-2xl px-5 py-3.5 flex items-center gap-3 w-[calc(100%-2rem)] max-w-sm">
+        <MSIcon name="error" className="text-lg text-red-500 dark:text-ve-error shrink-0" />
+        <p className="text-sm text-red-600 dark:text-ve-error flex-1">{actionError}</p>
+        <button onClick={() => setActionError(null)} className="text-red-400 dark:text-ve-error hover:text-red-600 dark:hover:text-ve-on-surface shrink-0">
+          <MSIcon name="close" className="text-base" />
+        </button>
+      </div>
+    )}
 
     {/* Verification error modal */}
     {errorStatement && (

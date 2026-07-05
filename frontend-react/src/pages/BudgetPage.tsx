@@ -63,6 +63,8 @@ export default function BudgetPage() {
 
   // Alert banner
   const [alertsDismissed, setAlertsDismissed] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -92,16 +94,20 @@ export default function BudgetPage() {
     try {
       await api.updateBudget(budget.id, { enabled: !budget.enabled });
       setBudgets(prev => prev.map(b => b.id === budget.id ? { ...b, enabled: !b.enabled } : b));
-    } catch {} finally { setTogglingId(null); }
+    } catch (err: any) {
+      setActionError(err.message || "Couldn't update this budget. Please try again.");
+    } finally { setTogglingId(null); }
   }
 
-  async function handleDelete(id: number, name: string) {
-    if (!window.confirm(`Remove budget alert for "${name}"?`)) return;
+  async function handleDelete(id: number) {
+    setConfirmDelete(null);
     setDeletingId(id);
     try {
       await api.deleteBudget(id);
       setBudgets(prev => prev.filter(b => b.id !== id));
-    } catch {} finally { setDeletingId(null); }
+    } catch (err: any) {
+      setActionError(err.message || "Couldn't remove this budget. Please try again.");
+    } finally { setDeletingId(null); }
   }
 
   async function handleCreate(e: React.FormEvent) {
@@ -115,7 +121,9 @@ export default function BudgetPage() {
       const fresh = await loadBudgets(selectedYear, selectedMonth);
       setBudgets(fresh);
       setShowForm(false); setFormCategoryId(""); setFormLimit("");
-    } catch {} finally { setSaving(false); }
+    } catch (err: any) {
+      setActionError(err.message || "Couldn't create this budget. Please try again.");
+    } finally { setSaving(false); }
   }
 
   function handleEditStart(budget: Budget) {
@@ -143,7 +151,9 @@ export default function BudgetPage() {
       const fresh = await loadBudgets(selectedYear, selectedMonth);
       setBudgets(fresh);
       setEditingId(null);
-    } catch {} finally { setEditSaving(false); }
+    } catch (err: any) {
+      setActionError(err.message || "Couldn't save changes. Please try again.");
+    } finally { setEditSaving(false); }
   }
 
   const usedCategoryIds = new Set(budgets.map(b => b.category_id));
@@ -315,7 +325,7 @@ export default function BudgetPage() {
                     >
                       <MSIcon name={isEditing ? "edit_off" : "edit"} className="text-lg" />
                     </button>
-                    <button onClick={() => handleDelete(budget.id, budget.category_name)} disabled={deletingId === budget.id}
+                    <button onClick={() => setConfirmDelete({ id: budget.id, name: budget.category_name })} disabled={deletingId === budget.id}
                       className="text-ft-on-surface-variant dark:text-ve-on-surface-variant hover:text-red-500 dark:hover:text-ve-error transition-colors disabled:opacity-40">
                       {deletingId === budget.id
                         ? <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
@@ -349,7 +359,7 @@ export default function BudgetPage() {
                   {budget.breach_count > 0 && (
                     <p className={cn("text-xs font-medium tabular-nums", budget.breach_count >= 4 ? "text-red-500 dark:text-ve-error" : "text-amber-500")}>
                       <MSIcon name="history" className="text-xs mr-0.5 align-middle" />
-                      Exceeded {budget.breach_count}× in last 11 months
+                      Exceeded {budget.breach_count}× in last 12 months
                     </p>
                   )}
                 </div>
@@ -425,6 +435,35 @@ export default function BudgetPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Delete confirmation modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-ft-surface dark:bg-ve-surface rounded-2xl p-6 max-w-sm w-full mx-4 border border-ft-outline-variant dark:border-ve-outline">
+            <h3 className="font-bold text-lg text-ft-on-surface dark:text-ve-on-surface mb-2">Remove budget alert?</h3>
+            <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mb-4">
+              You'll stop getting alerts for "{confirmDelete.name}" spending. Your past transactions won't be affected.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setConfirmDelete(null)}
+                className="flex-1 border border-ft-outline-variant dark:border-ve-outline rounded-xl py-2 text-sm text-ft-on-surface dark:text-ve-on-surface hover:bg-ft-surface-low dark:hover:bg-ve-surface-high">Cancel</button>
+              <button onClick={() => handleDelete(confirmDelete.id)}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-xl py-2 text-sm font-medium">Remove</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Action error toast */}
+      {actionError && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-50 dark:bg-ve-surface-high border border-red-100 dark:border-ve-error/30 rounded-2xl shadow-2xl px-5 py-3.5 flex items-center gap-3 w-[calc(100%-2rem)] max-w-sm">
+          <MSIcon name="error" className="text-lg text-red-500 dark:text-ve-error shrink-0" />
+          <p className="text-sm text-red-600 dark:text-ve-error flex-1">{actionError}</p>
+          <button onClick={() => setActionError(null)} className="text-red-400 dark:text-ve-error hover:text-red-600 dark:hover:text-ve-on-surface shrink-0">
+            <MSIcon name="close" className="text-base" />
+          </button>
         </div>
       )}
     </div>

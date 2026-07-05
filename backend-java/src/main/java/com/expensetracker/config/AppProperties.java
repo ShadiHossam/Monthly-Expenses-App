@@ -12,6 +12,7 @@ import java.util.List;
 public class AppProperties {
 
     private Jwt jwt = new Jwt();
+    private Encryption encryption = new Encryption();
     private Cors cors = new Cors();
     private Upload upload = new Upload();
     private Stripe stripe = new Stripe();
@@ -25,6 +26,11 @@ public class AppProperties {
     public static class Jwt {
         private String secret;
         private int expiryDays = 30;
+    }
+
+    @Data
+    public static class Encryption {
+        private String secret;
     }
 
     @Data

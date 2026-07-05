@@ -39,12 +39,19 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       window.location.href = "/login";
     }
     const err = await res.json().catch(() => ({ detail: "Unauthorized" }));
-    throw new Error(err.detail || "Unauthorized");
+    const error = new Error(err.detail || "Unauthorized") as Error & { status?: number };
+    error.status = 401;
+    throw error;
   }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || "Request failed");
+    const message = (err.errors && typeof err.errors === "object" && Object.keys(err.errors).length > 0)
+      ? Object.values(err.errors).join("; ")
+      : (err.detail || "Request failed");
+    const error = new Error(message) as Error & { status?: number };
+    error.status = res.status;
+    throw error;
   }
 
   if (res.status === 204) return undefined as T;

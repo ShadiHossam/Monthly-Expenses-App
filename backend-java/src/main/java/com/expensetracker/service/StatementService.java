@@ -106,114 +106,139 @@ public class StatementService {
 
         boolean isPdf = "pdf".equals(ext);
 
-        // Enforce per-user concurrent processing limit
+        // Enforce per-user concurrent processing limit. Reserve the slot atomically here
+        // (rather than just checking) so simultaneous uploads can't all read the same
+        // pre-increment count and bypass the limit; processStatementAsync releases it.
         User uploadUser = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         int limit = uploadUser.getConcurrentProcessing();
         AtomicInteger active = activeProcessing.computeIfAbsent(userId, k -> new AtomicInteger(0));
-        if (active.get() >= limit) {
+        if (active.incrementAndGet() > limit) {
+            active.decrementAndGet();
             throw new BusinessException(
                 "Too many uploads in progress (limit: " + limit + "). Wait for current uploads to finish.",
                 HttpStatus.TOO_MANY_REQUESTS);
         }
+        try {
+            Subscription sub = subscriptionRepository.findByUserId(userId)
+                    .orElseThrow(() -> new EntityNotFoundException("Subscription not found"));
 
-        Subscription sub = subscriptionRepository.findByUserId(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Subscription not found"));
-
-        int remaining = sub.getPagesLimit() - sub.getPagesUsed();
-        if (remaining <= 0) {
-            boolean overageAvailable = "business".equals(sub.getPlan());
-            if (!overageAvailable || !confirmOverage) {
-                throw new QuotaExceededException(
-                    "Monthly page limit reached (" + sub.getPagesLimit() + " pages)",
-                    overageAvailable
-                );
+            int remaining = sub.getPagesLimit() - sub.getPagesUsed();
+            if (remaining <= 0) {
+                boolean overageAvailable = "business".equals(sub.getPlan());
+                if (!overageAvailable || !confirmOverage) {
+                    throw new QuotaExceededException(
+                        "Monthly page limit reached (" + sub.getPagesLimit() + " pages)",
+                        overageAvailable
+                    );
+                }
             }
-        }
 
-        // Save file(s)
-        Path userDir = Paths.get(appProperties.getUpload().getDir(), userId.toString());
-        Files.createDirectories(userDir);
+            // Save file(s)
+            Path userDir = Paths.get(appProperties.getUpload().getDir(), userId.toString());
+            Files.createDirectories(userDir);
 
-        List<Long> statementIds = new ArrayList<>();
+            List<Long> statementIds = new ArrayList<>();
 
-        if (isPdf) {
-            // Load PDF once — renders pages and derives page count in a single pass
-            List<BufferedImage> pages = renderPdf(file);
-            int pageCount = pages.size();
-            for (int i = 0; i < pages.size(); i++) {
+            if (isPdf) {
+                // Load PDF once — renders pages and derives page count in a single pass
+                List<BufferedImage> pages = renderPdf(file);
+                int pageCount = pages.size();
+                for (int i = 0; i < pages.size(); i++) {
+                    String uuid = UUID.randomUUID().toString();
+                    Path imgPath = userDir.resolve(uuid + ".png");
+                    ImageIO.write(pages.get(i), "PNG", imgPath.toFile());
+
+                    Statement stmt = Statement.builder()
+                            .userId(userId)
+                            .filename(originalFilename + " (page " + (i + 1) + ")")
+                            .imagePath(imgPath.toString())
+                            .build();
+                    stmt = statementRepository.save(stmt);
+                    statementIds.add(stmt.getId());
+
+                    subscriptionRepository.incrementPagesUsed(userId, 1);
+                    usageLogRepository.save(UsageLog.builder()
+                            .userId(userId).statementId(stmt.getId()).pagesConsumed(1).build());
+                }
+
+                List<Long> finalIds = List.copyOf(statementIds);
+                // One reservation slot was taken above for this whole upload() call; release
+                // it only once all of this batch's pages have finished processing.
+                AtomicInteger pagesRemaining = new AtomicInteger(finalIds.size());
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        // Call via Spring proxy (self) so @Async + @Transactional take effect.
+                        // Calling `this.processStatementAsync(...)` would bypass the proxy and
+                        // block the HTTP thread.
+                        for (Long sid : finalIds) self.processStatementAsync(sid, active, pagesRemaining);
+                    }
+                });
+
+                return Map.of("data", Map.of("statement_ids", statementIds, "page_count", pageCount));
+            } else {
                 String uuid = UUID.randomUUID().toString();
-                Path imgPath = userDir.resolve(uuid + ".png");
-                ImageIO.write(pages.get(i), "PNG", imgPath.toFile());
+                Path filePath = userDir.resolve(uuid + "." + ext);
+                file.transferTo(filePath);
 
                 Statement stmt = Statement.builder()
                         .userId(userId)
-                        .filename(originalFilename + " (page " + (i + 1) + ")")
-                        .imagePath(imgPath.toString())
+                        .filename(originalFilename)
+                        .imagePath(filePath.toString())
                         .build();
                 stmt = statementRepository.save(stmt);
-                statementIds.add(stmt.getId());
+                Long statementId = stmt.getId();
 
                 subscriptionRepository.incrementPagesUsed(userId, 1);
                 usageLogRepository.save(UsageLog.builder()
-                        .userId(userId).statementId(stmt.getId()).pagesConsumed(1).build());
+                        .userId(userId).statementId(statementId).pagesConsumed(1).build());
+
+                Long finalStatementId = statementId;
+                AtomicInteger pagesRemaining = new AtomicInteger(1);
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        // Call via Spring proxy (self) so @Async takes effect.
+                        self.processStatementAsync(finalStatementId, active, pagesRemaining);
+                    }
+                });
+
+                return Map.of("data", Map.of(
+                    "statement_id", statementId,
+                    "stream_url", "/api/v1/statements/" + statementId + "/progress"
+                ));
             }
-
-            List<Long> finalIds = List.copyOf(statementIds);
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    // Call via Spring proxy (self) so @Async + @Transactional take effect.
-                    // Calling `this.processStatementAsync(...)` would bypass the proxy and
-                    // block the HTTP thread.
-                    for (Long sid : finalIds) self.processStatementAsync(sid);
-                }
-            });
-
-            return Map.of("data", Map.of("statement_ids", statementIds, "page_count", pageCount));
-        } else {
-            String uuid = UUID.randomUUID().toString();
-            Path filePath = userDir.resolve(uuid + "." + ext);
-            file.transferTo(filePath);
-
-            Statement stmt = Statement.builder()
-                    .userId(userId)
-                    .filename(originalFilename)
-                    .imagePath(filePath.toString())
-                    .build();
-            stmt = statementRepository.save(stmt);
-            Long statementId = stmt.getId();
-
-            subscriptionRepository.incrementPagesUsed(userId, 1);
-            usageLogRepository.save(UsageLog.builder()
-                    .userId(userId).statementId(statementId).pagesConsumed(1).build());
-
-            Long finalStatementId = statementId;
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    // Call via Spring proxy (self) so @Async takes effect.
-                    self.processStatementAsync(finalStatementId);
-                }
-            });
-
-            return Map.of("data", Map.of(
-                "statement_id", statementId,
-                "stream_url", "/api/v1/statements/" + statementId + "/progress"
-            ));
+        } catch (IOException | RuntimeException e) {
+            active.decrementAndGet();
+            throw e;
         }
     }
 
     @Async
     public void processStatementAsync(Long statementId) {
+        processStatementAsync(statementId, null, null);
+    }
+
+    /**
+     * @param reservation    the upload()-call-level concurrency slot to release once
+     *                       {@code pagesRemaining} reaches zero; null if this invocation
+     *                       manages its own slot (e.g. startup resume, manual reverify).
+     * @param pagesRemaining count of sibling pages from the same upload() call still processing.
+     */
+    @Async
+    public void processStatementAsync(Long statementId, AtomicInteger reservation, AtomicInteger pagesRemaining) {
         Long userId = null;
+        boolean selfManaged = reservation == null;
         try {
             Statement stmt = statementRepository.findById(statementId)
                     .orElseThrow(() -> new EntityNotFoundException("Statement not found"));
             User user = userRepository.findById(stmt.getUserId())
                     .orElseThrow(() -> new EntityNotFoundException("User not found"));
             userId = user.getId();
-            activeProcessing.computeIfAbsent(userId, k -> new AtomicInteger(0)).incrementAndGet();
+            if (selfManaged) {
+                activeProcessing.computeIfAbsent(userId, k -> new AtomicInteger(0)).incrementAndGet();
+            }
 
             sendProgress(statementId, 10, "Loading image", "preprocessing");
 
@@ -322,9 +347,13 @@ public class StatementService {
             sseRegistry.send(statementId, "error", Map.of("message", msg));
             sseRegistry.completeWithError(statementId, e);
         } finally {
-            if (userId != null) {
-                AtomicInteger counter = activeProcessing.get(userId);
-                if (counter != null) counter.decrementAndGet();
+            if (selfManaged) {
+                if (userId != null) {
+                    AtomicInteger counter = activeProcessing.get(userId);
+                    if (counter != null) counter.decrementAndGet();
+                }
+            } else if (pagesRemaining.decrementAndGet() == 0) {
+                reservation.decrementAndGet();
             }
         }
     }

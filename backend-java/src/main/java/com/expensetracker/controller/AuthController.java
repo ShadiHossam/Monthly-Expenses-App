@@ -38,10 +38,10 @@ public class AuthController {
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest req,
                                                HttpServletRequest httpRequest,
                                                HttpServletResponse httpResponse) {
-        String forwarded = httpRequest.getHeader("X-Forwarded-For");
-        String ip = (forwarded != null && !forwarded.isBlank())
-                ? forwarded.split(",")[0].trim()
-                : httpRequest.getRemoteAddr();
+        // Tomcat's RemoteIpValve (configured in application.yml with trusted-proxies) already
+        // resolves this to the real client IP from X-Forwarded-For. Reading the raw header
+        // here instead would let a client set its own rate-limit bucket via a spoofed XFF.
+        String ip = httpRequest.getRemoteAddr();
         TokenResponse result = authService.login(req, ip);
         setAuthCookie(httpResponse, result.getToken());
         return ResponseEntity.ok(result);

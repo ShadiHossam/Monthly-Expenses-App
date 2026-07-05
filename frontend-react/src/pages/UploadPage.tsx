@@ -11,6 +11,14 @@ function MSIcon({ name, className }: { name: string; className?: string }) {
   return <span className={cn("material-symbols-outlined select-none", className)}>{name}</span>;
 }
 
+const STEP_LABELS: Record<string, string> = {
+  preprocessing: "Preparing",
+  ocr: "Reading document",
+  parsing: "Extracting transactions",
+  verifying: "Checking data",
+  categorizing: "Categorizing",
+};
+
 export default function UploadPage({ onClose }: { onClose?: () => void } = {}) { // eslint-disable-line
   const {
     entries, addFiles, updateEntry, processFile, reset,
@@ -19,6 +27,7 @@ export default function UploadPage({ onClose }: { onClose?: () => void } = {}) {
     overlapWarnings,
     overagePending, setOveragePending,
     categories, setCategories,
+    fileError, clearFileError,
   } = useUploadContext();
 
   const [dragging, setDragging] = useState(false);
@@ -288,7 +297,7 @@ export default function UploadPage({ onClose }: { onClose?: () => void } = {}) {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-ft-on-surface dark:text-ve-on-surface">Statement Upload</h1>
           <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">
-            Upload your latest bank statements to keep your financial dashboard synchronized. We process PDF, CSV, and GIF formats securely.
+            Upload your latest bank statements to keep your financial dashboard synchronized. We accept PDFs or clear photos of your statement.
           </p>
         </div>
       )}
@@ -351,6 +360,17 @@ export default function UploadPage({ onClose }: { onClose?: () => void } = {}) {
         </div>
       )}
 
+      {/* ── Rejected file feedback ── */}
+      {fileError && (
+        <div className="mb-5 flex items-start gap-2 bg-red-50 dark:bg-ve-surface-high border border-red-100 dark:border-ve-error/30 rounded-xl px-4 py-3">
+          <MSIcon name="error" className="text-lg text-red-500 dark:text-ve-error shrink-0" />
+          <p className="text-sm text-red-600 dark:text-ve-error flex-1">{fileError}</p>
+          <button onClick={clearFileError} className="text-red-400 dark:text-ve-error hover:text-red-600 dark:hover:text-ve-on-surface shrink-0">
+            <MSIcon name="close" className="text-lg" />
+          </button>
+        </div>
+      )}
+
       {/* ── Drop zone ── */}
       <div
         onDragEnter={() => !quotaExhausted && setDragging(true)}
@@ -379,7 +399,7 @@ export default function UploadPage({ onClose }: { onClose?: () => void } = {}) {
               <MSIcon name="cloud_upload" className="text-4xl text-ft-on-surface-variant dark:text-ve-on-surface-variant" />
             </div>
             <p className="text-base font-bold text-ft-on-surface dark:text-ve-on-surface mb-1">Drag &amp; Drop Documents</p>
-            <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mb-4">Upload your monthly statements to automatically reconcile transactions. Supported formats: .pdf, .csv, .xls</p>
+            <p className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant mb-4">Upload your monthly statements to automatically reconcile transactions. Supported: PDF or photo (.pdf, .jpg, .png)</p>
             <button className="px-5 py-2.5 bg-ft-primary dark:bg-ve-primary-dim text-white dark:text-ve-background text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity">
               Browse Files
             </button>
@@ -484,7 +504,7 @@ function FileCard({ entry, onRetry }: { entry: FileEntry; onRetry?: () => void }
                   isDone ? "text-ft-primary dark:text-ve-primary" : isActive ? "text-ft-on-surface dark:text-ve-on-surface font-medium" : "text-ft-outline dark:text-ve-outline"
                 )}>
                   {isDone ? "✓" : isActive ? <span className="inline-block w-2 h-2 border border-ft-primary dark:border-ve-primary border-t-transparent rounded-full animate-spin" /> : "○"}
-                  <span className="capitalize">{step === "ocr" ? "OCR" : step}</span>
+                  <span>{STEP_LABELS[step] ?? step}</span>
                 </div>
               );
             })}

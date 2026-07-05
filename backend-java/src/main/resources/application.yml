@@ -44,6 +44,11 @@ app:
   jwt:
     secret: ${SECRET_KEY}
     expiry-days: 30
+  encryption:
+    # Dedicated key for encrypting stored Gmail refresh tokens / user AI API keys.
+    # Falls back to SECRET_KEY so existing deployments keep working, but a leaked
+    # JWT secret would then also decrypt those columns — set ENCRYPTION_KEY separately.
+    secret: ${ENCRYPTION_KEY:${SECRET_KEY}}
   cors:
     origins: ${CORS_ORIGINS:http://localhost:5173}
   upload:

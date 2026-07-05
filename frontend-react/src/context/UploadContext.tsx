@@ -54,6 +54,8 @@ interface UploadContextType {
   setOveragePending: React.Dispatch<React.SetStateAction<OveragePending | null>>;
   categories: Category[];
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  fileError: string | null;
+  clearFileError: () => void;
 }
 
 const UploadContext = createContext<UploadContextType | null>(null);
@@ -79,8 +81,10 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
   const [overagePending, setOveragePending] = useState<OveragePending | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [notifications, setNotifications] = useState<UploadNotification[]>([]);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const clearNotifications = useCallback(() => setNotifications([]), []);
+  const clearFileError = useCallback(() => setFileError(null), []);
 
   const processingRef = useRef(false);
   const abortControllersRef = useRef<AbortController[]>([]);
@@ -184,9 +188,17 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
   }, [processFile]);
 
   const addFiles = useCallback((files: File[]) => {
-    const images = files.filter(f => f.type.startsWith("image/") || f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf"));
-    if (!images.length) return;
-    const newEntries: FileEntry[] = images.map(f => ({ file: f, id: `${f.name}-${Date.now()}-${Math.random()}`, status: "queued" }));
+    const accepted = files.filter(f => f.type.startsWith("image/") || f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf"));
+    const rejected = files.filter(f => !accepted.includes(f));
+    if (rejected.length > 0) {
+      setFileError(rejected.length === 1
+        ? `"${rejected[0].name}" isn't a supported file. Please upload a PDF or a photo of your statement.`
+        : `${rejected.length} files weren't supported. Please upload a PDF or a photo of your statement.`);
+    } else {
+      setFileError(null);
+    }
+    if (!accepted.length) return;
+    const newEntries: FileEntry[] = accepted.map(f => ({ file: f, id: `${f.name}-${Date.now()}-${Math.random()}`, status: "queued" }));
     setEntries(prev => { const updated = [...prev, ...newEntries]; if (!processingRef.current) setTimeout(() => runQueue(newEntries), 0); return updated; });
   }, [runQueue]);
 
@@ -214,6 +226,7 @@ export function UploadProvider({ children }: { children: React.ReactNode }) {
       overlapWarnings, setOverlapWarnings,
       overagePending, setOveragePending,
       categories, setCategories,
+      fileError, clearFileError,
     }}>
       {children}
     </UploadContext.Provider>
