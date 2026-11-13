@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, Pressable, ScrollView, TextInput,
-  Switch, Alert, ActivityIndicator, Modal as RNModal,
+  Switch, Alert, ActivityIndicator, Modal as RNModal, RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../../lib/api';
@@ -45,15 +45,22 @@ export default function BudgetScreen() {
   const [editSaving, setEditSaving] = useState(false);
   const [alertsDismissed, setAlertsDismissed] = useState(false);
   const [showCatModal, setShowCatModal] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const isCurrentMonth = selectedYear === now.getFullYear() && selectedMonth === now.getMonth() + 1;
 
-  useEffect(() => {
+  function load() {
     setLoading(true);
+    setLoadError(false);
     Promise.all([loadBudgets(selectedYear, selectedMonth), api.listCategories()])
       .then(([bl, cats]) => { setBudgets(bl); setCategories(Array.isArray(cats) ? cats : []); })
-      .catch(() => {})
+      .catch(() => setLoadError(true))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedYear, selectedMonth]);
 
   function goPrevMonth() {
@@ -72,7 +79,9 @@ export default function BudgetScreen() {
     try {
       await api.updateBudget(budget.id, { enabled: !budget.enabled });
       setBudgets(prev => prev.map(b => b.id === budget.id ? { ...b, enabled: !b.enabled } : b));
-    } catch {} finally { setTogglingId(null); }
+    } catch (err: any) {
+      Alert.alert('Couldn’t update budget', err.message || 'Please try again.');
+    } finally { setTogglingId(null); }
   }
 
   async function handleDelete(id: number, name: string) {
@@ -83,7 +92,9 @@ export default function BudgetScreen() {
         try {
           await api.deleteBudget(id);
           setBudgets(prev => prev.filter(b => b.id !== id));
-        } catch {} finally { setDeletingId(null); }
+        } catch (err: any) {
+          Alert.alert('Couldn’t remove budget', err.message || 'Please try again.');
+        } finally { setDeletingId(null); }
       }},
     ]);
   }
@@ -98,7 +109,9 @@ export default function BudgetScreen() {
       const fresh = await loadBudgets(selectedYear, selectedMonth);
       setBudgets(fresh);
       setShowForm(false); setFormCategoryId(''); setFormLimit('');
-    } catch {} finally { setSaving(false); }
+    } catch (err: any) {
+      Alert.alert('Couldn’t create budget', err.message || 'Please try again.');
+    } finally { setSaving(false); }
   }
 
   async function handleEditSave(budget: BudgetStatus) {
@@ -113,7 +126,9 @@ export default function BudgetScreen() {
       await Promise.all(tasks);
       const fresh = await loadBudgets(selectedYear, selectedMonth);
       setBudgets(fresh); setEditingId(null);
-    } catch {} finally { setEditSaving(false); }
+    } catch (err: any) {
+      Alert.alert('Couldn’t save changes', err.message || 'Please try again.');
+    } finally { setEditSaving(false); }
   }
 
   const usedCategoryIds = new Set(budgets.map(b => b.category_id));
@@ -124,7 +139,10 @@ export default function BudgetScreen() {
 
   return (
     <View className="flex-1 bg-ft-background dark:bg-ve-background">
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 100, paddingHorizontal: 16 }}>
+      <ScrollView
+        contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 100, paddingHorizontal: 16 }}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={load} tintColor={isDark ? DARK.primary : LIGHT.primary} />}
+      >
         {/* Header */}
         <View className="flex-row items-start justify-between mb-4">
           <View>
@@ -228,7 +246,14 @@ export default function BudgetScreen() {
         )}
 
         {/* Budget list */}
-        {loading && budgets.length === 0 ? <Spinner fullScreen /> : budgets.length === 0 ? (
+        {loading && budgets.length === 0 ? <Spinner fullScreen /> : loadError ? (
+          <EmptyState
+            icon="wifi_off"
+            title="Couldn't load your budgets"
+            subtitle="Check your connection and try again."
+            action={{ label: 'Retry', onPress: load }}
+          />
+        ) : budgets.length === 0 ? (
           <EmptyState
             icon="account_balance_wallet"
             title="No budgets set up yet"

@@ -24,7 +24,12 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  } catch {
+    throw new Error('No internet connection. Please check your network and try again.');
+  }
 
   if (res.status === 401) {
     await storage.deleteToken();

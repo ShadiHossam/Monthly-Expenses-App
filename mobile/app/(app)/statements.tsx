@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView, Alert, ActivityIndicator, Modal as RNModal } from 'react-native';
+import { View, Text, Pressable, ScrollView, Alert, ActivityIndicator, Modal as RNModal, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../../lib/api';
 import { formatAED } from '../../lib/utils';
@@ -38,14 +38,22 @@ export default function StatementsScreen() {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [errorStatement, setErrorStatement] = useState<Statement | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const inactiveColor = isDark ? DARK.onSurfaceVariant : LIGHT.onSurfaceVariant;
 
-  useEffect(() => {
-    api.listStatements()
+  function load() {
+    return api.listStatements()
       .then(data => setStatements(Array.isArray(data) ? data : []))
       .catch(() => setStatements([]))
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => { setLoading(false); setRefreshing(false); });
+  }
+
+  useEffect(() => { load(); }, []);
+
+  function onRefresh() {
+    setRefreshing(true);
+    load();
+  }
 
   async function handleDelete(id: number, filename: string) {
     Alert.alert('Delete statement?', `Delete "${filename}"? This will also remove all associated transactions.`, [
@@ -56,7 +64,9 @@ export default function StatementsScreen() {
           await api.deleteStatement(id);
           setStatements(prev => prev.filter(s => s.id !== id));
           setSelectedIds(prev => { const next = new Set(prev); next.delete(id); return next; });
-        } catch {} finally { setDeletingId(null); }
+        } catch (err: any) {
+          Alert.alert('Couldn’t delete statement', err.message || 'Please try again.');
+        } finally { setDeletingId(null); }
       }},
     ]);
   }
@@ -68,10 +78,15 @@ export default function StatementsScreen() {
       { text: 'Delete', style: 'destructive', onPress: async () => {
         setBulkDeleting(true);
         try {
-          await Promise.all(ids.map(id => api.deleteStatement(id)));
-          setStatements(prev => prev.filter(s => !selectedIds.has(s.id)));
-          setSelectedIds(new Set());
-        } catch {} finally { setBulkDeleting(false); }
+          const results = await Promise.allSettled(ids.map(id => api.deleteStatement(id)));
+          const succeeded = new Set(ids.filter((_, i) => results[i].status === 'fulfilled'));
+          setStatements(prev => prev.filter(s => !succeeded.has(s.id)));
+          setSelectedIds(prev => { const next = new Set(prev); succeeded.forEach(id => next.delete(id)); return next; });
+          const failedCount = results.filter(r => r.status === 'rejected').length;
+          if (failedCount > 0) {
+            Alert.alert('Some deletes failed', `${failedCount} statement${failedCount !== 1 ? 's' : ''} could not be deleted — please try again.`);
+          }
+        } finally { setBulkDeleting(false); }
       }},
     ]);
   }
@@ -81,7 +96,9 @@ export default function StatementsScreen() {
     try {
       const updated = await api.reverifyStatement(id);
       setStatements(prev => prev.map(s => s.id === id ? { ...s, verify_status: updated.verify_status } : s));
-    } catch {} finally { setRetryingId(null); }
+    } catch (err: any) {
+      Alert.alert('Couldn’t retry statement', err.message || 'Please try again.');
+    } finally { setRetryingId(null); }
   }
 
   async function handleRetryAll() {
@@ -109,7 +126,10 @@ export default function StatementsScreen() {
 
   return (
     <View className="flex-1 bg-ft-background dark:bg-ve-background">
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 100, paddingHorizontal: 16 }}>
+      <ScrollView
+        contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 100, paddingHorizontal: 16 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={isDark ? DARK.primary : LIGHT.primary} />}
+      >
         <View className="flex-row items-start justify-between mb-4 gap-3 flex-wrap">
           <View>
             <Text className="text-2xl font-bold text-ft-on-surface dark:text-ve-on-surface">Statements</Text>
@@ -212,14 +232,14 @@ export default function StatementsScreen() {
                     </View>
                     <View className="flex-row items-center gap-2 shrink-0">
                       {isStuck && (
-                        <Pressable onPress={() => handleRetry(stmt.id)} disabled={retryingId === stmt.id}>
+                        <Pressable onPress={() => handleRetry(stmt.id)} disabled={retryingId === stmt.id} hitSlop={12}>
                           {retryingId === stmt.id
                             ? <ActivityIndicator size="small" color="#f59e0b" />
                             : <MSIcon name="replay" size={20} color="#f59e0b" />
                           }
                         </Pressable>
                       )}
-                      <Pressable onPress={() => handleDelete(stmt.id, stmt.filename ?? '')} disabled={deletingId === stmt.id}>
+                      <Pressable onPress={() => handleDelete(stmt.id, stmt.filename ?? '')} disabled={deletingId === stmt.id} hitSlop={12}>
                         {deletingId === stmt.id
                           ? <ActivityIndicator size="small" color="#ef4444" />
                           : <MSIcon name="delete" size={20} color={inactiveColor} />

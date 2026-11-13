@@ -7,7 +7,7 @@ import { Link } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 
 export default function RegisterScreen() {
-  const { login } = useAuth();
+  const { setSession } = useAuth();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,10 +21,7 @@ export default function RegisterScreen() {
     try {
       const { api } = await import('../../lib/api');
       const res = await api.register(username.trim(), password, email.trim() || undefined);
-      const { storage } = await import('../../lib/storage');
-      await storage.setToken(res.token);
-      // login() will re-call me() and set user
-      await login(username.trim(), password);
+      await setSession(res.token, res.user);
     } catch (err: any) {
       setError(err.message || 'Registration failed');
     } finally {
@@ -95,9 +92,11 @@ export default function RegisterScreen() {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
+                autoComplete="password-new"
                 placeholder="Choose a password"
                 placeholderTextColor="#6f7a6d"
               />
+              <Text className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">At least 8 characters.</Text>
             </View>
 
             <Pressable

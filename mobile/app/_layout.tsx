@@ -1,6 +1,6 @@
 import '../global.css';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { useRouter, useSegments, Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { UploadProvider } from '../context/UploadContext';
 import { UploadProgressBadge } from '../components/layout/UploadProgressBadge';
 import { UploadDoneToasts } from '../components/layout/UploadDoneToasts';
+import { LIGHT, DARK } from '../constants/colors';
 
 function RootNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -26,6 +27,15 @@ function RootNavigator() {
       router.replace('/(app)/(tabs)/');
     }
   }, [isAuthenticated, isLoading, segments]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: isDark ? DARK.background : LIGHT.background }}>
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <ActivityIndicator size="large" color={isDark ? DARK.primary : LIGHT.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>

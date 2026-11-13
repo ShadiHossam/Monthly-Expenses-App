@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   View, Text, Pressable, SectionList, TextInput,
-  Alert, ScrollView, Modal as RNModal, ActivityIndicator,
+  Alert, ScrollView, Modal as RNModal, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../../../lib/api';
@@ -33,6 +33,7 @@ export default function TransactionsScreen() {
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterType, setFilterType] = useState<'' | 'debit' | 'credit'>('');
   const [filterCat, setFilterCat] = useState<number | ''>('');
   const [sortBy, setSortBy] = useState<SortBy>('date');
@@ -40,6 +41,8 @@ export default function TransactionsScreen() {
   const [txns, setTxns] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [editingCatTxnId, setEditingCatTxnId] = useState<number | null>(null);
   const [showCatPicker, setShowCatPicker] = useState(false);
   const [addingNewCat, setAddingNewCat] = useState(false);
@@ -78,19 +81,25 @@ export default function TransactionsScreen() {
   }
 
   useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
     if (period === 'custom' && (!customFrom || !customTo)) return;
     setLoading(true);
     const { from, to } = getRange();
     const params: any = { limit: 500 };
-    if (search) params.search = search;
+    if (debouncedSearch) params.search = debouncedSearch;
     if (filterType) params.type = filterType;
     if (filterCat) params.category_id = filterCat;
     if (from) params.from = from;
     if (to) params.to = to;
     let autoSwitched = false;
+    setLoadError(false);
     api.listTransactions(params).then(t => {
       const items = (t as any)?.content ?? [];
-      if (period === 'month' && monthOffset === 0 && !search && !filterType && !filterCat && items.length === 0 && !hasAutoSwitchedTxns) {
+      if (period === 'month' && monthOffset === 0 && !debouncedSearch && !filterType && !filterCat && items.length === 0 && !hasAutoSwitchedTxns) {
         hasAutoSwitchedTxns = true;
         autoSwitched = true;
         setPeriod('');
@@ -98,8 +107,9 @@ export default function TransactionsScreen() {
         return;
       }
       setTxns(items);
-    }).finally(() => { if (!autoSwitched) setLoading(false); });
-  }, [search, filterType, filterCat, period, monthOffset, quarterOffset, yearOffset, customFrom, customTo]);
+    }).catch(() => { setTxns([]); setLoadError(true); })
+      .finally(() => { if (!autoSwitched) setLoading(false); });
+  }, [debouncedSearch, filterType, filterCat, period, monthOffset, quarterOffset, yearOffset, customFrom, customTo, refreshKey]);
 
   const catMap = Object.fromEntries(categories.map(c => [c.id, c]));
 
@@ -131,13 +141,17 @@ export default function TransactionsScreen() {
 
   async function handleCategoryChange(txnId: number, categoryId: number) {
     const txn = txns.find(t => t.id === txnId);
-    await api.setCategory(txnId, categoryId);
-    setTxns(prev => prev.map(t => t.id === txnId ? { ...t, category_id: categoryId } : t));
     setEditingCatTxnId(null);
     setShowCatPicker(false);
-    if (txn?.merchant_name) {
-      const cat = categories.find(c => c.id === categoryId);
-      setMerchantRulePrompt({ merchantName: txn.merchant_name, categoryId, categoryName: cat?.name ?? '' });
+    try {
+      await api.setCategory(txnId, categoryId);
+      setTxns(prev => prev.map(t => t.id === txnId ? { ...t, category_id: categoryId } : t));
+      if (txn?.merchant_name) {
+        const cat = categories.find(c => c.id === categoryId);
+        setMerchantRulePrompt({ merchantName: txn.merchant_name, categoryId, categoryName: cat?.name ?? '' });
+      }
+    } catch (err: any) {
+      Alert.alert('Couldn’t update category', err.message || 'Please try again.');
     }
   }
 
@@ -245,13 +259,16 @@ export default function TransactionsScreen() {
       </View>
 
       {/* List */}
-      {loading ? <Spinner fullScreen /> : txns.length === 0 ? (
+      {loading ? <Spinner fullScreen /> : loadError ? (
+        <EmptyState icon="wifi_off" title="Couldn't load transactions" subtitle="Check your connection and try again." />
+      ) : txns.length === 0 ? (
         <EmptyState icon="receipt_long" title="No transactions found" subtitle="Try adjusting your filters." />
       ) : (
         <SectionList
           sections={sections}
           keyExtractor={item => String(item.id)}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
+          refreshControl={<RefreshControl refreshing={false} onRefresh={() => setRefreshKey(k => k + 1)} tintColor={isDark ? DARK.primary : LIGHT.primary} />}
           renderSectionHeader={({ section }) => section.title ? (
             <View className="flex-row items-center justify-between px-1 py-2 bg-ft-background dark:bg-ve-background">
               <Text className="text-xs font-bold uppercase tracking-wider text-ft-on-surface-variant dark:text-ve-on-surface-variant">
@@ -317,7 +334,7 @@ export default function TransactionsScreen() {
                   </Text>
                   <Pressable
                     onPress={() => handleDeleteTransaction(t.id)}
-                    hitSlop={8}
+                    hitSlop={12}
                   >
                     {deletingId === t.id
                       ? <ActivityIndicator size="small" color="#ef4444" />

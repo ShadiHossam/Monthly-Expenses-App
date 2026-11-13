@@ -1,0 +1,133 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { SITE } from "../../config/site";
+
+const faqs = [
+  { q: "Does Goodbudget connect to my bank account?", a: "No — and this is true even on its paid tier. Goodbudget is built entirely around manual entry or CSV import; it has never offered automatic bank sync, in the UAE or anywhere else. FinTrack's core feature is the opposite: upload a PDF statement and skip manual entry entirely." },
+  { q: "Is Goodbudget's envelope method better than Safe-to-Spend?", a: "They solve budgeting differently. Envelope budgeting asks you to pre-allocate every dirham into categories before spending. FinTrack's Safe-to-Spend gives you one number after bills and goals are accounted for, without requiring you to maintain envelope balances by hand." },
+  { q: "How much does Goodbudget cost versus FinTrack?", a: "Goodbudget's free plan caps you at 10 envelopes and 2 devices; unlocking unlimited envelopes and more devices requires Goodbudget Plus at roughly $8/month or $70/year, billed in USD. FinTrack's Free plan has no envelope limit, and Premium is a flat AED 36/month." },
+];
+
+const ldJson = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map(item => ({
+    "@type": "Question",
+    "name": item.q,
+    "acceptedAnswer": { "@type": "Answer", "text": item.a }
+  }))
+};
+
+const breadcrumbs = [
+  { name: "Home", url: "/" },
+  { name: "Compare", url: "/compare" },
+  { name: "FinTrack vs Goodbudget", url: "/compare/goodbudget" },
+];
+---
+
+<BaseLayout
+  title="FinTrack vs Goodbudget — UAE Comparison"
+  description="Goodbudget has no bank sync at all, even on paid plans — everything is manual entry. Compare FinTrack vs Goodbudget on statement import, automation, and pricing."
+  canonicalPath="/compare/goodbudget"
+  ldJson={ldJson}
+  breadcrumbs={breadcrumbs}
+>
+
+<div class="page-hero" style="padding-top:9rem;padding-bottom:5rem;">
+  <div class="container" style="position:relative;z-index:1;">
+    <span class="badge badge-green" style="margin-bottom:1.25rem;background:rgba(16,185,129,0.15);color:var(--green-400);border-color:rgba(16,185,129,0.25);">Comparison</span>
+    <h1 style="color:#ffffff;margin-bottom:1rem;">FinTrack vs Goodbudget.</h1>
+    <p style="color:rgba(255,255,255,0.55);font-size:1.0625rem;max-width:600px;margin:0 auto;">
+      Goodbudget is a digital take on the classic cash-envelope system — and by design, it has no automatic bank connection anywhere, UAE included. Every transaction is typed in by hand. Here's the side-by-side.
+    </p>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="compare-wrap overflow-x-auto" style="max-width:900px;margin:0 auto;">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;min-width:220px;">Feature</th>
+            <th style="text-align:center;color:var(--green-700);">FinTrack</th>
+            <th style="text-align:center;color:var(--text-muted);">Goodbudget</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="font-weight:600;">UAE bank statement OCR</td><td class="check-yes">✓</td><td class="check-no">✗</td></tr>
+          <tr><td style="font-weight:600;">Any automatic bank sync (any country)</td><td class="check-yes">✓</td><td class="check-no">✗ Manual entry only</td></tr>
+          <tr><td style="font-weight:600;">Envelope-style category budgeting</td><td class="check-partial">Via categories</td><td class="check-yes">✓ Core feature</td></tr>
+          <tr><td style="font-weight:600;">Safe-to-Spend daily number</td><td class="check-yes">✓</td><td class="check-no">✗</td></tr>
+          <tr><td style="font-weight:600;">Shared household budgets</td><td class="check-yes">✓</td><td class="check-yes">✓</td></tr>
+          <tr><td style="font-weight:600;">Free plan available</td><td class="check-yes">✓</td><td class="check-partial">10 envelopes, 2 devices</td></tr>
+          <tr><td style="font-weight:600;">Starting price</td><td style="text-align:center;color:var(--green-700);font-weight:700;">Free</td><td style="text-align:center;color:var(--text-muted);font-weight:600;">~$8/mo for Plus</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--green-50);">
+  <div class="container" style="max-width:820px;">
+    <div class="section-header">
+      <span class="section-eyebrow">Why UAE Users Choose FinTrack</span>
+      <h2>Envelope Discipline, Without the Typing.</h2>
+    </div>
+    <div class="bento-grid bento-grid-3">
+      <div class="card">
+        <h3 style="margin-bottom:.5rem;">Zero manual entry</h3>
+        <p style="color:var(--text-muted);font-size:.9375rem;line-height:1.75;margin:0;">Goodbudget asks you to log every transaction by hand, forever. FinTrack's AI reads your statement and does that work for you.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:.5rem;">UAE merchant intelligence</h3>
+        <p style="color:var(--text-muted);font-size:.9375rem;line-height:1.75;margin:0;">FinTrack recognizes Carrefour, Noon, Talabat, Salik, and DEWA automatically — categories you'd otherwise have to create and file into manually.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:.5rem;">No envelope cap on Free</h3>
+        <p style="color:var(--text-muted);font-size:.9375rem;line-height:1.75;margin:0;">Goodbudget's free tier stops at 10 envelopes. FinTrack's Free plan covers unlimited categories and the full Safe-to-Spend dashboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <span class="section-eyebrow">FAQ</span>
+      <h2>FinTrack vs Goodbudget — Common Questions</h2>
+    </div>
+    <div style="border-top:1px solid var(--border);">
+      {faqs.map(item => (
+        <div class="faq-item">
+          <button class="faq-btn">
+            {item.q}
+            <span class="faq-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--green-700)" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </span>
+          </button>
+          <div class="faq-body">{item.a}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section-sm" style="background:var(--green-50);padding-bottom:5rem;">
+  <div class="container">
+    <div class="cta-band" style="max-width:760px;margin:0 auto;">
+      <div style="position:relative;z-index:1;">
+        <h2 style="color:#ffffff;font-size:clamp(1.75rem,3.5vw,2.5rem);margin-bottom:1rem;">Budget Without the Data Entry.</h2>
+        <p style="color:rgba(255,255,255,0.55);margin-bottom:2rem;max-width:420px;margin-left:auto;margin-right:auto;">
+          Free to start, no credit card, and it reads your UAE bank statement in seconds.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+          <a href={SITE.appUrl + '/register'} class="btn-primary" style="background:var(--green-500);color:var(--green-950);">Start Free</a>
+          <a href="/compare" class="btn-outline" style="border-color:rgba(255,255,255,0.25);color:rgba(255,255,255,0.75);background:transparent;">See All Comparisons</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>

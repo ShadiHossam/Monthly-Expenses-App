@@ -4,14 +4,14 @@ import { SITE } from "../../config/site";
 
 export function getStaticPaths() {
   const banks = [
-    { slug: "rakbank", name: "RAKBank" },
-    { slug: "dib", name: "Dubai Islamic Bank (DIB)" },
-    { slug: "hsbc-uae", name: "HSBC UAE" },
-    { slug: "cbd", name: "Commercial Bank of Dubai (CBD)" },
-    { slug: "adib", name: "Abu Dhabi Islamic Bank (ADIB)" },
-    { slug: "emirates-islamic", name: "Emirates Islamic" },
-    { slug: "ajman-bank", name: "Ajman Bank" },
-    { slug: "bank-of-sharjah", name: "Bank of Sharjah" },
+    { slug: "rakbank", name: "RAKBank", about: "RAKBank — officially the National Bank of Ras Al Khaimah — was established in 1976 and has built its reputation on SME lending and retail banking rather than large corporate accounts. That retail focus means a high proportion of RAKBank statements are personal current and savings accounts, which is exactly the transaction pattern FinTrack's categorization is tuned for." },
+    { slug: "dib", name: "Dubai Islamic Bank (DIB)", about: "Founded in 1975, Dubai Islamic Bank was the world's first full-service Islamic bank. Its statements describe profit distributions and Sharia-compliant finance products rather than conventional interest — when you upload a DIB statement, FinTrack still maps salary deposits, profit payouts, and bill debits to the same clear categories as any conventional account." },
+    { slug: "hsbc-uae", name: "HSBC UAE", about: "HSBC has operated in the UAE since the 1940s, tracing back to the British Bank of the Middle East, and today runs as part of the global HSBC Group. Its UAE statements often mix AED transactions with occasional foreign-currency entries — useful context if you're an expat comparing spending across currencies inside FinTrack." },
+    { slug: "cbd", name: "Commercial Bank of Dubai (CBD)", about: "Commercial Bank of Dubai was established in 1969 and has grown into a mid-sized UAE bank with a strong retail and SME presence across Dubai. As a bank most commonly used for day-to-day personal and small-business accounts, CBD statements tend to be transaction-dense — a good fit for FinTrack's line-by-line auto-categorization." },
+    { slug: "adib", name: "Abu Dhabi Islamic Bank (ADIB)", about: "Abu Dhabi Islamic Bank was founded in 1997 and is now one of the UAE's largest Sharia-compliant banks. Like other Islamic banks, ADIB statements use profit-sharing and Murabaha/Ijara terminology instead of interest — FinTrack still recognizes salary credits, recurring bills, and merchant spending on these statements the same way it would on a conventional account." },
+    { slug: "emirates-islamic", name: "Emirates Islamic", about: "Emirates Islamic is the Sharia-compliant banking arm of the Emirates NBD group, offering Islamic versions of standard personal banking products. Because it shares infrastructure with Emirates NBD, its PDF statement layout is broadly similar — FinTrack's OCR handles both formats without extra setup." },
+    { slug: "ajman-bank", name: "Ajman Bank", about: "Ajman Bank was established in 2007–2008 as a fully Sharia-compliant bank based in the emirate of Ajman, serving residents across the Northern Emirates. It's a smaller institution than Dubai or Abu Dhabi's major banks, so FinTrack's statement parsing is especially useful for catching every transaction on a shorter monthly history." },
+    { slug: "bank-of-sharjah", name: "Bank of Sharjah", about: "Bank of Sharjah was founded in 1973 and is one of the older banks headquartered in the Northern Emirates, with a mix of corporate and retail banking clients. If you're a Bank of Sharjah customer commuting into Dubai or Abu Dhabi for work, FinTrack's Salik and toll-category detection is particularly useful for tracking that cross-emirate commute cost." },
   ];
   return banks.map(bank => ({ params: { slug: bank.slug }, props: { bank } }));
 }
@@ -58,6 +58,16 @@ const breadcrumbs = [
     </p>
   </div>
 </div>
+
+<section class="section-sm">
+  <div class="container" style="max-width:720px;">
+    <div class="section-header">
+      <span class="section-eyebrow">About {bank.name}</span>
+      <h2 style="font-size:1.375rem;">{bank.name} in the UAE.</h2>
+    </div>
+    <p style="color:var(--text-muted);font-size:.9375rem;line-height:1.8;margin:0;">{bank.about}</p>
+  </div>
+</section>
 
 <section class="section">
   <div class="container" style="max-width:820px;">

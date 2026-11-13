@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Pressable, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, ScrollView, TextInput, Alert, ActivityIndicator, Modal as RNModal, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { api } from '../../lib/api';
 import { MSIcon } from '../../components/ui/MSIcon';
@@ -22,30 +22,51 @@ export default function CategoriesScreen() {
   const [showRuleForm, setShowRuleForm] = useState(false);
   const [rulePattern, setRulePattern] = useState('');
   const [ruleCatId, setRuleCatId] = useState<number | ''>('');
+  const [showRuleCatPicker, setShowRuleCatPicker] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [aiMerchantInput, setAiMerchantInput] = useState('');
   const [aiSuggesting, setAiSuggesting] = useState(false);
   const [aiSuggestionReason, setAiSuggestionReason] = useState('');
   const inactiveColor = isDark ? DARK.onSurfaceVariant : LIGHT.onSurfaceVariant;
 
   async function load() {
-    const [cats, rls] = await Promise.all([api.listCategories(), api.listRules()]);
-    setCategories(Array.isArray(cats) ? cats : []);
-    setRules(Array.isArray(rls) ? rls : []);
-    setLoading(false);
+    try {
+      const [cats, rls] = await Promise.all([api.listCategories(), api.listRules()]);
+      setCategories(Array.isArray(cats) ? cats : []);
+      setRules(Array.isArray(rls) ? rls : []);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }
+
+  function onRefresh() {
+    setRefreshing(true);
+    load();
   }
   useEffect(() => { load(); }, []);
 
   async function addCategory() {
     if (!newName.trim()) return;
-    await api.createCategory(newName.trim(), newColor, newIcon);
-    setNewName(''); setShowAdd(false); setAiMerchantInput(''); setAiSuggestionReason('');
-    load();
+    try {
+      await api.createCategory(newName.trim(), newColor, newIcon);
+      setNewName(''); setShowAdd(false); setAiMerchantInput(''); setAiSuggestionReason('');
+      load();
+    } catch (err: any) {
+      Alert.alert('Couldn’t create category', err.message || 'Please try again.');
+    }
   }
 
   async function deleteCategory(id: number) {
     Alert.alert('Delete category?', 'Transactions will move to Uncategorized.', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: async () => { await api.deleteCategory(id); load(); } },
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+        try {
+          await api.deleteCategory(id); load();
+        } catch (err: any) {
+          Alert.alert('Couldn’t delete category', err.message || 'Please try again.');
+        }
+      } },
     ]);
   }
 
@@ -56,16 +77,28 @@ export default function CategoriesScreen() {
       const res = await api.aiSuggestCategory(aiMerchantInput.trim());
       const s = (res as any).data ?? res;
       setNewName(s.name); setNewColor(s.color || '#10b981'); setAiSuggestionReason(s.reason || '');
+    } catch (err: any) {
+      Alert.alert('AI suggestion failed', err.message || 'Please try again.');
     } finally { setAiSuggesting(false); }
   }
 
   async function addRule() {
     if (!rulePattern.trim() || !ruleCatId) return;
-    await api.createRule({ pattern: rulePattern.trim(), pattern_type: 'contains', category_id: ruleCatId as number, priority: 0 });
-    setRulePattern(''); setRuleCatId(''); setShowRuleForm(false); load();
+    try {
+      await api.createRule({ pattern: rulePattern.trim(), pattern_type: 'contains', category_id: ruleCatId as number, priority: 0 });
+      setRulePattern(''); setRuleCatId(''); setShowRuleForm(false); load();
+    } catch (err: any) {
+      Alert.alert('Couldn’t save rule', err.message || 'Please try again.');
+    }
   }
 
-  async function deleteRule(id: number) { await api.deleteRule(id); load(); }
+  async function deleteRule(id: number) {
+    try {
+      await api.deleteRule(id); load();
+    } catch (err: any) {
+      Alert.alert('Couldn’t delete rule', err.message || 'Please try again.');
+    }
+  }
 
   const inputClass = 'border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2.5 text-sm bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface';
 
@@ -73,6 +106,7 @@ export default function CategoriesScreen() {
     <ScrollView
       className="flex-1 bg-ft-background dark:bg-ve-background"
       contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 100, paddingHorizontal: 16 }}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={isDark ? DARK.primary : LIGHT.primary} />}
     >
       <View className="flex-row items-start justify-between mb-6">
         <View>
@@ -191,7 +225,7 @@ export default function CategoriesScreen() {
                 </Text>
               </View>
               {!cat.is_system && (
-                <Pressable onPress={() => deleteCategory(cat.id)} hitSlop={8}>
+                <Pressable onPress={() => deleteCategory(cat.id)} hitSlop={12}>
                   <MSIcon name="delete" size={18} color={isDark ? DARK.error : '#ef4444'} />
                 </Pressable>
               )}
@@ -216,12 +250,13 @@ export default function CategoriesScreen() {
         <View className="bg-ft-surface dark:bg-ve-surface border border-ft-outline-variant dark:border-ve-outline rounded-2xl p-5 mb-4 gap-3">
           <TextInput className={inputClass} placeholder="Pattern (e.g. Brands for Less)" placeholderTextColor={inactiveColor} value={rulePattern} onChangeText={setRulePattern} />
           <Pressable
-            onPress={() => {}}
-            className="border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2.5 bg-ft-surface-low dark:bg-ve-surface-high"
+            onPress={() => setShowRuleCatPicker(true)}
+            className="flex-row items-center justify-between border border-ft-outline-variant dark:border-ve-outline rounded-xl px-3 py-2.5 bg-ft-surface-low dark:bg-ve-surface-high"
           >
             <Text className={ruleCatId ? 'text-sm text-ft-on-surface dark:text-ve-on-surface' : 'text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant'}>
               {ruleCatId ? categories.find(c => c.id === ruleCatId)?.name : 'Select category…'}
             </Text>
+            <MSIcon name="expand_more" size={18} color={inactiveColor} />
           </Pressable>
           <View className="flex-row gap-2">
             <Pressable onPress={() => setShowRuleForm(false)} className="flex-1 py-2.5 border border-ft-outline-variant dark:border-ve-outline rounded-xl items-center">
@@ -245,7 +280,7 @@ export default function CategoriesScreen() {
                   <Text className="text-sm font-medium text-ft-on-surface dark:text-ve-on-surface">"{rule.pattern}"</Text>
                   <Text className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant mt-0.5">→ {cat?.name ?? 'Unknown'}</Text>
                 </View>
-                <Pressable onPress={() => deleteRule(rule.id)} hitSlop={8}>
+                <Pressable onPress={() => deleteRule(rule.id)} hitSlop={12}>
                   <MSIcon name="close" size={18} color={inactiveColor} />
                 </Pressable>
               </View>
@@ -257,6 +292,31 @@ export default function CategoriesScreen() {
           <Text className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant text-center">No auto-rules yet. Add one to auto-categorize future uploads.</Text>
         </View>
       )}
+      {/* Rule category picker modal */}
+      <RNModal visible={showRuleCatPicker} transparent animationType="slide" onRequestClose={() => setShowRuleCatPicker(false)}>
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} onPress={() => setShowRuleCatPicker(false)} />
+        <View style={{ backgroundColor: isDark ? DARK.surface : LIGHT.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '70%' }}>
+          <View className="flex-row items-center justify-between px-5 pt-5 pb-3 border-b border-ft-outline-variant dark:border-ve-outline">
+            <Text className="font-bold text-ft-on-surface dark:text-ve-on-surface">Select Category</Text>
+            <Pressable onPress={() => setShowRuleCatPicker(false)}>
+              <MSIcon name="close" size={20} color={inactiveColor} />
+            </Pressable>
+          </View>
+          <ScrollView>
+            {categories.map(c => (
+              <Pressable
+                key={c.id}
+                onPress={() => { setRuleCatId(c.id); setShowRuleCatPicker(false); }}
+                className="flex-row items-center gap-3 px-5 py-3 border-b border-ft-outline-variant dark:border-ve-outline"
+              >
+                <MSIcon name={c.icon || 'label'} size={18} color={c.color} />
+                <Text className="flex-1 text-sm text-ft-on-surface dark:text-ve-on-surface">{c.name}</Text>
+                {ruleCatId === c.id && <MSIcon name="check" size={16} color={isDark ? DARK.primary : LIGHT.primary} />}
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      </RNModal>
     </ScrollView>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  ScrollView, View, Text, Pressable, FlatList,
-  Modal as RNModal, Alert, ActivityIndicator,
+  ScrollView, View, Text, Pressable, FlatList, TextInput,
+  Modal as RNModal, Alert, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -44,8 +44,37 @@ export default function DashboardScreen() {
   const [recent, setRecent] = useState<Transaction[]>([]);
   const [places, setPlaces] = useState<FrequentPlace[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [autoSwitchedBanner, setAutoSwitchedBanner] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const [showAskAI, setShowAskAI] = useState(false);
+  const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([]);
+  const [aiInput, setAiInput] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiUpgradeRequired, setAiUpgradeRequired] = useState(false);
+
+  async function sendAiQuestion(question: string) {
+    if (!question.trim() || aiLoading) return;
+    const q = question.trim();
+    setAiInput('');
+    setAiMessages(prev => [...prev, { role: 'user', text: q }]);
+    setAiLoading(true);
+    try {
+      const { from, to } = getRange();
+      const res = await api.askAI(q, from, to);
+      setAiMessages(prev => [...prev, { role: 'ai', text: (res as any)?.data?.answer ?? (res as any)?.answer ?? 'No response' }]);
+    } catch (err: any) {
+      const msg = (err?.message ?? '').toLowerCase();
+      if (msg.includes('403') || msg.includes('forbidden') || msg.includes('plan') || msg.includes('upgrade')) {
+        setAiUpgradeRequired(true);
+      } else {
+        setAiMessages(prev => [...prev, { role: 'ai', text: 'Something went wrong. Please try again.' }]);
+      }
+    } finally {
+      setAiLoading(false);
+    }
+  }
 
   function getRange(): { from: string; to: string } {
     if (period === 'custom') return { from: customFrom, to: customTo };
@@ -101,6 +130,7 @@ export default function DashboardScreen() {
   useEffect(() => {
     if (period === 'custom' && (!customFrom || !customTo)) return;
     setLoading(true);
+    setLoadError(false);
     const { from, to } = getRange();
     let autoSwitched = false;
     Promise.all([
@@ -121,7 +151,7 @@ export default function DashboardScreen() {
       setBreakdown(Array.isArray(b) ? b : []);
       setRecent((t as any)?.content ?? []);
       setPlaces((Array.isArray(p) ? p : []).slice(0, 4));
-    }).catch(console.error).finally(() => { if (!autoSwitched) setLoading(false); });
+    }).catch(() => setLoadError(true)).finally(() => { if (!autoSwitched) setLoading(false); });
   }, [period, monthOffset, quarterOffset, yearOffset, customFrom, customTo, refreshKey]);
 
   const savingsRate = (summary?.total_credits ?? 0) > 0
@@ -138,6 +168,7 @@ export default function DashboardScreen() {
     <View className="flex-1 bg-ft-background dark:bg-ve-background">
       <ScrollView
         contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 120, paddingHorizontal: 16 }}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={() => setRefreshKey(k => k + 1)} tintColor={isDark ? DARK.primary : LIGHT.primary} />}
       >
         {/* Period tabs */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
@@ -193,6 +224,13 @@ export default function DashboardScreen() {
 
         {loading ? (
           <Spinner fullScreen />
+        ) : loadError ? (
+          <EmptyState
+            icon="wifi_off"
+            title="Couldn't load your dashboard"
+            subtitle="Check your connection and try again."
+            action={{ label: 'Retry', onPress: () => setRefreshKey(k => k + 1) }}
+          />
         ) : !hasData ? (
           <EmptyState
             icon="account_balance"
@@ -376,7 +414,7 @@ export default function DashboardScreen() {
 
       {/* Ask AI FAB */}
       <Pressable
-        onPress={() => Alert.alert('Ask AI', 'AI chat coming soon')}
+        onPress={() => setShowAskAI(true)}
         style={[
           {
             position: 'absolute',
@@ -458,6 +496,74 @@ export default function DashboardScreen() {
             </View>
           </Pressable>
         </Pressable>
+      </RNModal>
+
+      {/* Ask AI modal */}
+      <RNModal visible={showAskAI} transparent animationType="slide" onRequestClose={() => setShowAskAI(false)}>
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} onPress={() => setShowAskAI(false)} />
+        <View style={{ backgroundColor: isDark ? DARK.surface : LIGHT.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '75%', paddingBottom: insets.bottom + 12 }}>
+          <View className="flex-row items-center justify-between px-5 pt-5 pb-3 border-b border-ft-outline-variant dark:border-ve-outline">
+            <View>
+              <Text className="font-bold text-ft-on-surface dark:text-ve-on-surface">Ask AI</Text>
+              <Text className="text-xs text-ft-on-surface-variant dark:text-ve-on-surface-variant">Ask anything about your finances</Text>
+            </View>
+            <Pressable onPress={() => setShowAskAI(false)}>
+              <MSIcon name="close" size={20} color={inactiveColor} />
+            </Pressable>
+          </View>
+
+          <ScrollView style={{ paddingHorizontal: 16, paddingTop: 12 }}>
+            {aiUpgradeRequired ? (
+              <View className="items-center py-8 gap-2">
+                <Text style={{ fontSize: 32 }}>⭐</Text>
+                <Text className="font-semibold text-ft-on-surface dark:text-ve-on-surface">AI chat requires Solo or higher</Text>
+                <Text className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant text-center">Upgrade your plan to chat with AI about your spending.</Text>
+              </View>
+            ) : (
+              <>
+                {aiMessages.length === 0 && (
+                  <Text className="text-sm text-ft-on-surface-variant dark:text-ve-on-surface-variant text-center py-4">
+                    Try "Where am I spending the most?" or "What's my savings rate?"
+                  </Text>
+                )}
+                {aiMessages.map((m, i) => (
+                  <View key={i} style={{ alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%', marginBottom: 10 }}>
+                    <View style={{
+                      borderRadius: 16, paddingHorizontal: 14, paddingVertical: 10,
+                      backgroundColor: m.role === 'user' ? (isDark ? DARK.primaryDim : LIGHT.primary) : (isDark ? DARK.surfaceHigh : LIGHT.surfaceLow),
+                    }}>
+                      <Text style={{ fontSize: 13, lineHeight: 18, color: m.role === 'user' ? (isDark ? DARK.background : 'white') : (isDark ? DARK.onSurface : LIGHT.onSurface) }}>
+                        {m.text}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+                {aiLoading && <ActivityIndicator size="small" color={isDark ? DARK.primary : LIGHT.primary} style={{ marginVertical: 8 }} />}
+              </>
+            )}
+          </ScrollView>
+
+          {!aiUpgradeRequired && (
+            <View className="flex-row items-center gap-2 px-4 pt-3">
+              <TextInput
+                value={aiInput}
+                onChangeText={setAiInput}
+                placeholder="Ask about your spending…"
+                placeholderTextColor={inactiveColor}
+                editable={!aiLoading}
+                onSubmitEditing={() => sendAiQuestion(aiInput)}
+                className="flex-1 border border-ft-outline-variant dark:border-ve-outline rounded-xl px-4 py-3 text-sm bg-ft-surface-low dark:bg-ve-surface-high text-ft-on-surface dark:text-ve-on-surface"
+              />
+              <Pressable
+                onPress={() => sendAiQuestion(aiInput)}
+                disabled={!aiInput.trim() || aiLoading}
+                style={{ width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: isDark ? DARK.primary : LIGHT.primary, opacity: !aiInput.trim() || aiLoading ? 0.5 : 1 }}
+              >
+                <MSIcon name="send" size={18} color={isDark ? DARK.background : 'white'} />
+              </Pressable>
+            </View>
+          )}
+        </View>
       </RNModal>
     </View>
   );
